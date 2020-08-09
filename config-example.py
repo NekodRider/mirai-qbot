@@ -4,6 +4,6 @@ __all__ = [
     'API_URL',
 ]
 
-BOTQQ =  "3147961318"
+BOTQQ =  "88888888"
 AUTHKEY = "12345678"
 API_URL = "localhost:23333/"
