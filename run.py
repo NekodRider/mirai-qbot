@@ -14,6 +14,9 @@ if __name__ == '__main__':
     if not os.path.exists('mods/dota/dota_id.json'):
         with open('mods/dota/dota_id.json','w') as f:
             f.write("{}")
+    if not os.path.exists('mods/bili/bili_roomid.json'):
+        with open('mods/bili/bili_roomid.json','w') as f:
+            f.write("{}")
     app = Mirai(f"mirai://{config.API_URL}?authKey={config.AUTHKEY}&qq={config.BOTQQ}")
     handler = RotatingFileHandler('mirai-qbot.log', level=INFO, bubble = True, 
                                    max_size=10240,backup_count=1)
