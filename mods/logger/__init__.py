@@ -4,7 +4,6 @@ from pathlib import Path
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
-@sub_app.receiver(FriendMessage)
 @sub_app.receiver(GroupMessage)
 async def logger_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     if message.toString() == "/log":
@@ -14,9 +13,6 @@ async def logger_handler(app: Mirai, sender: "Sender", event_type: "Type", messa
             res = "".join(res[0 if len(res)<20 else len(res)-20:])
         try:
             msg = [Plain(text=res)]
-            if event_type == "GroupMessage":
-                await app.sendGroupMessage(sender.group, msg)
-            elif event_type == "FriendMessage":
-                await app.sendFriendMessage(sender, msg)
+            await app.sendGroupMessage(sender.group, msg)
         except:
             pass
