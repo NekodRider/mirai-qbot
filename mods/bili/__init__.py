@@ -1,9 +1,10 @@
 #encoding=Utf-8
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
-from .dance_top import getTop3DanceToday
 from urllib.request import urlretrieve
 from pathlib import Path
+from .dance_top import getTop3DanceToday
+from .live import getLiveInfo
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
@@ -27,8 +28,23 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
             pass
-
-# if __name__ == "__main__":
-#     title, author, pic, url = getTop3DanceToday()
-#     img_path = str(Path(__file__).parent.joinpath('dance_' + str(0) + ".jpg"))
-#     urlretrieve(pic[0], img_path)
+    elif message.toString()[:5] == "/live":
+        SessionLogger.info("[LIVE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        room_id = message.toString()[6:]
+        res = getLiveInfo(room_id)
+        if res=="error":
+            msg = [Plain(text="未找到该直播！")]
+            SessionLogger.info("[LIVE]未找到该直播")
+        else:
+            if res['isLive']==0:
+                msg = [Plain(text=res['name'] + " 未在直播.")]
+            else:
+                msg = [
+                    Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
+                    await Image.fromRemote(res["keyframe"])
+                ]
+            SessionLogger.info("[LIVE]返回成功")
+        try:
+            await app.sendGroupMessage(group,msg)
+        except exceptions.BotMutedError:
+            pass
