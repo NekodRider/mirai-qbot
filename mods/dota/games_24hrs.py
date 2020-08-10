@@ -1,13 +1,15 @@
 import time
 import types
-from .helper import getDotaInfo, hero_dict, error_codes
+from .helper import getDotaGamesInfo, getDotaPlayerInfo, hero_dict, error_codes
 
 
 def getGamesIn24Hrs(playerId):
     res = []
-    player_name, games_data = getDotaInfo(playerId)
-    if player_name in error_codes.keys():
-        return error_codes[player_name]
+    player_data = getDotaPlayerInfo(playerId)
+    if type(player_data) == type(""):
+        return error_codes[player_data]
+    player_name = player_data["steamAccount"]["name"]
+    games_data = getDotaGamesInfo(playerId)
 
     for match in games_data:
         if (time.time() - match["startDateTime"]) // 3600 > 24:
