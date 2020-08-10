@@ -1,6 +1,7 @@
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
 from functools import reduce
 
@@ -54,6 +55,6 @@ def getWinningRateGraph(playerId, total=50):
     plt.scatter(graph_index, winning_rate, color="red", s=15)
     plt.legend()
     plt.draw()
-    pic_name = playerId + "_winning_rate.png"
+    pic_name = str(Path(__file__).parent.joinpath(playerId + "_winning_rate.png"))
     plt.savefig(pic_name)
     return pic_name, player_name
