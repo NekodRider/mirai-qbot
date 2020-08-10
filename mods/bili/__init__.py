@@ -1,5 +1,5 @@
 #encoding=Utf-8
-from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
+from mirai import Mirai, Permission, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
 from urllib.request import urlretrieve
 from pathlib import Path
@@ -9,6 +9,19 @@ import time
 import asyncio
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
+
+def groupToStr(g):
+    return f"{g.id}|{g.name}{g.permission}"
+
+def groupFromStr(s):
+    sl = s.split("|")
+    if sl[2]=="Permission.Member":
+        p = Permission.Member
+    elif sl[2]=="Permission.Owner":
+        p = Permission.Owner
+    else:
+        p = Permission.Administrator
+    return Group(id=int(sl[0]),name=sl[1],permission=p)
 
 @sub_app.receiver("GroupMessage")
 async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
@@ -40,9 +53,10 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
         else:
             monitor_dict = readMonitorDict()
             if room_id in monitor_dict.keys():
-                monitor_dict[room_id].append(group)
+                monitor_dict[room_id].append(groupToStr(group))
             else:
-                monitor_dict[room_id] = [group]
+                monitor_dict[room_id] = [groupToStr(group)]
+            updateMonitorDict(monitor_dict)
             if res['isLive']==0:
                 msg = [Plain(text="已加入监视列表\n" + res['name'] + " 未在直播.")]
             else:
@@ -67,9 +81,9 @@ async def monitor(app: Mirai):
                     Plain(text=res['name'] + " 开播啦! " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
                     await Image.fromRemote(res["keyframe"])
                 ]
-            try:
-                for group in monitor_dict[room_id]:
-                    await app.sendGroupMessage(group,msg)
-            except exceptions.BotMutedError:
-                pass
+                try:
+                    for group in monitor_dict[room_id]:
+                        await app.sendGroupMessage(groupFromStr(group),msg)
+                except exceptions.BotMutedError:
+                    pass
         await asyncio.sleep(3*60)
