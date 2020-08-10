@@ -41,7 +41,7 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             else:
                 msg = [
                     Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
-                    Image.fromRemote(res["keyframe"])
+                    await Image.fromRemote(res["keyframe"])
                 ]
             SessionLogger.info("[LIVE]返回成功")
         try:
