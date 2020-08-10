@@ -8,7 +8,8 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 async def logger_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     if message.toString() == "/log":
         with open("/var/log/mirai-qbot.log","r") as f:
-            res = f.read()
+            res = f.readlines()
+            res = res[len(res)-20:]
         try:
             msg = [Plain(text=res)]
             if event_type == "GroupMessage":
