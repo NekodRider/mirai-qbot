@@ -16,7 +16,7 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
         for i, ti in enumerate(title):
             msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
             msg.append(Plain(text=url[i] + "\n"))
-            msg.append(Image.fromRemote(url[i]))
+            msg.append(Image.fromRemote(pic[i]))
             msg.append(Plain(text="\n"))
         SessionLogger.info("[DANCE]返回成功")
         try:
