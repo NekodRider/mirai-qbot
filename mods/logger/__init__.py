@@ -7,7 +7,7 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 @sub_app.receiver(GroupMessage)
 async def logger_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     if message.toString() == "/log":
-        SessionLogger.info("[LOGGER]来自群%d中成员%d的消息:" % (sender.group,sender) + message.toString())
+        SessionLogger.info("[LOGGER]来自群%d中成员%d的消息:" % (sender.group.id,sender) + message.toString())
         with open("/var/log/mirai-qbot.log","r") as f:
             res = f.readlines()
             res = "".join(res[0 if len(res)<20 else len(res)-20:])
