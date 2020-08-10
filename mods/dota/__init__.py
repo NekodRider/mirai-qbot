@@ -13,32 +13,38 @@ dota_id_dict = readDict()
 async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
     if message.toString()[:5] == "/dota":
         query_id = message.toString()[6:]
-        if query_id in dota_id_dict.keys():
+        if query_id not in dota_id_dict.keys():
+            msg = [Plain(text="未添加该用户！")]
+        else:
             query_id = dota_id_dict[query_id]
-        res = getGamesIn24Hrs(query_id)
-        msg = [Plain(text=res)]
+            res = getGamesIn24Hrs(query_id)
+            msg = [Plain(text=res)]
         try:
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
             pass
     elif message.toString()[:8] == "/winrate":
         query_id = message.toString()[9:].split(" ")
-        args = 50
-        if len(query_id) == 2:
-            try:
-                args = int(query_id[1])
-                if args > 50 or args <= 0:
-                    args = 50
-            except ValueError:
-                args = 50
-        pic_name, player_name = getWinningRateGraph(query_id[0], args)
-        if type(player_name) == type(0):
-            msg = [Plain(text=pic_name)]
+        if query_id[0] not in dota_id_dict.keys():
+            msg = [Plain(text="未添加该用户！")]
         else:
-            msg = [
-                Image.fromFileSystem(pic_name),
-                Plain(text=player_name + "最近" + str(args) + "场游戏胜率变化图")
-            ]
+            query_id[0] = dota_id_dict[query_id[0]]
+            args = 50
+            if len(query_id) == 2:
+                try:
+                    args = int(query_id[1])
+                    if args > 50 or args <= 0:
+                        args = 50
+                except ValueError:
+                    args = 50
+            pic_name, player_name = getWinningRateGraph(query_id[0], args)
+            if type(player_name) == type(0):
+                msg = [Plain(text=pic_name)]
+            else:
+                msg = [
+                    Image.fromFileSystem(pic_name),
+                    Plain(text=player_name + "最近" + str(args) + "场游戏胜率变化图")
+                ]
         try:
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
@@ -54,20 +60,21 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
             pass
 
 
-# if __name__ == "__main__":
-#     message = "/winrate 309000276 50"
-#     query_id = message[9:].split(" ")
-#     args = 50
-#     if len(query_id) == 2:
-#         try:
-#             args = int(query_id[1])
-#             if args > 50 or args <= 0:
-#                 print("error")
-#         except ValueError:
-#             print("error")
-#     pic_name, player = getWinningRateGraph(query_id[0], args)
-#     if type(player) == type(0):
-#         print("fuck")
-#     else:
-#         print(pic_name, player)
-#     # print(getWinningRateGraph("309000276"))
+if __name__ == "__main__":
+    message = "/winrate yd 50"
+    query_id = message[9:].split(" ")
+    print(list(query_id))
+    args = 50
+    if len(query_id) == 2:
+        try:
+            args = int(query_id[1])
+            if args > 50 or args <= 0:
+                print("error")
+        except ValueError:
+            print("error")
+    pic_name, player = getWinningRateGraph(query_id[0], args)
+    if type(player) == type(0):
+        print("fuck")
+    else:
+        print(pic_name, player)
+    # print(getWinningRateGraph("309000276"))
