@@ -21,6 +21,7 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             img_path = str(Path(__file__).parent.joinpath('dance_' + str(i) + ".jpg"))
             urlretrieve(pic[i], img_path)
             msg.append(Image.fromFileSystem(img_path))
+            msg.append(Plain(text="\n"))
         SessionLogger.info("[DANCE]返回成功")
         try:
             await app.sendGroupMessage(group,msg)
