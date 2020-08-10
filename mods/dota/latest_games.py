@@ -38,5 +38,5 @@ def getLatestWinningStat(playerId, total=20):
     res += '场均反补：' + str(reports[7]) + '\n'
     res += '场均伤害：' + str(reports[8]) + '\n'
     res += '场均建筑伤害：' + str(reports[9]) + '\n'
-    res += '场均治疗：' + str(reports[10]) + '\n'
+    res += '场均治疗：' + str(reports[10])
     return res
