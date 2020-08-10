@@ -16,7 +16,7 @@ def load_mods(app: Mirai):
 def load_mod(app: Mirai, module_path: str):
     try:
         importlib.import_module(module_path)
-        SessionLogger.info(f'Succeeded to import "{module_path}"')
+        SessionLogger.info(f'成功导入 "{module_path}"')
     except Exception as e:
-        SessionLogger.error(f'Failed to import "{module_path}", error: {e}')
+        SessionLogger.error(f'未能导入 "{module_path}", error: {e}')
         SessionLogger.exception(e)
