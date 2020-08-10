@@ -4,7 +4,8 @@ from mirai.logger import Session as SessionLogger
 from urllib.request import urlretrieve
 from pathlib import Path
 from .dance_top import getTop3DanceToday
-from .live import getLiveInfo
+from .live import getLiveInfo, readMonitorDict, updateMonitorDict
+import time
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
@@ -36,11 +37,16 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             msg = [Plain(text="未找到该直播！")]
             SessionLogger.info("[LIVE]未找到该直播")
         else:
+            monitor_dict = readMonitorDict()
+            if group in monitor_dict.keys():
+                monitor_dict[group].append(room_id)
+            else:
+                monitor_dict[group] = [room_id]
             if res['isLive']==0:
-                msg = [Plain(text=res['name'] + " 未在直播.")]
+                msg = [Plain(text="已加入监视列表\n" + res['name'] + " 未在直播.")]
             else:
                 msg = [
-                    Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
+                    Plain(text="已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
                     await Image.fromRemote(res["keyframe"])
                 ]
             SessionLogger.info("[LIVE]返回成功")
@@ -48,3 +54,21 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
             pass
+
+@sub_app.subroutine
+async def monitor(app: Mirai):
+    while 1:
+        monitor_dict = readMonitorDict()
+        for group in monitor_dict.keys():
+            for i in monitor_dict[group]:
+                res = getLiveInfo(i)
+                if res['isLive']==1 and time.time()+5*60*60-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<3*60:
+                    msg = [
+                        Plain(text=res['name'] + " 开播啦! " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
+                        await Image.fromRemote(res["keyframe"])
+                    ]
+                try:
+                    await app.sendGroupMessage(group,msg)
+                except exceptions.BotMutedError:
+                    pass
+        time.sleep(3*60)
