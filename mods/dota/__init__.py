@@ -31,13 +31,13 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
                     args = 50
             except ValueError:
                 args = 50
-        name, res = getWinningRateGraph(query_id[0], args)
-        if type(res) == type(0):
-            msg = [Plain(text=name)]
+        pic_name, player_name = getWinningRateGraph(query_id[0], args)
+        if type(player_name) == type(0):
+            msg = [Plain(text=pic_name)]
         else:
             msg = [
-                Image.fromFileSystem(res),
-                Plain(text=name + "最近" + str(args) + "游戏胜率变化图")
+                Image.fromFileSystem(pic_name),
+                Plain(text=player_name + "最近" + str(args) + "场游戏胜率变化图")
             ]
         try:
             await app.sendGroupMessage(group,msg)
