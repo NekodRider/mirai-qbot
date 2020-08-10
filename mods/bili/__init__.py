@@ -11,7 +11,7 @@ import asyncio
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 def groupToStr(g):
-    return f"{g.id}|{g.name}{g.permission}"
+    return f"{g.id}|{g.name}|{g.permission}"
 
 def groupFromStr(s):
     sl = s.split("|")
