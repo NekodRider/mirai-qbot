@@ -14,7 +14,7 @@ def getLiveInfo(room_id):
     res['keyframe'] = live_data["data"]["keyframe"]
     res['area_name'] = live_data["data"]["area_name"]
     res['url'] = "https://live.bilibili.com/" + room_id
-    url = "https://api.bilibili.com/x/space/acc/info?mid=" + uid
+    url = "https://api.bilibili.com/x/space/acc/info?mid=" + str(uid)
     html = request.urlopen(url)
     live_data = json.loads(html.read().decode('utf-8'))
     res['name'] = live_data["data"]["name"]
