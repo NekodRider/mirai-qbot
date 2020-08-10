@@ -14,10 +14,10 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
     if message.toString()[:6] == "/dance":
         SessionLogger.info("[DANCE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         title, author, pic, url = getTop3DanceToday()
-        msg = [Plain(text="B站舞蹈区实时排名前3（已剔除不适内容）")]
+        msg = [Plain(text="B站舞蹈区实时排名前3（已剔除潜在不适内容）\n")]
         for i, ti in enumerate(title):
-            msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i]))
-            msg.append(Plain(text=url[i]))
+            msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
+            msg.append(Plain(text=url[i] + "\n"))
             img_path = str(Path(__file__).parent.joinpath('dance_' + str(i) + ".jpg"))
             urlretrieve(pic[i], img_path)
             msg.append(Image.fromFileSystem(img_path))
