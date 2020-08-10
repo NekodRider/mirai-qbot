@@ -1,4 +1,5 @@
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
+from mirai.logger import Session as SessionLogger
 import random
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -31,6 +32,7 @@ def stringToMsg(s):
 async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
     sender=member.id
     groupId=group.id
+    global repeat_queue
     if message.toString() == repeat_queue[0] and message.toString() != repeat_log[0] and sender != repeat_queue[1]:
         SessionLogger.info("[REPEAT]来自群%d中成员%d的消息:" % (groupId,sender),message.toString())
         try:

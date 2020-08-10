@@ -1,5 +1,6 @@
 #encoding=Utf-8
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
+from mirai.logger import Session as SessionLogger
 from .helper import readDict, updateDict, getDotaPlayerInfo, getDotaGamesInfo, error_codes
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
