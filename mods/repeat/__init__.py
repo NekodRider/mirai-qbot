@@ -3,7 +3,7 @@ import random
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
-repeat_queue = [""]
+repeat_queue = ["",0]
 repeat_log = [""]
 
 def stringToMsg(s):
@@ -29,13 +29,14 @@ def stringToMsg(s):
 
 @sub_app.receiver("GroupMessage")
 async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
-    if message.toString() == repeat_queue[0] and message.toString() != repeat_log[0]:
+    sender = member.id
+    if message.toString() == repeat_queue[0] and message.toString() != repeat_log[0] and sender != repeat_queue[1]:
         try:
             msg = stringToMsg(message.toString())
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
             pass
-        repeat_queue[0]=""
+        repeat_queue=["",0]
         repeat_log[0] = message.toString()
     else:
-        repeat_queue[0] = message.toString()
+        repeat_queue = [message.toString(),sender]
