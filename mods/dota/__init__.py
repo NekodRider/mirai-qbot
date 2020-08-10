@@ -15,7 +15,7 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
     sender=member.id
     groupId=group.id
     if message.toString()[:5] == "/dota":
-        SessionLogger.info("[DOTA]来自群%d中成员%d的消息:" % (groupId,sender),message.toString())
+        SessionLogger.info("[DOTA]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         query_id = message.toString()[6:]
         if query_id not in dota_id_dict.keys():
             msg = [Plain(text="未添加该用户！")]
@@ -30,7 +30,7 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
         except exceptions.BotMutedError:
             pass
     elif message.toString()[:8] == "/winrate":
-        SessionLogger.info("[WINRATE]来自群%d中成员%d的消息:" % (groupId,sender),message.toString())
+        SessionLogger.info("[WINRATE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         query_id = message.toString()[9:].split(" ")
         if query_id[0] not in dota_id_dict.keys():
             msg = [Plain(text="未添加该用户！")]
@@ -60,7 +60,7 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
         except exceptions.BotMutedError:
             pass
     elif message.toString()[:8] == "/setdota":
-        SessionLogger.info("[SETDOTA]来自群%d中成员%d的消息:" % (groupId,sender),message.toString())
+        SessionLogger.info("[SETDOTA]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         rec = message.toString()[9:].split(" ")
         dota_id_dict[rec[0]] = rec[1]
         updateDict(dota_id_dict)
