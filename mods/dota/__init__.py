@@ -57,8 +57,11 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
     elif message.toString()[:5] == "/comp":
         SessionLogger.info("[COMP]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         query_id = message.toString()[6:].split(" ")
-        if query_id[0] not in dota_id_dict.keys() or query_id[1] not in dota_id_dict.keys():
-            msg = [Plain(text="未添加该用户！")]
+        if query_id[0] not in dota_id_dict.keys():
+            msg = [Plain(text="未添加用户" + query_id[0] + "！")]
+            SessionLogger.info("[COMP]未添加该用户")
+        elif query_id[1] not in dota_id_dict.keys():
+            msg = [Plain(text="未添加用户" + query_id[1] + "！")]
             SessionLogger.info("[COMP]未添加该用户")
         else:
             query_id[0] = dota_id_dict[query_id[0]]
