@@ -46,7 +46,7 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
 
     elif message.toString()[:10] == "/recommend":
         SessionLogger.info("[RECOM]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
-        title, author, pic, url = getTop3DanceToday()
+        title, author, pic, url = getRecommendDance()
         msg = [Plain(text="本次核心推荐up随机视频：\n")]
         for i, ti in enumerate(title):
             msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
