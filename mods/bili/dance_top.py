@@ -4,7 +4,7 @@ import json
 import random
 
 black_lists = ["男"]
-up_lists = ["15385187", "84465926", "632887", "2689967", "5276"
+up_lists = ["15385187", "84465926", "632887", "2689967", "5276",
             "8366990", "7375428", "466272", "13346799", "8581342"]
 
 dance_api = "http://api.bilibili.com/x/web-interface/ranking?rid=129&day=1"
