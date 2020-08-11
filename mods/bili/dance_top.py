@@ -12,7 +12,7 @@ video_pri = "https://www.bilibili.com/video/"
 
 
 def getDanceUrl(uid):
-    return "http://api.bilibili.com/x/space/arc/search?mid=" + uid + "15385187&pn=1&ps=10&tid=129"
+    return "http://api.bilibili.com/x/space/arc/search?mid=" + uid + "&pn=1&ps=10&tid=129"
 
 
 def checkTitle(title):
@@ -31,7 +31,7 @@ def getRecommendDance():
         rand_user = up_lists[random.randint % len(up_lists)]
         url = getDanceUrl(rand_user)
         try:
-            html = request.urlopen(dance_api)
+            html = request.urlopen(url)
         except:
             return -1
         data = json.loads(html.read().decode('utf-8'))
