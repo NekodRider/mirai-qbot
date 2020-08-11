@@ -4,7 +4,7 @@ from mirai.logger import Session as SessionLogger
 from .helper import readDict, updateDict, getDotaPlayerInfo, getDotaGamesInfo, error_codes
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
-from .latest_games import getLatestWinningStat
+from .latest_games import getLatestWinningStat, getLatestComparingStat
 from pathlib import Path
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -56,6 +56,35 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
             await app.sendGroupMessage(group, msg)
         except exceptions.BotMutedError:
             pass
+
+    elif message.toString()[:5] == "/comp":
+        SessionLogger.info("[COMP]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        query_id = message.toString()[6:].split(" ")
+        if query_id[0] not in dota_id_dict.keys():
+            msg = [Plain(text="未添加用户" + query_id[0] + "！")]
+            SessionLogger.info("[COMP]未添加该用户")
+        elif query_id[1] not in dota_id_dict.keys():
+            msg = [Plain(text="未添加用户" + query_id[1] + "！")]
+            SessionLogger.info("[COMP]未添加该用户")
+        else:
+            query_id[0] = dota_id_dict[query_id[0]]
+            query_id[1] = dota_id_dict[query_id[1]]
+            args = 20
+            if len(query_id) == 3:
+                try:
+                    args = int(query_id[2])
+                    if args > 50 or args <= 0:
+                        args = 20
+                except ValueError:
+                    args = 20
+            res = getLatestComparingStat(query_id[0], query_id[1], args)
+            msg = [Plain(text=res)]
+            SessionLogger.info("[COMP]返回成功")
+        try:
+            await app.sendGroupMessage(group, msg)
+        except exceptions.BotMutedError:
+            pass
+
     elif message.toString()[:8] == "/winrate":
         SessionLogger.info("[WINRATE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         query_id = message.toString()[9:].split(" ")
