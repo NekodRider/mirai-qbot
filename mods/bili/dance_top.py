@@ -28,15 +28,15 @@ def getRecommendDance():
     pic = []
     url = []
     for i in range(0, 3):
-        rand_user = up_lists[random.randint % len(up_lists)]
-        url = getDanceUrl(rand_user)
+        rand_user = up_lists[random.randint(0, len(up_lists) - 1)]
+        cur_url = getDanceUrl(rand_user)
         try:
-            html = request.urlopen(url)
+            html = request.urlopen(cur_url)
         except:
             return -1
         data = json.loads(html.read().decode('utf-8'))
         dance_list = data["data"]["list"]["vlist"]
-        rand_dance = dance_list[random.randint % len(dance_list)]
+        rand_dance = dance_list[random.randint(0, len(dance_list) - 1)]
         bvid = rand_dance["bvid"]
         url.append(video_pri + bvid)
         author.append(rand_dance["author"])
