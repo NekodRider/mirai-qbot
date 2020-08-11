@@ -3,7 +3,7 @@ from mirai import Mirai, Permission, Group, GroupMessage, MessageChain, Member, 
 from mirai.logger import Session as SessionLogger
 from urllib.request import urlretrieve
 from pathlib import Path
-from .dance_top import getTop3DanceToday
+from .dance_top import getTop3DanceToday, getRecommendDance
 from .live import getLiveInfo, readMonitorDict, updateMonitorDict
 import time
 import asyncio
@@ -43,6 +43,24 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
             pass
+
+    elif message.toString()[:10] == "/recommend":
+        SessionLogger.info("[RECOM]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        title, author, pic, url = getTop3DanceToday()
+        msg = [Plain(text="本次核心推荐up随机视频：\n")]
+        for i, ti in enumerate(title):
+            msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
+            msg.append(Plain(text=url[i] + "\n"))
+            img_path = str(Path(__file__).parent.joinpath('dance_' + str(i) + ".jpg"))
+            urlretrieve(pic[i], img_path)
+            msg.append(Image.fromFileSystem(img_path))
+            msg.append(Plain(text="\n"))
+        SessionLogger.info("[RECOM]返回成功")
+        try:
+            await app.sendGroupMessage(group,msg)
+        except exceptions.BotMutedError:
+            pass
+
     elif message.toString()[:5] == "/live":
         SessionLogger.info("[LIVE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
         room_id = message.toString()[6:]
