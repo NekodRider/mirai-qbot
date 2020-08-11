@@ -78,5 +78,5 @@ def getLatestComparingStat(playerIdA, playerIdB, total=20):
     res += '场均反补：' + str(reportsA[5]) + " " + cmp_results[5] + " " + str(reportsB[5]) + '\n'
     res += '场均英雄伤害：' + str(reportsA[6]) + " " + cmp_results[6] + " " + str(reportsB[6]) + '\n'
     res += '场均建筑伤害：' + str(reportsA[7]) + " " + cmp_results[7] + " " + str(reportsB[7]) + '\n'
-    res += '场均治疗：' + str(reportsA[8]) + " " + cmp_results[8] + " " + str(reportsB[8]) + '\n'
+    res += '场均治疗：' + str(reportsA[8]) + " " + cmp_results[8] + " " + str(reportsB[8])
     return res
