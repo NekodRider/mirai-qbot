@@ -24,8 +24,11 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
         else:
             query_id = dota_id_dict[query_id]
             res = getGamesIn24Hrs(query_id)
+            if res in ('请输入正确steam ID!', '该玩家不存在!'):
+                SessionLogger.info("[DOTA]"+res)
+            else:
+                SessionLogger.info("[DOTA]返回成功")
             msg = [Plain(text=res)]
-            SessionLogger.info("[DOTA]返回成功")
         try:
             await app.sendGroupMessage(group,msg)
         except exceptions.BotMutedError:
