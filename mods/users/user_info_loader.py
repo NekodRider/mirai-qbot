@@ -1,9 +1,3 @@
-if __name__ == "__main__":
-    import sys
-    import os
-    os.getcwd()
-    sys.path.append('/Users/mmmartt/Files/projects/mirai-qbot')
-
 from pathlib import Path
 from utils.dict_loader import readDict, updateDict
 
@@ -26,6 +20,13 @@ def loadUserInfo():
     return readDict(USER_DATA_PATH, True, [])
 
 
+def getUserInfo(qq: str):
+    try:
+        return list(filter(lambda a: a['qq'] == qq, loadUserInfo()))[0]
+    except IndexError:
+        return None
+
+
 def updateUserInfo(qq: str, info):
     data = loadUserInfo()
     targets = list(filter(lambda a: a['qq'] == qq, data))
@@ -43,5 +44,4 @@ def updateUserInfo(qq: str, info):
     return updateDict(USER_DATA_PATH, list(filter(lambda a: a['qq'] != qq, data)) + [target])
 
 
-if __name__ == "__main__":
-    updateUserInfo('uck', {'nickname': 'fuckyou', 'oo': 'fuck'})
+# updateUserInfo('uck', {'nickname': 'fuckyou', 'oo': 'fuck'})
