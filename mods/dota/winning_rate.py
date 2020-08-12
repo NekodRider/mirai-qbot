@@ -24,7 +24,7 @@ def getWinningRateGraph(playerId, total=50):
     games_data = getDotaGamesInfo(playerId, "?take=" + str(total) + "&include=Player")
 
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
-    for id, match in enumerate(games_data):
+    for _, match in enumerate(games_data):
         res.append(1 if match["players"][0]["isVictory"] else 0)
 
 
@@ -38,7 +38,7 @@ def getWinningRateGraph(playerId, total=50):
     winning_rate = []
     winning_rate.append(round(pre_win / pre_total * 100, 4) if (pre_total != 0) else 100)
     res.reverse()
-    for id, result in enumerate(res):
+    for _, result in enumerate(res):
         pre_total += 1
         if result == 1:
             pre_win += 1
@@ -49,7 +49,7 @@ def getWinningRateGraph(playerId, total=50):
     graph_range = graph_max - graph_min
 
     plt.figure()
-    plt.title('Winning rate in latest ' + str(total) + " games")
+    plt.title('Winning rate in the latest ' + str(total) + " games")
     plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
     plt.plot(graph_index, winning_rate, color="red", label="Winning rate")
     plt.scatter(graph_index, winning_rate, color="red", s=15)
