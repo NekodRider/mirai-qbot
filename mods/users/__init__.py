@@ -1,5 +1,6 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain
 from utils.msg_parser import parseMsg
+from mirai.logger import Session as SessionLogger
 from mods.users.user_info_loader import getUserInfo, updateUserInfo
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -37,7 +38,7 @@ def getNameHandler(member: Member, args):
 
 
 USER_CMD_HANDLER = {
-    'setName': setNameHandler,
+    'setname': setNameHandler,
     'name': getNameHandler
 }
 
@@ -52,7 +53,7 @@ async def funny_handler(app: Mirai, group: Group, message: MessageChain, member:
     if cmd not in USER_CMD_HANDLER.keys():
         return
     SessionLogger.info("[USER]群%d中%d消息:" %
-                       (groupId, sender) + ', cmd:' + cmd + 'args:' + args)
+                       (group.id, member.id) + cmd + 'args:' + ' '.join(args))
     handler = USER_CMD_HANDLER[cmd]
     msg = [Plain(text=handler(member, args))]
     try:

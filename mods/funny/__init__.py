@@ -1,4 +1,5 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain
+from mirai.logger import Session as SessionLogger
 from utils.msg_parser import parseMsg
 from mods.funny.jrrp import jrrpHandler
 
@@ -19,7 +20,7 @@ async def funny_handler(app: Mirai, group: Group, message: MessageChain, member:
     if cmd not in FUNNY_CMD_HANDLER.keys():
         return
     SessionLogger.info("[FUNNY]群%d中%d消息:" %
-                       (groupId, sender) + ', cmd:' + cmd + 'args:' + args)
+                       (group.id, member.id)  + cmd + ' ' + ' '.join(args))
     handler = FUNNY_CMD_HANDLER[cmd]
     msg = [Plain(text=handler(group, member, args))]
     try:
