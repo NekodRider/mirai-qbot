@@ -49,7 +49,7 @@ def getWinningRateGraph(playerId, total=50):
     graph_range = graph_max - graph_min
 
     plt.figure()
-    plt.title('Winning rate in latest ' + str(total) + " games")
+    plt.title('Winning rate in the latest ' + str(total) + " games")
     plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
     plt.plot(graph_index, winning_rate, color="red", label="Winning rate")
     plt.scatter(graph_index, winning_rate, color="red", s=15)
