@@ -9,7 +9,7 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 def setNameHandler(member: Member, args):
     if len(args) == 0:
         return 'USAGE: /setName yd'
-    [name] = args
+    [name, *arg] = args
     oldName = getUserInfo(member.id)
     try:
         updateUserInfo(member.id, {'nickname': name})

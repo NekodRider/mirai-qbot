@@ -36,7 +36,7 @@ def addDefaultQueryIdWhileLT(num, index=None):
 
 @addDefaultQueryIdWhileLT(3)
 def dotaDotaHandler(sender, groupId, *args):
-    query_id = args[0]
+    query_id = args[0] if len(args) > 0 else None
     if query_id not in dota_id_dict.keys():
         SessionLogger.info("[DOTA]未添加该用户")
         return "未添加该用户！"
