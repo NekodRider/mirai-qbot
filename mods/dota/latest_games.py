@@ -24,7 +24,7 @@ def getLatestGamesStat(playerId, total):
         res['heal'] = int(match["players"][0]["heroHealing"]) + res.get('heal', 0)
         total_time += int(match["durationSeconds"])
         exp += int(int(match["players"][0]["experiencePerMinute"]) * (int(match["durationSeconds"]) / 60))
-        net += int(match["players"][0]["networth"])
+        net += int(int(match["players"][0]["goldPerMinute"]) * (int(match["durationSeconds"]) / 60))
 
     reports = list(map(lambda value: round(value / total, 2), res.values()))
     kda = round((res['k'] + res['a']) / (res['d'] if res['d'] != 0 else 1), 2)
