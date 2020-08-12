@@ -4,7 +4,7 @@ import time
 import random
 
 
-def jrrpHandler(group: Group, member: Member) -> str:
+def jrrpHandler(group: Group, member: Member, *args) -> str:
     """
     return 'YD 今日人品为 99,YDNB！
 
@@ -31,7 +31,7 @@ def jrrpHandler(group: Group, member: Member) -> str:
     nickname = member.memberName.upper()
     hint = ''
     try:
-        nickname = getUserInfo(member.id).upper()
+        nickname = getUserInfo(member.id)['nickname'].upper()
     except:
         hint = '\n\n可以通过 /setName 为自己设定名字哦！'
     return (msg+postfix) % (nickname, rp, nickname) + hint
