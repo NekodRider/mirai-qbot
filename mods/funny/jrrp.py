@@ -19,11 +19,9 @@ def jrrpHandler(group: Group, member: Member, *args) -> str:
     msg = '%s今日人品为%d，%s'
     postfix = 'NB！！！'
     if rp == 0:
-        postfix = 'SB！！！'
-    elif rp < 21:
-        postfix = 'SB！！'
-    elif rp < 51:
-        postfix = 'SB！'
+        postfix = 'SB!!!!'
+    elif rp < 50:
+        postfix = '不NB'
     elif rp < 81:
         postfix = 'NB！'
     elif rp < 100:
