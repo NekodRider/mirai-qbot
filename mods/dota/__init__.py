@@ -1,23 +1,29 @@
-#encoding=Utf-8
-from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
+# encoding=Utf-8
+from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At, FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
-from .helper import readDict, updateDict, getDotaPlayerInfo, getDotaGamesInfo, error_codes
+from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
 from .latest_games import getLatestWinningStat, getLatestComparingStat
 from pathlib import Path
+from utils.dict_loader import readDict, updateDict
+from mods.users.user_info_loader import getUserInfo
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
-dota_id_dict = readDict()
+dota_id_dict = readDict(dota_dict_path)
 
 
 @sub_app.receiver("GroupMessage")
-async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
-    sender=member.id
-    groupId=group.id
+async def dota_handler(app: Mirai, group: Group, message: MessageChain, member: Member):
+    sender = member.id
+    groupId = group.id
     if message.toString()[:5] == "/dota":
-        SessionLogger.info("[DOTA]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
-        query_id = message.toString()[6:]
+        SessionLogger.info("[DOTA]来自群%d中成员%d的消息:" %
+                           (groupId, sender) + message.toString())
+        query_id = message.toString()[6:].strip()
+        if query_id == '':
+            info = getUserInfo(member.id)
+            query_id = query_id if info is None else info['nickname']
         if query_id not in dota_id_dict.keys():
             msg = [Plain(text="未添加该用户！")]
             SessionLogger.info("[DOTA]未添加该用户")
@@ -30,11 +36,12 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
                 SessionLogger.info("[DOTA]返回成功")
             msg = [Plain(text=res)]
         try:
-            await app.sendGroupMessage(group,msg)
+            await app.sendGroupMessage(group, msg)
         except exceptions.BotMutedError:
             pass
     elif message.toString()[:5] == "/stat":
-        SessionLogger.info("[STAT]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        SessionLogger.info("[STAT]来自群%d中成员%d的消息:" %
+                           (groupId, sender) + message.toString())
         query_id = message.toString()[6:].split(" ")
         if query_id[0] not in dota_id_dict.keys():
             msg = [Plain(text="未添加该用户！")]
@@ -58,7 +65,8 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
             pass
 
     elif message.toString()[:5] == "/comp":
-        SessionLogger.info("[COMP]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        SessionLogger.info("[COMP]来自群%d中成员%d的消息:" %
+                           (groupId, sender) + message.toString())
         query_id = message.toString()[6:].split(" ")
         if query_id[0] not in dota_id_dict.keys():
             msg = [Plain(text="未添加用户" + query_id[0] + "！")]
@@ -86,7 +94,8 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
             pass
 
     elif message.toString()[:8] == "/winrate":
-        SessionLogger.info("[WINRATE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        SessionLogger.info("[WINRATE]来自群%d中成员%d的消息:" %
+                           (groupId, sender) + message.toString())
         query_id = message.toString()[9:].split(" ")
         if query_id[0] not in dota_id_dict.keys():
             msg = [Plain(text="未添加该用户！")]
@@ -112,16 +121,17 @@ async def dota_handler(app: Mirai, group:Group, message:MessageChain, member:Mem
                 ]
                 SessionLogger.info("[WINRATE]返回成功")
         try:
-            await app.sendGroupMessage(group,msg)
+            await app.sendGroupMessage(group, msg)
         except exceptions.BotMutedError:
             pass
     elif message.toString()[:8] == "/setdota":
-        SessionLogger.info("[SETDOTA]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        SessionLogger.info("[SETDOTA]来自群%d中成员%d的消息:" %
+                           (groupId, sender) + message.toString())
         rec = message.toString()[9:].split(" ")
         dota_id_dict[rec[0]] = rec[1]
-        updateDict(dota_id_dict)
+        updateDict(dota_dict_path, dota_id_dict)
         msg = [Plain(text="添加成功！")]
         try:
-            await app.sendGroupMessage(group,msg)
+            await app.sendGroupMessage(group, msg)
         except exceptions.BotMutedError:
             pass
