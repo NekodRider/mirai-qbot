@@ -17,7 +17,7 @@ dota_id_dict = readJSON(dota_dict_path)
 def args_parser(num, index=None):
     def wrapper(*args,sender,event_type):
         if len(args) < num:
-            r = getUserInfo(args[0])
+            r = getUserInfo(sender)
             userId = r and r['nickname']
             if userId is not None:
                 if index is not None:
