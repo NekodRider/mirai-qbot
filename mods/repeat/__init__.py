@@ -3,8 +3,6 @@ from mirai.logger import Session as SessionLogger
 from .._utils.convert import stringToMsg
 import random
 
-COMMANDS_FLAG = False
-
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 repeat_queue = ["",0]

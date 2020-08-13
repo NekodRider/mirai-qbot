@@ -2,8 +2,6 @@ from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, excep
 from mirai.logger import Session as SessionLogger
 import random
 
-COMMANDS_FLAG = True
-COMMANDS = {"roll":roll_handler}
 
 def roll_handler(*args):
     params = args
@@ -14,3 +12,5 @@ def roll_handler(*args):
         res = [random.randint(1,params[1]) for i in range(params[0])]
         msg = [Plain(text="%dd%d 结果:" % tuple(params) + str(res))]
     return msg
+
+COMMANDS = {"roll":roll_handler}

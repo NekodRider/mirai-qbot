@@ -9,7 +9,6 @@ from .._utils.convert import groupFromStr, groupToStr
 import time
 import asyncio
 
-COMMANDS_FLAG = False
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
