@@ -129,9 +129,9 @@ async def up_handler(*args,sender,event_type):
                 up_dict[up_id] = [sender.id]
         updateJSON(BILI_UP_JSON_PATH,up_dict)
         if len(res)==0:
-            msg = [Plain(text="已加入关注列表 " + res['name'] + " 暂无新投稿.")]
+            msg = [Plain(text="已加入关注列表 " + up_name + " 暂无新投稿.")]
         else:
-            msg = [Plain(text=f"已加入关注列表 {res['name']}\n")]
+            msg = [Plain(text=f"已加入关注列表 {up_name}\n")]
             for i in res:
                 msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
                 msg.append(await Image.fromRemote(i["pic"]))
