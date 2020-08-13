@@ -5,23 +5,11 @@ from urllib.request import urlretrieve
 from pathlib import Path
 from .dance_top import getTop3DanceToday, getRecommendDance
 from .live import getLiveInfo, readMonitorDict, updateMonitorDict
+from .._utils.convert import groupFromStr, groupToStr
 import time
 import asyncio
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
-
-def groupToStr(g):
-    return f"{g.id}|{g.name}|{g.permission}"
-
-def groupFromStr(s):
-    sl = s.split("|")
-    if sl[2]=="Permission.Member":
-        p = Permission.Member
-    elif sl[2]=="Permission.Owner":
-        p = Permission.Owner
-    else:
-        p = Permission.Administrator
-    return Group(id=int(sl[0]),name=sl[1],permission=p)
 
 @sub_app.receiver("GroupMessage")
 async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
@@ -82,6 +70,25 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
                     Plain(text="已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
                     await Image.fromRemote(res["keyframe"])
                 ]
+            SessionLogger.info("[LIVE]返回成功")
+        try:
+            await app.sendGroupMessage(group,msg)
+        except exceptions.BotMutedError:
+            pass
+    
+    elif message.toString()[:7] == "/rmlive":
+        SessionLogger.info("[LIVE]来自群%d中成员%d的消息:" % (groupId,sender) + message.toString())
+        room_id = message.toString()[8:]
+        res = getLiveInfo(room_id)
+        if res=="error":
+            msg = [Plain(text="未找到该直播！")]
+            SessionLogger.info("[LIVE]未找到该直播")
+        else:
+            monitor_dict = readMonitorDict()
+            if room_id in monitor_dict.keys():
+                monitor_dict[room_id].remove(groupToStr(group))
+            updateMonitorDict(monitor_dict)
+            msg = [Plain(text="已将 {} 移出监视列表\n".format(res['name']))]
             SessionLogger.info("[LIVE]返回成功")
         try:
             await app.sendGroupMessage(group,msg)

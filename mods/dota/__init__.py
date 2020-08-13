@@ -4,7 +4,7 @@ from mirai.logger import Session as SessionLogger
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
-from .latest_games import getLatestWinningStat, getLatestComparingStat
+from .latest_games import getLatestGamesStat, getLatestComparingStat
 from pathlib import Path
 from utils.dict_loader import readDict, updateDict
 from mods.users.user_info_loader import getUserInfo
@@ -66,7 +66,7 @@ def statHandler(sender, groupId, *args):
                     args = 20
             except ValueError:
                 args = 20
-        res = getLatestWinningStat(query_id[0], args)
+        res = getLatestGamesStat(query_id[0], args)
         SessionLogger.info("[STAT]返回成功")
         return res
 
@@ -144,8 +144,6 @@ DOTA_Handlers = {
 
 @sub_app.receiver("GroupMessage")
 async def dota_handler(app: Mirai, group: Group, message: MessageChain, member: Member):
-    sender = member.id
-    groupId = group.id
     [cmd, *args] = parseMsg(message.toString())
     if cmd not in DOTA_Handlers.keys():
         return

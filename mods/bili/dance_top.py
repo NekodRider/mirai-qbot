@@ -27,7 +27,7 @@ def getRecommendDance():
     title = []
     pic = []
     url = []
-    for i in range(0, 3):
+    for _ in range(0, 3):
         rand_user = up_lists[random.randint(0, len(up_lists) - 1)]
         cur_url = getDanceUrl(rand_user)
         try:
@@ -56,16 +56,15 @@ def getTop3DanceToday():
     title = []
     pic = []
     url = []
-    for i, data in enumerate(dance_data["data"]["list"]):
-        cur_dance = dance_data["data"]["list"][i]
-        if checkTitle(cur_dance["title"]) == -1:
+    for _, data in enumerate(dance_data["data"]["list"]):
+        if checkTitle(data["title"]) == -1:
             continue
         count += 1
-        bvid = cur_dance["bvid"]
+        bvid = data["bvid"]
         url.append(video_pri + bvid)
-        author.append(cur_dance["author"])
-        title.append(cur_dance["title"])
-        pic.append(cur_dance["pic"])
+        author.append(data["author"])
+        title.append(data["title"])
+        pic.append(data["pic"])
         if count >= 3:
             break
     return title, author, pic, url

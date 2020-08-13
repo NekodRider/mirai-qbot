@@ -9,7 +9,7 @@ def load_mods(app: Mirai):
     module_prefix = mod_dir.name
 
     for mod in mod_dir.iterdir():
-        if mod.is_dir() and mod.joinpath('__init__.py').exists():
+        if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath('__init__.py').exists():
             load_mod(app, f'{module_prefix}.{mod.name}')
 
 
