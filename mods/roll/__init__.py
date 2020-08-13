@@ -5,7 +5,7 @@ import random
 
 def roll_handler(*args,sender,event_type):
     params = args
-    if len(args!=1):
+    if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     if "d" not in args[0]:
         return [Plain(text="参数格式不对 请输入1d6形式")]

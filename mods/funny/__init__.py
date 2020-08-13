@@ -33,7 +33,7 @@ def jrrp_handler(*args, sender, event_type):
     try:
         nickname = getUserInfo(member.id)['nickname'].upper()
     except:
-        hint = '\n\n可以通过 /setName 为自己设定名字哦！'
+        hint = '\n\n可以通过 /setname 为自己设定名字哦！'
     return [Plain(text=(msg+postfix) % (nickname, rp, nickname) + hint)]
 
 COMMANDS = {"jrrp": jrrp_handler}
