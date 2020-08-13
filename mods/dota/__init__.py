@@ -48,7 +48,7 @@ async def dota_handler(*args,sender, event_type):
             SessionLogger.info("[DOTA]返回成功")
         return [Plain(text=res)]
 
-@args_parser(1,2)
+@args_parser(1,0)
 async def stat_handler(*args, sender, event_type):
     if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
@@ -70,7 +70,7 @@ async def stat_handler(*args, sender, event_type):
         SessionLogger.info("[STAT]返回成功")
         return [Plain(text=res)]
 
-@args_parser(2,2)
+@args_parser(2,0)
 async def compare_handler(*args, sender, event_type):
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
@@ -96,7 +96,7 @@ async def compare_handler(*args, sender, event_type):
         SessionLogger.info("[COMP]返回成功")
         return res
 
-@args_parser(1,2)
+@args_parser(1,0)
 async def winrate_handler(*args, sender, event_type):
     if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
@@ -126,7 +126,7 @@ async def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]返回成功")
         return msg
 
-@args_parser(2,2)
+@args_parser(2,0)
 async def setdota_handler(*args, sender, event_type):
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
