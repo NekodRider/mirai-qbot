@@ -1,29 +1,39 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from mirai.logger import Session as SessionLogger
 from .._utils import parseMsg
-from mods.funny.jrrp import jrrpHandler
-
-sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
-
-FUNNY_CMD_HANDLER = {
-    'jrrp': jrrpHandler
-}
-
-# cmd = 'rrp'
-# if cmd not in FUNNY_CMD_HANDLER.keys():
-#     print('fuck')
+from .jrrp import calcJrrp
 
 
-@sub_app.receiver("GroupMessage")
-async def funny_handler(app: Mirai, group: Group, message: MessageChain, member: Member):
-    [cmd, *args] = parseMsg(message.toString())
-    if cmd not in FUNNY_CMD_HANDLER.keys():
-        return
-    SessionLogger.info("[FUNNY]群%d中%d消息:" %
-                       (group.id, member.id)  + cmd + ' ' + ' '.join(args))
-    handler = FUNNY_CMD_HANDLER[cmd]
-    msg = [Plain(text=handler(group, member, args))]
+def jrrp_handler(*args, sender, event_type):
+    """
+    return 'YD 今日人品为 99,YDNB！
+
+    0 -> YDSB!!!
+    1-20 -> YDSB!!
+    21-50 -> YDSB!
+    51-80 -> YDNB!
+    80-99 -> YDNB!!
+    100 -> YDNB!!!
+    """
+    if event_type != "GroupMessage":
+        return [Plain(text="尚未支持该类型")]
+    rp = calcJrrp(sender.group.id, sender.id)
+    msg = '%s今日人品为%d，%s'
+    postfix = 'NB！！！'
+    if rp == 0:
+        postfix = 'SB!!!!'
+    elif rp < 50:
+        postfix = '不NB，但YDNB！'
+    elif rp < 81:
+        postfix = 'NB！'
+    elif rp < 100:
+        postfix = 'NB！！'
+    nickname = sender.memberName.upper()
+    hint = ''
     try:
-        await app.sendGroupMessage(group, msg)
-    except exceptions.BotMutedError:
-        pass
+        nickname = getUserInfo(member.id)['nickname'].upper()
+    except:
+        hint = '\n\n可以通过 /setName 为自己设定名字哦！'
+    return [Plain(text=(msg+postfix) % (nickname, rp, nickname) + hint)]
+
+COMMANDS = {"jrrp": jrrp_handler}

@@ -3,7 +3,7 @@ from mirai.logger import Session as SessionLogger
 from pathlib import Path
 
 
-def logger_handler(*args):
+def logger_handler(*args,sender,event_type):
     with open(Path(__file__).parent.parent.parent.joinpath("mirai-qbot.log"),"r") as f:
         res = f.readlines()
         res = "".join(res[0 if len(res)<11 else len(res)-11:len(res)-1])
