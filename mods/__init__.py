@@ -48,18 +48,18 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
         [comm,*args] = command_str.split(" ")
         if comm in commands.keys():
             if event_type == "GroupMessage":
-                SessionLogger.info(f"[{comm[len(PREFIX):]}]来自群{sender.group.id}中成员{sender.id}的消息:" + message_str)
+                SessionLogger.info(f"[{comm[len(PREFIX):]}]来自群{sender.group.id}中成员{sender.id}的指令:" + message_str)
             elif event_type == "FriendMessage":
-                SessionLogger.info(f"[{comm[len(PREFIX):]}]来自好友{sender.id}的消息:" + message_str)
+                SessionLogger.info(f"[{comm[len(PREFIX):]}]来自好友{sender.id}的指令:" + message_str)
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
             msg = commands[comm](*args)
-            msg.insert(0, At(sender.id))
             try:
                 if event_type == "FriendMessage":
-                    await app.sendFriendMessage(sender, msg)
+                    await app.sendFriendMessage(sender.id, msg)
                 elif event_type == "GroupMessage":
+                    msg.insert(0, At(sender.id))
                     await app.sendGroupMessage(sender.group, msg)
                 else:
                     SessionLogger.error(f"未知事件类型{event_type}")
