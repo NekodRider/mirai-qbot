@@ -93,8 +93,9 @@ async def compare_handler(*args, sender, event_type):
             except ValueError:
                 args = 20
         res = getLatestComparingStat(id_a, id_b, args)
+        msg = [Plain(text=res)]
         SessionLogger.info("[COMP]返回成功")
-        return res
+        return msg
 
 @args_parser(1,0)
 async def winrate_handler(*args, sender, event_type):
