@@ -24,7 +24,7 @@ def load_mod(app: Mirai, module_path: str):
     try:
         mod = importlib.import_module(module_path)
         if "COMMANDS" in dir(mod):
-            for comms,func in mod.COMMANDS:
+            for comms,func in mod.COMMANDS.items():
                 comms = PREFIX + comms
                 if comms in commands.keys():
                     SessionLogger.error(f'未能导入 "{module_path}", error: 已存在指令{comms}')
@@ -40,11 +40,11 @@ def load_mod(app: Mirai, module_path: str):
 @sub_app.receiver("GroupMessage")
 async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     message_str = message.toString()
-    pattern = PREFIX + "([a-z]+ )*[a-z]+"
+    pattern = PREFIX + "([a-z0-9]+ )*[a-z0-9]+"
     match = re.match(pattern,message_str,re.I)
     command_str = ""
     if match:
-        command_str = message_str[match[0]:match[1]]
+        command_str = message_str[match.span()[0]:match.span()[1]]
         [comm,*args] = command_str.split(" ")
         if comm in commands.keys():
             if event_type == "GroupMessage":
