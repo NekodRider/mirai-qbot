@@ -4,12 +4,14 @@ from mirai.logger import Session as SessionLogger
 from urllib.request import urlretrieve
 from pathlib import Path
 from .dance_top import getTop3DanceToday, getRecommendDance
-from .live import getLiveInfo
+from .live import getLiveInfo, getNameByUid
+from .card import getCards
 from .._utils import groupFromStr, groupToStr, readJSON, updateJSON
 import time
 import asyncio
 
 BILI_LIVE_JSON_PATH = Path(__file__).parent.joinpath("bili_roomid.json")
+BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def dance_handler(*args,sender,event_type):
@@ -45,10 +47,8 @@ async def live_handler(*args,sender,event_type):
                 if res['isLive']==0:
                     msg.append(Plain(text=res['name'] + " 未在直播.\n"))
                 else:
-                    msg.append(
-                        Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
-                        await Image.fromRemote(res["keyframe"])
-                    )
+                    msg.append(Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])))
+                    msg.append(await Image.fromRemote(res["keyframe"]))
         return msg
 
     room_id = args[0]
@@ -99,8 +99,68 @@ async def rmlive_handler(*args,sender,event_type):
         SessionLogger.info("[LIVE]返回成功")
     return msg
 
+async def up_handler(*args,sender,event_type):
+    if len(args)==0:
+        res = "目前关注的UP主有：\n"
+        up_dict = readJSON(BILI_UP_JSON_PATH)
+        for up, target in up_dict.items():
+            if (event_type=="GroupMessage" and groupToStr(sender.group) in target) \
+                or (event_type=="FriendMessage" and sender.id in target):
+                res += getNameByUid(up) + " "
+        return [Plain(text=res)]
+
+    up_id = args[0]
+    up_name = getNameByUid(up_id)
+    res = getCards(up_id)
+    if res=="error":
+        msg = [Plain(text="未找到该UP主！")]
+        SessionLogger.info("[UP]未找到该UP主")
+    else:
+        up_dict = readJSON(BILI_UP_JSON_PATH)
+        if up_id in up_dict.keys():
+            if event_type=="GroupMessage" and groupToStr(sender.group) not in up_dict[up_id]:
+                up_dict[up_id].append(groupToStr(sender.group))
+            if event_type=="FriendMessage" and sender.id not in up_dict[up_id]:
+                up_dict[up_id].append(sender.id)
+        else:
+            if event_type=="GroupMessage":
+                up_dict[up_id] = [groupToStr(sender.group)]
+            elif event_type=="FriendMessage":
+                up_dict[up_id] = [sender.id]
+        updateJSON(BILI_UP_JSON_PATH,up_dict)
+        if len(res)==0:
+            msg = [Plain(text="已加入关注列表 " + res['name'] + " 暂无新投稿.")]
+        else:
+            msg = [Plain(text=f"已加入关注列表 {res['name']}\n")]
+            for i in res:
+                msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
+                msg.append(await Image.fromRemote(i["pic"]))
+                msg.append(Plain(text="\n"))
+        SessionLogger.info("[LIVE]返回成功")
+    return msg
+
+async def rmup_handler(*args,sender,event_type):
+    if len(args)!=1:
+        return [Plain(text="缺少参数或参数过多")]
+    up_id = args[0]
+    res = getCards(up_id)
+    if res=="error":
+        msg = [Plain(text="未找到该UP主！")]
+        SessionLogger.info("[RMUP]未找到该UP主")
+    else:
+        up_dict = readJSON(BILI_UP_JSON_PATH)
+        if up_id in up_dict.keys():
+            if event_type=="GroupMessage":
+                up_dict[up_id].remove(groupToStr(sender.group))
+            elif event_type=="FriendMessage":
+                up_dict[up_id].remove(sender.id)
+        updateJSON(BILI_UP_JSON_PATH,up_dict)
+        msg = [Plain(text="已将 {} 移出监视列表\n".format(getNameByUid(up_id)))]
+        SessionLogger.info("[RMUP]返回成功")
+    return msg
+
 @sub_app.subroutine
-async def monitor(app: Mirai):
+async def live_monitor(app: Mirai):
     while 1:
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         for room_id in monitor_dict.keys():
@@ -120,4 +180,28 @@ async def monitor(app: Mirai):
                     pass
         await asyncio.sleep(3*60)
 
-COMMANDS = {"dance":dance_handler,"recommend":recommend_handler,"live":live_handler,"rmlive":rmlive_handler}
+@sub_app.subroutine
+async def up_monitor(app: Mirai):
+    while 1:
+        up_dict = readJSON(BILI_UP_JSON_PATH)
+        for up_id in up_dict.keys():
+            res = getCards(up_id)
+            up_name = getNameByUid(up_id)
+            if len(res)!=0:
+                msg = []
+                for i in res:
+                    msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
+                    msg.append(await Image.fromRemote(i["pic"]))
+                    msg.append(Plain(text="\n"))
+                try:
+                    for member in up_dict[up_id]:
+                        if type(member)==str:
+                            await app.sendGroupMessage(groupFromStr(member),msg)
+                        else:
+                            await app.sendFriendMessage(member,msg)
+                except exceptions.BotMutedError:
+                    pass
+        await asyncio.sleep(60*60)
+
+COMMANDS = {"dance":dance_handler,"recommend":recommend_handler,"live":live_handler,"rmlive":rmlive_handler,
+            "up":up_handler,"rmup":rmup_handler}

@@ -2,6 +2,12 @@ from urllib import request
 from pathlib import Path
 import json
 
+def getNameByUid(uid):
+    url = "https://api.bilibili.com/x/space/acc/info?mid=" + str(uid)
+    html = request.urlopen(url)
+    live_data = json.loads(html.read().decode('utf-8'))
+    return live_data["data"]["name"]
+
 def getLiveInfo(room_id):
     url = "https://api.live.bilibili.com/room/v1/Room/get_info?id=" + room_id
     html = request.urlopen(url)
@@ -16,9 +22,6 @@ def getLiveInfo(room_id):
     res['area_name'] = live_data["data"]["area_name"]
     res['url'] = "https://live.bilibili.com/" + room_id
     res['live_time'] = live_data["data"]["live_time"]
-    url = "https://api.bilibili.com/x/space/acc/info?mid=" + str(uid)
-    html = request.urlopen(url)
-    live_data = json.loads(html.read().decode('utf-8'))
-    res['name'] = live_data["data"]["name"]
+    res['name'] = getNameByUid(uid)
 
     return res
