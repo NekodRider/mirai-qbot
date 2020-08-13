@@ -7,7 +7,6 @@ def readMonitorDict():
         d = json.loads(f.read())
     return d
 
-
 def updateMonitorDict(d):
     with open(Path(__file__).parent.joinpath("bili_roomid.json"),'w',encoding='utf-8') as f:
         f.write(json.dumps(d))
