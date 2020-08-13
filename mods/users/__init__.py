@@ -1,7 +1,7 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from .._utils import parseMsg
 from mirai.logger import Session as SessionLogger
-from mods.users.user_info_loader import getUserInfo, updateUserInfo
+from .user_info_loader import getUserInfo, updateUserInfo
 
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
