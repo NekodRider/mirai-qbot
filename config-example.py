@@ -2,6 +2,7 @@ __all__ = [
     'BOTQQ',
     'AUTHKEY',
     'API_URL',
+    'PREFIX'
 ]
 
 PREFIX = "/"

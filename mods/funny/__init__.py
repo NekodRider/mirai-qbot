@@ -3,8 +3,6 @@ from mirai.logger import Session as SessionLogger
 from utils.msg_parser import parseMsg
 from mods.funny.jrrp import jrrpHandler
 
-COMMANDS_FLAG = False
-
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 FUNNY_CMD_HANDLER = {

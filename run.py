@@ -20,5 +20,5 @@ if __name__ == '__main__':
                                   max_size=10240, backup_count=1)
     handler.format_string = '[{record.time:%Y-%m-%d %H:%M:%S}][Mirai] {record.level_name}: {record.channel}: {record.message}'
     handler.push_application()
-    load_mods(app,config.prefix)
+    load_mods(app,config.PREFIX)
     app.run()

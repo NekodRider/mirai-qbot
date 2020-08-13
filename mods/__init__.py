@@ -4,6 +4,7 @@ from pathlib import Path
 from mirai import Mirai, exceptions, MessageChain, Group, At
 from mirai.logger import Session as SessionLogger
 
+
 PREFIX = ""
 commands = {}
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -22,7 +23,7 @@ def load_mods(app: Mirai, prefix: str):
 def load_mod(app: Mirai, module_path: str):
     try:
         mod = importlib.import_module(module_path)
-        if mod.COMMANDS_FLAG:
+        if "COMMANDS" in dir(mod):
             for comms,func in mod.COMMANDS:
                 comms = PREFIX + comms
                 if comms in commands.keys():
@@ -62,6 +63,5 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
                     await app.sendGroupMessage(sender.group, msg)
                 else:
                     SessionLogger.error(f"未知事件类型{event_type}")
-                    return
             except exceptions.BotMutedError:
                 pass
