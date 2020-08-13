@@ -6,7 +6,7 @@ from pathlib import Path
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
-from .latest_games import getLatestGamesStat, getLatestComparingStat
+from .latest_games import getStat, getLatestComparingStat
 from .._utils import parseMsg, readJSON, updateJSON
 from ..users import getUserInfo
 
@@ -66,7 +66,7 @@ async def stat_handler(*args, sender, event_type):
                     args = 20
             except ValueError:
                 args = 20
-        res = getLatestGamesStat(query_id, args)
+        res = getStat(query_id, args)
         SessionLogger.info("[STAT]返回成功")
         return [Plain(text=res)]
 

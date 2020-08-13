@@ -1,6 +1,23 @@
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes
 
 
+def getStat(playerId,total=20):
+    reports, kda, gpm, xpm, player_name = getLatestGamesStat(playerId,total)
+    res = player_name + '最近 ' + str(total) + ' 场游戏总数据统计如下：\n'
+    res += '胜率：' + str(reports[0]*100) + '%\n'
+    res += 'KDA：' + str(kda) + '\n'
+    res += '场均击杀：' + str(reports[1]) + '\n'
+    res += '场均死亡：' + str(reports[2]) + '\n'
+    res += '场均助攻：' + str(reports[3]) + '\n'
+    res += '场均GPM：' + str(gpm) + '\n'
+    res += '场均XPM：' + str(xpm) + '\n'
+    res += '场均正补：' + str(reports[4]) + '\n'
+    res += '场均反补：' + str(reports[5]) + '\n'
+    res += '场均英雄伤害：' + str(reports[6]) + '\n'
+    res += '场均建筑伤害：' + str(reports[7]) + '\n'
+    res += '场均治疗：' + str(reports[8]) 
+    return res
+
 def getLatestGamesStat(playerId, total=20):
     res = {}
     player_data = getDotaPlayerInfo(playerId, "/summary")
@@ -29,20 +46,7 @@ def getLatestGamesStat(playerId, total=20):
     gpm = round(net / total, 2)
     xpm = round(exp / total, 2)
     
-    res = player_name + '最近 ' + str(total) + ' 场游戏总数据统计如下：\n'
-    res += '胜率：' + str(reports[0]*100) + '%\n'
-    res += 'KDA：' + str(kda) + '\n'
-    res += '场均击杀：' + str(reports[1]) + '\n'
-    res += '场均死亡：' + str(reports[2]) + '\n'
-    res += '场均助攻：' + str(reports[3]) + '\n'
-    res += '场均GPM：' + str(gpm) + '\n'
-    res += '场均XPM：' + str(xpm) + '\n'
-    res += '场均正补：' + str(reports[4]) + '\n'
-    res += '场均反补：' + str(reports[5]) + '\n'
-    res += '场均英雄伤害：' + str(reports[6]) + '\n'
-    res += '场均建筑伤害：' + str(reports[7]) + '\n'
-    res += '场均治疗：' + str(reports[8])
-    return res
+    return reports, kda, gpm, xpm, player_name
 
 
 def getLatestComparingStat(playerIdA, playerIdB, total=20):
