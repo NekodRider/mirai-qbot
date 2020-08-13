@@ -12,7 +12,7 @@ import asyncio
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
-def dance_handler(*args,sender,event_type):
+async def dance_handler(*args,sender,event_type):
     title, author, pic, url = getTop3DanceToday()
     msg = [Plain(text="B站舞蹈区实时排名前3（已剔除潜在不适内容）\n")]
     for i, ti in enumerate(title):
@@ -25,7 +25,7 @@ def dance_handler(*args,sender,event_type):
     SessionLogger.info("[DANCE]返回成功")
     return msg
 
-def recommend_handler(*args,sender,event_type):
+async def recommend_handler(*args,sender,event_type):
     title, author, pic, url = getRecommendDance()
     msg = [Plain(text="本次核心推荐up随机视频：\n")]
     for i, ti in enumerate(title):
@@ -38,7 +38,7 @@ def recommend_handler(*args,sender,event_type):
     SessionLogger.info("[RECOMMEND]返回成功")
     return msg
 
-def live_handler(*args,sender,event_type):
+async def live_handler(*args,sender,event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     room_id = args[0]
@@ -64,12 +64,12 @@ def live_handler(*args,sender,event_type):
         else:
             msg = [
                 Plain(text="已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
-                Image.fromRemote(res["keyframe"])
+                await Image.fromRemote(res["keyframe"])
             ]
         SessionLogger.info("[LIVE]返回成功")
     return msg
 
-def rmlive_handler(*args,sender,event_type):
+async def rmlive_handler(*args,sender,event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     room_id = args[0]

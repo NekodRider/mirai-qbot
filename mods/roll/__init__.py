@@ -3,7 +3,7 @@ from mirai.logger import Session as SessionLogger
 import random
 
 
-def roll_handler(*args,sender,event_type):
+async def roll_handler(*args,sender,event_type):
     params = args
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
