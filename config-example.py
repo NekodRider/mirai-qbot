@@ -4,6 +4,7 @@ __all__ = [
     'API_URL',
 ]
 
+PREFIX = "/"
 BOTQQ =  "88888888"
 AUTHKEY = "12345678"
 API_URL = "localhost:23333/"

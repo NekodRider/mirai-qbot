@@ -9,10 +9,12 @@ from .._utils.convert import groupFromStr, groupToStr
 import time
 import asyncio
 
+COMMANDS_FLAG = False
+
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 @sub_app.receiver("GroupMessage")
-async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
+async def bili_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
     sender=member.id
     groupId=group.id
     if message.toString()[:6] == "/dance":
