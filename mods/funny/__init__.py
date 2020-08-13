@@ -5,7 +5,7 @@ from .jrrp import calcJrrp
 from ..users import getUserInfo
 
 
-def jrrp_handler(*args, sender, event_type):
+async def jrrp_handler(*args, sender, event_type):
     """
     return 'YD 今日人品为 99,YDNB！
 

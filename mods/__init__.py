@@ -10,7 +10,7 @@ commands = {}
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 def help_handler(*args,sender, event_type):
-    res_str = "目前支持的指令有："
+    res_str = "目前支持的指令有：\n"
     for comms in commands.keys():
         res_str += comms + " "
     msg = [Plain(text=res_str[:-1])]
@@ -63,7 +63,7 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
-            msg = commands[comm](*args,sender = sender,event_type = event_type)
+            msg = await commands[comm](*args,sender = sender,event_type = event_type)
             try:
                 if event_type == "FriendMessage":
                     await app.sendFriendMessage(sender.id, msg)
