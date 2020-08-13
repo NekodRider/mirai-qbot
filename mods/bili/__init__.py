@@ -59,7 +59,8 @@ async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:M
         else:
             monitor_dict = readMonitorDict()
             if room_id in monitor_dict.keys():
-                monitor_dict[room_id].append(groupToStr(group))
+                if groupToStr(group) not in monitor_dict[room_id]:
+                    monitor_dict[room_id].append(groupToStr(group))
             else:
                 monitor_dict[room_id] = [groupToStr(group)]
             updateMonitorDict(monitor_dict)

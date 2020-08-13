@@ -29,8 +29,8 @@ def getLatestGamesStat(playerId, total=20):
     gpm = round(net / total, 2)
     xpm = round(exp / total, 2)
     
-    res = player_name + '最近' + str(total) + '游戏总数据统计如下：\n'
-    res += '胜率：' + str(reports[0]) + '\n'
+    res = player_name + '最近 ' + str(total) + ' 场游戏总数据统计如下：\n'
+    res += '胜率：' + str(reports[0]*100) + '%\n'
     res += 'KDA：' + str(kda) + '\n'
     res += '场均击杀：' + str(reports[1]) + '\n'
     res += '场均死亡：' + str(reports[2]) + '\n'
