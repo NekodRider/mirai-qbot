@@ -6,7 +6,7 @@ from pathlib import Path
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
-from .latest_games import getLatestGamesStat, getLatestComparingStat
+from .latest_games import getStat, getLatestComparingStat
 from .._utils import parseMsg, readJSON, updateJSON
 from ..users import getUserInfo
 
@@ -48,29 +48,29 @@ async def dota_handler(*args,sender, event_type):
             SessionLogger.info("[DOTA]返回成功")
         return [Plain(text=res)]
 
-@args_parser(1)
+@args_parser(1,0)
 async def stat_handler(*args, sender, event_type):
-    if len(args)!=1:
+    if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
-    query_id = args[0]
-    if query_id[0] not in dota_id_dict.keys():
+    query_id,*num = args
+    if query_id not in dota_id_dict.keys():
         SessionLogger.info("[STAT]未添加该用户")
         return [Plain(text="未添加该用户！")]
     else:
-        query_id[0] = dota_id_dict[query_id[0]]
+        query_id = dota_id_dict[query_id]
         args = 20
-        if len(query_id) == 2:
+        if len(num) == 1:
             try:
-                args = int(query_id[1])
+                args = int(num[0])
                 if args > 50 or args <= 0:
                     args = 20
             except ValueError:
                 args = 20
-        res = getLatestGamesStat(query_id[0], args)
+        res = getStat(query_id, args)
         SessionLogger.info("[STAT]返回成功")
         return [Plain(text=res)]
 
-@args_parser(2,2)
+@args_parser(2,0)
 async def compare_handler(*args, sender, event_type):
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
@@ -93,28 +93,29 @@ async def compare_handler(*args, sender, event_type):
             except ValueError:
                 args = 20
         res = getLatestComparingStat(id_a, id_b, args)
+        msg = [Plain(text=res)]
         SessionLogger.info("[COMP]返回成功")
-        return res
+        return msg
 
-@args_parser(1)
+@args_parser(1,0)
 async def winrate_handler(*args, sender, event_type):
-    if len(args)!=1:
+    if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
-    query_id = list(args)
-    if query_id[0] not in dota_id_dict.keys():
+    query_id,*num = args
+    if query_id not in dota_id_dict.keys():
         SessionLogger.info("[WINRATE]未添加该用户")
         return [Plain(text="未添加该用户！")]
     else:
-        query_id[0] = dota_id_dict[query_id[0]]
+        query_id = dota_id_dict[query_id]
         args = 20
-        if len(query_id) == 2:
+        if len(num) == 1:
             try:
-                args = int(query_id[1])
+                args = int(num[0])
                 if args > 50 or args <= 0:
                     args = 20
             except ValueError:
                 args = 20
-        pic_name, player_name = getWinningRateGraph(query_id[0], args)
+        pic_name, player_name = getWinningRateGraph(query_id, args)
         if type(player_name) == type(0):
             msg = [Plain(text=pic_name)]
             SessionLogger.info("[WINRATE]用户不存在")
@@ -126,7 +127,7 @@ async def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]返回成功")
         return msg
 
-@args_parser(2,2)
+@args_parser(2,0)
 async def setdota_handler(*args, sender, event_type):
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
