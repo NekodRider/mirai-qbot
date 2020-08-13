@@ -15,19 +15,21 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 dota_id_dict = readJSON(dota_dict_path)
 
 def args_parser(num, index=None):
-    def wrapper(*args,sender,event_type):
-        if len(args) < num:
-            r = getUserInfo(sender)
-            userId = r and r['nickname']
-            if userId is not None:
-                if index is not None:
-                    a = list(args)
-                    a.insert(index, userId)
-                    args = tuple(a)
-                else:
-                    args += (userId, )
-        return wrapper(*args,sender = sender,event_type = event_type)
-    return wrapper
+    def decorator(func):
+        def wrapper(*args,sender,event_type):
+            if len(args) < num:
+                r = getUserInfo(sender.id)
+                userId = r and r['nickname']
+                if userId is not None:
+                    if index is not None:
+                        a = list(args)
+                        a.insert(index, userId)
+                        args = tuple(a)
+                    else:
+                        args += (userId, )
+            return func(*args,sender = sender,event_type = event_type)
+        return wrapper
+    return decorator
 
 @args_parser(1)
 def dota_handler(*args,sender, event_type):
