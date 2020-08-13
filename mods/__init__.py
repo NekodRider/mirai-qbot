@@ -9,7 +9,7 @@ PREFIX = ""
 commands = {}
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
-def help_handler(*args,sender, event_type):
+async def help_handler(*args,sender, event_type):
     res_str = "目前支持的指令有：\n"
     for comms in commands.keys():
         res_str += comms + " "
