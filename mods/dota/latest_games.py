@@ -61,7 +61,7 @@ def getLatestComparingStat(playerIdA, playerIdB, total=20):
     gpm_results = '<' if gpmA < gpmB else '=' if gpmA == gpmB else '>'
     xpm_results = '<' if xpmA < xpmB else '=' if xpmA == xpmB else '>'
 
-    res = player_nameA + ' vs ' + player_nameB + '最近' + str(total) + '游戏数据如下：\n'
+    res = player_nameA + ' vs ' + player_nameB + '最近 ' + str(total) + ' 场游戏数据如下：\n'
     res += '胜率：' + str(reportsA[0]) + " " + cmp_results[0] + " " + str(reportsB[0]) + '\n'
     res += 'KDA：' + str(kdaA) + " " + kda_results + " " + str(kdaB) + '\n'
     res += '场均击杀：' + str(reportsA[1]) + " " + cmp_results[1] + " " + str(reportsB[1]) + '\n'
