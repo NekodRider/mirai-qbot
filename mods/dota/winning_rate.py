@@ -2,21 +2,10 @@ from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
-
 from functools import reduce
 
 
-def norm(data):
-    range = np.max(data) - np.min(data)
-    return ((data - np.min(data)) / range) * 6 - 3
-
-
-def denomre(data, max, min):
-    range = max - min
-    return ((data + 1) / 2 * range) + min
-
-
-def getWinningRateGraph(playerId, total=50):
+def getWinningRateGraph(playerId, total=20):
     res = []
     player_data = getDotaPlayerInfo(playerId, "/summary")
     if type(player_data) == type(""):
