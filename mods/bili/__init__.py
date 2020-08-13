@@ -41,6 +41,8 @@ async def live_handler(*args,sender,event_type):
         msg = []
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         for room_id, target in monitor_dict.items():
+            if room_id == "time":
+                continue
             if (event_type=="GroupMessage" and groupToStr(sender.group) in target) \
                 or (event_type=="FriendMessage" and sender.id in target):
                 res = getLiveInfo(room_id)
@@ -104,6 +106,8 @@ async def up_handler(*args,sender,event_type):
         res = "目前关注的UP主有：\n"
         up_dict = readJSON(BILI_UP_JSON_PATH)
         for up, target in up_dict.items():
+            if up == "time":
+                continue
             if (event_type=="GroupMessage" and groupToStr(sender.group) in target) \
                 or (event_type=="FriendMessage" and sender.id in target):
                 res += getNameByUid(up) + " "
@@ -165,6 +169,8 @@ async def live_monitor(app: Mirai):
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH,defaultValue={"time":time.time()})
         if time.time() - monitor_dict["time"] >= 3*60:
             for room_id in monitor_dict.keys():
+                if room_id=="time":
+                    continue
                 res = getLiveInfo(room_id)
                 if res['isLive']==1 and time.time()+5*60*60-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<3*60:
                     msg = [
@@ -189,6 +195,8 @@ async def up_monitor(app: Mirai):
         up_dict = readJSON(BILI_UP_JSON_PATH,defaultValue={"time":time.time()})
         if time.time() - up_dict["time"] >= 60*60:
             for up_id in up_dict.keys():
+                if up_id=="time":
+                    continue
                 res = getCards(up_id)
                 up_name = getNameByUid(up_id)
                 if len(res)!=0:
