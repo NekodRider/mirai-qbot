@@ -18,9 +18,7 @@ async def dance_handler(*args,sender,event_type):
     for i, ti in enumerate(title):
         msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(text=url[i] + "\n"))
-        img_path = str(Path(__file__).parent.joinpath('dance_' + str(i) + ".jpg"))
-        urlretrieve(pic[i], img_path)
-        msg.append(Image.fromFileSystem(img_path))
+        msg.append(await Image.fromRemote(pic[i]))
         msg.append(Plain(text="\n"))
     SessionLogger.info("[DANCE]返回成功")
     return msg
@@ -31,9 +29,7 @@ async def recommend_handler(*args,sender,event_type):
     for i, ti in enumerate(title):
         msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(text=url[i] + "\n"))
-        img_path = str(Path(__file__).parent.joinpath('dance_' + str(i) + ".jpg"))
-        urlretrieve(pic[i], img_path)
-        msg.append(Image.fromFileSystem(img_path))
+        msg.append(await Image.fromRemote(pic[i]))
         msg.append(Plain(text="\n"))
     SessionLogger.info("[RECOMMEND]返回成功")
     return msg
