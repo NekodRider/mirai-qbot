@@ -1,5 +1,5 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
-from utils.msg_parser import parseMsg
+from .._utils import parseMsg
 from mirai.logger import Session as SessionLogger
 from mods.users.user_info_loader import getUserInfo, updateUserInfo
 

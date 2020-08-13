@@ -1,6 +1,6 @@
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At,FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
-from .._utils.convert import stringToMsg
+from .._utils import stringToMsg
 import random
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
