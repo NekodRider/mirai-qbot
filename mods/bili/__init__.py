@@ -49,13 +49,13 @@ def live_handler(*args,sender,event_type):
     else:
         monitor_dict = readJSON(Path(__file__).parent.joinpath("bili_roomid.json"))
         if room_id in monitor_dict.keys():
-            if event_type=="GroupMessage" and groupToStr(sender) not in monitor_dict[room_id]:
-                monitor_dict[room_id].append(groupToStr(sender))
+            if event_type=="GroupMessage" and groupToStr(sender.group) not in monitor_dict[room_id]:
+                monitor_dict[room_id].append(groupToStr(sender.group))
             if event_type=="FriendMessage" and sender.id not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(sender.id)
         else:
             if event_type=="GroupMessage":
-                monitor_dict[room_id] = [groupToStr(sender)]
+                monitor_dict[room_id] = [groupToStr(sender.group)]
             elif event_type=="FriendMessage":
                 monitor_dict[room_id] = [sender.id]
         updateJSON(Path(__file__).parent.joinpath("bili_roomid.json"),monitor_dict)
@@ -64,7 +64,7 @@ def live_handler(*args,sender,event_type):
         else:
             msg = [
                 Plain(text="已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
-                await Image.fromRemote(res["keyframe"])
+                Image.fromRemote(res["keyframe"])
             ]
         SessionLogger.info("[LIVE]返回成功")
     return msg
@@ -81,7 +81,7 @@ def rmlive_handler(*args,sender,event_type):
         monitor_dict = readJSON(Path(__file__).parent.joinpath("bili_roomid.json"))
         if room_id in monitor_dict.keys():
             if event_type=="GroupMessage":
-                monitor_dict[room_id].remove(groupToStr(sender))
+                monitor_dict[room_id].remove(groupToStr(sender.group))
             elif event_type=="FriendMessage":
                 monitor_dict[room_id].remove(sender.id)
         updateJSON(Path(__file__).parent.joinpath("bili_roomid.json"),monitor_dict)

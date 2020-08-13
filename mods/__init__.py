@@ -54,7 +54,7 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
-            msg = commands[comm](*args,sender,event_type)
+            msg = commands[comm](*args,sender = sender,event_type = event_type)
             try:
                 if event_type == "FriendMessage":
                     await app.sendFriendMessage(sender.id, msg)
