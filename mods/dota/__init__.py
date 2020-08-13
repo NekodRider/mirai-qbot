@@ -14,6 +14,22 @@ from ..users import getUserInfo
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 dota_id_dict = readJSON(dota_dict_path)
 
+def args_parser(num, index=None):
+    def wrapper(*args,sender,event_type):
+        if len(args) < num:
+            r = getUserInfo(args[0])
+            userId = r and r['nickname']
+            if userId is not None:
+                if index is not None:
+                    a = list(args)
+                    a.insert(index, userId)
+                    args = tuple(a)
+                else:
+                    args += (userId, )
+        return wrapper(*args,sender = sender,event_type = event_type)
+    return wrapper
+
+@args_parser(1)
 def dota_handler(*args,sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
@@ -30,6 +46,7 @@ def dota_handler(*args,sender, event_type):
             SessionLogger.info("[DOTA]返回成功")
         return [Plain(text=res)]
 
+@args_parser(1)
 def stat_handler(*args, sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
@@ -51,6 +68,7 @@ def stat_handler(*args, sender, event_type):
         SessionLogger.info("[STAT]返回成功")
         return [Plain(text=res)]
 
+@args_parser(2,2)
 def compare_handler(*args, sender, event_type):
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
@@ -76,7 +94,7 @@ def compare_handler(*args, sender, event_type):
         SessionLogger.info("[COMP]返回成功")
         return res
 
-
+@args_parser(1)
 def winrate_handler(*args, sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
@@ -106,7 +124,7 @@ def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]返回成功")
         return msg
 
-
+@args_parser(2,2)
 def setdota_handler(*args, sender, event_type):
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
