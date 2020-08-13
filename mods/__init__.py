@@ -1,7 +1,7 @@
 import re
 import importlib
 from pathlib import Path
-from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member
+from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
 from mirai.logger import Session as SessionLogger
 from ._utils import Sender, Type
 
@@ -9,11 +9,20 @@ PREFIX = ""
 commands = {}
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
+def help_handler(*args,sender, event_type):
+    res_str = "目前支持的指令有："
+    for comms in commands.keys():
+        res_str += PREFIX+comms + " "
+    msg = [Plain(text=res_str[:-1])]
+    return msg
+
 def load_mods(app: Mirai, prefix: str):
     global PREFIX
     PREFIX = prefix
     mod_dir = Path(__file__).parent
     module_prefix = mod_dir.name
+
+    commands["help"] = help_handler
 
     for mod in mod_dir.iterdir():
         if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath('__init__.py').exists():
@@ -65,3 +74,5 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
                     SessionLogger.error(f"未知事件类型{event_type}")
             except exceptions.BotMutedError:
                 pass
+
+
