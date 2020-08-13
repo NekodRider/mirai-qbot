@@ -2,6 +2,7 @@ from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, excep
 from mirai.logger import Session as SessionLogger
 from .._utils import parseMsg
 from .jrrp import calcJrrp
+from ..users import getUserInfo
 
 
 def jrrp_handler(*args, sender, event_type):
@@ -31,7 +32,7 @@ def jrrp_handler(*args, sender, event_type):
     nickname = sender.memberName.upper()
     hint = ''
     try:
-        nickname = getUserInfo(member.id)['nickname'].upper()
+        nickname = getUserInfo(sender.id)['nickname'].upper()
     except:
         hint = '\n\n可以通过 /setname 为自己设定名字哦！'
     return [Plain(text=(msg+postfix) % (nickname, rp, nickname) + hint)]
