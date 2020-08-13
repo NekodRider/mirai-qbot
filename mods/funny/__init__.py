@@ -2,6 +2,7 @@ from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, excep
 from mirai.logger import Session as SessionLogger
 from .._utils import parseMsg
 from .jrrp import calcJrrp
+from ..users import getUserInfo
 
 
 def jrrp_handler(*args, sender, event_type):
