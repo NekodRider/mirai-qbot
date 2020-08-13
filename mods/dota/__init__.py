@@ -6,13 +6,12 @@ from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinningRateGraph
 from .latest_games import getLatestGamesStat, getLatestComparingStat
 from pathlib import Path
-from utils.dict_loader import readDict, updateDict
+from .._utils import parseMsg, readJSON, updateJSON
 from mods.users.user_info_loader import getUserInfo
-from utils.msg_parser import parseMsg
 
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
-dota_id_dict = readDict(dota_dict_path)
+dota_id_dict = readJSON(dota_dict_path)
 
 # 理论上应该规定一下handler的类型，算了随便搞好了
 
@@ -129,7 +128,7 @@ def winrateHandler(sender, groupId, *args):
 @addDefaultQueryIdWhileLT(4, 2)
 def setDotaHandler(sender, groupId, *args):
     dota_id_dict[args[0]] = args[1]
-    updateDict(dota_dict_path, dota_id_dict)
+    updateJSON(dota_dict_path, dota_id_dict)
     return [Plain(text="添加成功！")]
 
 

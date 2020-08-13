@@ -1,6 +1,6 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from mirai.logger import Session as SessionLogger
-from utils.msg_parser import parseMsg
+from .._utils import parseMsg
 from mods.funny.jrrp import jrrpHandler
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
