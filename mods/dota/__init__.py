@@ -32,7 +32,7 @@ def args_parser(num, index=None):
     return decorator
 
 @args_parser(1)
-def dota_handler(*args,sender, event_type):
+async def dota_handler(*args,sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     query_id = args[0]
@@ -49,7 +49,7 @@ def dota_handler(*args,sender, event_type):
         return [Plain(text=res)]
 
 @args_parser(1)
-def stat_handler(*args, sender, event_type):
+async def stat_handler(*args, sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     query_id = args[0]
@@ -71,7 +71,7 @@ def stat_handler(*args, sender, event_type):
         return [Plain(text=res)]
 
 @args_parser(2,2)
-def compare_handler(*args, sender, event_type):
+async def compare_handler(*args, sender, event_type):
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
     [id_a,id_b,*num] = args
@@ -97,7 +97,7 @@ def compare_handler(*args, sender, event_type):
         return res
 
 @args_parser(1)
-def winrate_handler(*args, sender, event_type):
+async def winrate_handler(*args, sender, event_type):
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     query_id = list(args)
@@ -127,7 +127,7 @@ def winrate_handler(*args, sender, event_type):
         return msg
 
 @args_parser(2,2)
-def setdota_handler(*args, sender, event_type):
+async def setdota_handler(*args, sender, event_type):
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
     return [Plain(text="添加成功！")]
