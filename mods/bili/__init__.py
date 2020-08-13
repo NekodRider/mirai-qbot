@@ -9,7 +9,7 @@ from .._utils import groupFromStr, groupToStr, readJSON, updateJSON
 import time
 import asyncio
 
-
+BILI_LIVE_JSON_PATH = Path(__file__).parent.joinpath("bili_roomid.json")
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def dance_handler(*args,sender,event_type):
@@ -35,15 +35,29 @@ async def recommend_handler(*args,sender,event_type):
     return msg
 
 async def live_handler(*args,sender,event_type):
-    if len(args)!=1:
-        return [Plain(text="缺少参数或参数过多")]
+    if len(args)==0:
+        msg = []
+        monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
+        for room_id, target in monitor_dict.items():
+            if (event_type=="GroupMessage" and groupToStr(sender.group) in target) \
+                or (event_type=="FriendMessage" and sender.id in target):
+                res = getLiveInfo(room_id)
+                if res['isLive']==0:
+                    msg.append(Plain(text=res['name'] + " 未在直播.\n"))
+                else:
+                    msg.append(
+                        Plain(text=res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
+                        await Image.fromRemote(res["keyframe"])
+                    )
+        return msg
+
     room_id = args[0]
     res = getLiveInfo(room_id)
     if res=="error":
         msg = [Plain(text="未找到该直播！")]
         SessionLogger.info("[LIVE]未找到该直播")
     else:
-        monitor_dict = readJSON(Path(__file__).parent.joinpath("bili_roomid.json"))
+        monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         if room_id in monitor_dict.keys():
             if event_type=="GroupMessage" and groupToStr(sender.group) not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(groupToStr(sender.group))
@@ -54,7 +68,7 @@ async def live_handler(*args,sender,event_type):
                 monitor_dict[room_id] = [groupToStr(sender.group)]
             elif event_type=="FriendMessage":
                 monitor_dict[room_id] = [sender.id]
-        updateJSON(Path(__file__).parent.joinpath("bili_roomid.json"),monitor_dict)
+        updateJSON(BILI_LIVE_JSON_PATH,monitor_dict)
         if res['isLive']==0:
             msg = [Plain(text="已加入监视列表\n" + res['name'] + " 未在直播.")]
         else:
@@ -74,13 +88,13 @@ async def rmlive_handler(*args,sender,event_type):
         msg = [Plain(text="未找到该直播！")]
         SessionLogger.info("[LIVE]未找到该直播")
     else:
-        monitor_dict = readJSON(Path(__file__).parent.joinpath("bili_roomid.json"))
+        monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         if room_id in monitor_dict.keys():
             if event_type=="GroupMessage":
                 monitor_dict[room_id].remove(groupToStr(sender.group))
             elif event_type=="FriendMessage":
                 monitor_dict[room_id].remove(sender.id)
-        updateJSON(Path(__file__).parent.joinpath("bili_roomid.json"),monitor_dict)
+        updateJSON(BILI_LIVE_JSON_PATH,monitor_dict)
         msg = [Plain(text="已将 {} 移出监视列表\n".format(res['name']))]
         SessionLogger.info("[LIVE]返回成功")
     return msg
@@ -88,7 +102,7 @@ async def rmlive_handler(*args,sender,event_type):
 @sub_app.subroutine
 async def monitor(app: Mirai):
     while 1:
-        monitor_dict = readJSON(Path(__file__).parent.joinpath("bili_roomid.json"))
+        monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         for room_id in monitor_dict.keys():
             res = getLiveInfo(room_id)
             if res['isLive']==1 and time.time()+5*60*60-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<3*60:
