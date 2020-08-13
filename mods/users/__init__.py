@@ -3,6 +3,8 @@ from utils.msg_parser import parseMsg
 from mirai.logger import Session as SessionLogger
 from mods.users.user_info_loader import getUserInfo, updateUserInfo
 
+COMMANDS_FLAG = False
+
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 

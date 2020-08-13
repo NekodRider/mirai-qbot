@@ -1,7 +1,9 @@
-from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain
+from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from mirai.logger import Session as SessionLogger
 from utils.msg_parser import parseMsg
 from mods.funny.jrrp import jrrpHandler
+
+COMMANDS_FLAG = False
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
@@ -25,5 +27,5 @@ async def funny_handler(app: Mirai, group: Group, message: MessageChain, member:
     msg = [Plain(text=handler(group, member, args))]
     try:
         await app.sendGroupMessage(group, msg)
-    except expression as identifier:
+    except exceptions.BotMutedError:
         pass

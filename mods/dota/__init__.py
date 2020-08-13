@@ -13,6 +13,8 @@ from utils.msg_parser import parseMsg
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 dota_id_dict = readDict(dota_dict_path)
 
+COMMANDS_FLAG = False
+
 # 理论上应该规定一下handler的类型，算了随便搞好了
 
 
