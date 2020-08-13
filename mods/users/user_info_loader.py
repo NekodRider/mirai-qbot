@@ -15,14 +15,14 @@ type Data = Array<UserInfo>
 
 USER_DATA_PATH = Path(__file__).parent.joinpath('users.json')
 
-def getUserInfo(qq: str):
+def getUserInfo(qq: int):
     try:
         return list(filter(lambda a: a['qq'] == qq, readJSON(USER_DATA_PATH, True, [])))[0]
     except IndexError:
         return None
 
 
-def updateUserInfo(qq: str, info):
+def updateUserInfo(qq: int, info):
     data = readJSON(USER_DATA_PATH, True, [])
     targets = list(filter(lambda a: a['qq'] == qq, data))
     length = len(targets)
