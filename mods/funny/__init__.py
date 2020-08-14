@@ -33,7 +33,7 @@ async def jrrp_handler(*args, sender: Member, event_type):
     if rp == 0:
         postfix = 'SB!!!!'
     elif rp < 40:
-        postfix = '不NB，但%sNB！' % 'yd' if nickname != 'yd' else 'td'
+        postfix = '不NB，但%sNB！' % 'YD' if nickname != 'YD' else 'TD'
     elif rp < 71:
         postfix = 'NB！'
     elif rp < 100:
