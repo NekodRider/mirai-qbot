@@ -14,9 +14,9 @@
 
 ### Todo
 
-- [基于函数注释实现单项指令帮助导入](#25)
-- [把逻辑改成一个消息队列类似物](#24)
-- [增加出借今日人品功能](#26)
+- [基于函数注释实现单项指令帮助导入](https://github.com/NekodRider/mirai-qbot/issues/25)
+- [把逻辑改成一个消息队列类似物](https://github.com/NekodRider/mirai-qbot/issues/24)
+- [增加出借今日人品功能](https://github.com/NekodRider/mirai-qbot/issues/26)
 - 新功能？
 
 ### Change Logs
