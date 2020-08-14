@@ -1,4 +1,5 @@
 *.json
+!mods/bili/*.json
 /config.py
 .venv
 *log*
