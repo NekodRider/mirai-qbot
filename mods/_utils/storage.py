@@ -1,9 +1,9 @@
 import json
 import os
 
-def readJSON(path, createFileIfNotExisted=True, defaultValue={}):
+def readJSON(path, shouldCreateFileIfNotExisted=True, defaultValue={}):
     if not os.path.exists(path):
-        if not createFileIfNotExisted:
+        if not shouldCreateFileIfNotExisted:
             return None
         updateJSON(path, defaultValue)
     with open(path, encoding='utf-8') as f:
