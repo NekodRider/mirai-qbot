@@ -76,6 +76,6 @@ def getTop3DanceToday():
         title.append(data["title"])
         pic.append(cover_url)
         racy.append(this_racy)
-        if count > 3:
+        if count >= 3:
             break
     return title, author, pic, url, racy
