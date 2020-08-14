@@ -6,6 +6,7 @@ from pathlib import Path
 from .dance_top import getTop3DanceToday, getRecommendDance
 from .live import getLiveInfo, getNameByUid
 from .card import getCards
+from .cover_checker import detectSafeSearchUri
 from .._utils import groupFromStr, groupToStr, readJSON, updateJSON
 import time
 import asyncio
@@ -13,24 +14,27 @@ import asyncio
 BILI_LIVE_JSON_PATH = Path(__file__).parent.joinpath("bili_roomid.json")
 BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
+RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝"]
 
 async def dance_handler(*args,sender,event_type):
-    title, author, pic, url = getTop3DanceToday()
+    title, author, pic, url, racy = getTop3DanceToday()
     msg = [Plain(text="B站舞蹈区实时排名前3（已剔除潜在不适内容）\n")]
     for i, ti in enumerate(title):
         msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(text=url[i] + "\n"))
+        msg.append(Plain(text="se指数（by Google）：" + RACY_LIST[racy[i]] + "\n"))
         msg.append(await Image.fromRemote(pic[i]))
         msg.append(Plain(text="\n"))
     SessionLogger.info("[DANCE]返回成功")
     return msg
 
 async def recommend_handler(*args,sender,event_type):
-    title, author, pic, url = getRecommendDance()
+    title, author, pic, url, racy = getRecommendDance()
     msg = [Plain(text="本次核心推荐up随机视频：\n")]
     for i, ti in enumerate(title):
         msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(text=url[i] + "\n"))
+        msg.append(Plain(text="se指数（by Google）：" + RACY_LIST[racy[i]] + "\n"))
         msg.append(await Image.fromRemote(pic[i]))
         msg.append(Plain(text="\n"))
     SessionLogger.info("[RECOMMEND]返回成功")
