@@ -22,7 +22,7 @@ async def dance_handler(*args,sender,event_type):
     for i, ti in enumerate(title):
         msg.append(Plain(text=str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(text=url[i] + "\n"))
-        msg.append(Plain(text="se指数（by Google）：" + RACY_LIST[racy[i]] + "\n"))
+        msg.append(Plain(text="se指数（by Google）：" + RACY_LIST[racy[i] - 1] + "\n"))
         msg.append(await Image.fromRemote(pic[i]))
         msg.append(Plain(text="\n"))
     SessionLogger.info("[DANCE]返回成功")
