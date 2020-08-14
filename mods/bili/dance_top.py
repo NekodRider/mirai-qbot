@@ -11,10 +11,6 @@ dance_api = "http://api.bilibili.com/x/web-interface/ranking?rid=129&day=1"
 video_pri = "https://www.bilibili.com/video/"
 
 
-def getDanceUrl(uid):
-    return "http://api.bilibili.com/x/space/arc/search?mid=" + uid + "&pn=1&ps=10&tid=129"
-
-
 def checkTitle(title):
     for word in black_lists:
         if word in title:
@@ -27,9 +23,9 @@ def getRecommendDance():
     title = []
     pic = []
     url = []
-    for i in range(0, 3):
+    for _ in range(0, 3):
         rand_user = up_lists[random.randint(0, len(up_lists) - 1)]
-        cur_url = getDanceUrl(rand_user)
+        cur_url = "http://api.bilibili.com/x/space/arc/search?mid=" + rand_user + "&pn=1&ps=10&tid=129"
         try:
             html = request.urlopen(cur_url)
         except:
@@ -56,16 +52,15 @@ def getTop3DanceToday():
     title = []
     pic = []
     url = []
-    for i, data in enumerate(dance_data["data"]["list"]):
-        cur_dance = dance_data["data"]["list"][i]
-        if checkTitle(cur_dance["title"]) == -1:
+    for _, data in enumerate(dance_data["data"]["list"]):
+        if checkTitle(data["title"]) == -1:
             continue
         count += 1
-        bvid = cur_dance["bvid"]
+        bvid = data["bvid"]
         url.append(video_pri + bvid)
-        author.append(cur_dance["author"])
-        title.append(cur_dance["title"])
-        pic.append(cur_dance["pic"])
+        author.append(data["author"])
+        title.append(data["title"])
+        pic.append(data["pic"])
         if count >= 3:
             break
     return title, author, pic, url
