@@ -71,11 +71,10 @@ def getCompWinRateGraph(playerIdList, total=20):
         player_name_list.append(pn)
     
     graph_index = range(0, total + 1)
-    graph_range = graph_max - graph_min
 
     plt.figure()
     plt.title('Winrate Comparison in the latest ' + str(total) + " games")
-    for no,wr in winning_rate_list:
+    for no,wr in enumerate(winning_rate_list):
         color = list(np.random.choice(range(256), size=3))
         plt.plot(graph_index, wr, color=color, label=player_name_list[no] + "'s Winrate")
         plt.scatter(graph_index, wr, color=color, s=15)
