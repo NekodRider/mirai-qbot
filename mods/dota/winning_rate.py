@@ -73,20 +73,22 @@ def getCompWinRateGraph(playerIdList, total=20):
     
     graph_index = range(0, total + 1)
 
-    plt.figure()
-    plt.title('Winrate Comparison in the latest ' + str(total) + " games")
+    plt.figure(figsize=(7.5, 5.5))
+    plt.title('最近 ' + str(total) + " 场游戏胜率对比")
     for no,wr in enumerate(winning_rate_list):
         color = [random.random() for i in range(3)]
-        plt.plot(graph_index, wr, color=color, label=player_name_list[no] + "'s Winrate")
+        plt.plot(graph_index, wr, color=color, label=player_name_list[no])
         plt.scatter(graph_index, wr, color=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
     x_major_locator=plt.MultipleLocator(total//10)
     ax=plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.xlim(-0.5,total+0.5)
-    plt.ylim(graph_min-0.5,graph_max+0.5)
-    plt.legend()
+    plt.ylim(graph_min-0.5,graph_max+1.5)
+    plt.legend(loc='upper right',bbox_to_anchor=(1.1, 1.1))
     plt.draw()
     pic_name = str(Path(__file__).parent.joinpath("".join(playerIdList[:2]) + "_winning_rate.png"))
     plt.savefig(pic_name)
