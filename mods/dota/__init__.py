@@ -135,6 +135,7 @@ async def setdota_handler(*args, sender, event_type):
 
 @args_parser(2,0)
 async def winrate_compare_handler(*args, sender, event_type):
+    args = list(args)
     if len(args)<2:
         return [Plain(text="缺少参数或参数过多")]
     try:
