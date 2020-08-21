@@ -79,7 +79,7 @@ def getCompWinRateGraph(playerIdA, playerIdB, total=20):
     plt.scatter(graph_index, winning_rate_b, color="blue", s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
-    x_major_locator=plt.MultipleLocator(1)
+    x_major_locator=plt.MultipleLocator(total//10)
     ax=plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
     plt.xlim(-0.5,total+0.5)
