@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from functools import reduce
+import random
 
 
 plt.rcParams['font.sans-serif']=['WenQuanYi Micro Hei']
@@ -57,35 +58,38 @@ def getWinRateGraph(playerId, total=20):
     plt.savefig(pic_name)
     return pic_name, player_name
 
-def getCompWinRateGraph(playerIdA, playerIdB, total=20):
-    winning_rate_a, player_name_a = getWinRateList(playerIdA,total)
-    winning_rate_b, player_name_b = getWinRateList(playerIdB,total)
-    if type(winning_rate_a) == type(""):
-        return winning_rate_a, 0, 0
-    if type(winning_rate_b) == type(""):
-        return winning_rate_b, 0, 0
+def getCompWinRateGraph(playerIdList, total=20):
+    winning_rate_list = []
+    player_name_list = []
+    graph_max, graph_min = 0, 100
+    for pid in playerIdList:
+        wr, pn = getWinRateList(pid,total)
+        if type(wr) == type(""):
+            return wr, 0
+        graph_max = np.max(wr + [graph_max])
+        graph_min = np.min(wr + [graph_min])
+        winning_rate_list.append(wr)
+        player_name_list.append(pn)
     
     graph_index = range(0, total + 1)
-    graph_max = np.max(winning_rate_a + winning_rate_b)
-    graph_min = np.min(winning_rate_a + winning_rate_b)
-    graph_range = graph_max - graph_min
 
-    plt.figure()
-    plt.title('Winrate Comparison in the latest ' + str(total) + " games")
-    plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
-    plt.plot(graph_index, winning_rate_a, color="red", label=player_name_a + "'s Winrate")
-    plt.plot(graph_index, winning_rate_b, color="blue", label=player_name_b + "'s Winrate")
-    plt.scatter(graph_index, winning_rate_a, color="red", s=15)
-    plt.scatter(graph_index, winning_rate_b, color="blue", s=15)
+    plt.figure(figsize=(7.5, 5.5))
+    plt.title('最近 ' + str(total) + " 场游戏胜率对比")
+    for no,wr in enumerate(winning_rate_list):
+        color = [random.random() for i in range(3)]
+        plt.plot(graph_index, wr, color=color, label=player_name_list[no])
+        plt.scatter(graph_index, wr, color=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
-    x_major_locator=plt.MultipleLocator(1)
+    x_major_locator=plt.MultipleLocator(total//10)
     ax=plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.xlim(-0.5,total+0.5)
-    plt.ylim(graph_min-0.5,graph_max+0.5)
-    plt.legend()
+    plt.ylim(graph_min-0.5,graph_max+1.5)
+    plt.legend(loc='upper right',bbox_to_anchor=(1.1, 1.1))
     plt.draw()
-    pic_name = str(Path(__file__).parent.joinpath(playerIdA + playerIdB + "_winning_rate.png"))
+    pic_name = str(Path(__file__).parent.joinpath("".join(playerIdList[:2]) + "_winning_rate.png"))
     plt.savefig(pic_name)
-    return pic_name, player_name_a, player_name_b
+    return pic_name, player_name_list
