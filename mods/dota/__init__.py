@@ -135,34 +135,31 @@ async def setdota_handler(*args, sender, event_type):
 
 @args_parser(2,0)
 async def winrate_compare_handler(*args, sender, event_type):
-    if len(args)<2 or len(args)>3:
+    args = list(args)
+    if len(args)<2:
         return [Plain(text="缺少参数或参数过多")]
-    [id_a,id_b,*num] = args
-    if id_a not in dota_id_dict.keys():
-        SessionLogger.info("[WRCP]未添加用户 "+ id_a)
-        return [Plain(text="未添加用户 " + id_a + " ！")]
-    elif id_b not in dota_id_dict.keys():
-        SessionLogger.info("[WRCP]未添加用户 "+ id_b)
-        return [Plain(text="未添加用户 " + id_b + " ！")]
+    try:
+        num = int(args[-1])
+        ids = args[:len(args)-1]
+    except:
+        num = 0
+        ids = list(args)
+    for no,i in enumerate(ids):
+        if i not in dota_id_dict.keys():
+            SessionLogger.info("[WRCP]未添加用户 "+ i)
+            return [Plain(text="未添加用户 " + i + " ！")]
+        ids[no] = dota_id_dict[i]
     else:
-        id_a = dota_id_dict[id_a]
-        id_b = dota_id_dict[id_b]
-        args = 20
-        if len(num)!=0:
-            try:
-                args = int(num[0])
-                if args > 50 or args <= 0:
-                    args = 20
-            except ValueError:
-                args = 20
-        pic_name, player_name_a, player_name_b = getCompWinRateGraph(id_a, id_b, args)
-        if type(player_name_a) == type(0):
+        if num<=0 or num > 50:
+            num = 20
+        pic_name, player_name_list = getCompWinRateGraph(ids, num)
+        if type(player_name_list) == type(0):
             msg = [Plain(text=pic_name)]
             SessionLogger.info("[WRCP]用户不存在")
         else:
             msg = [
-                Image.fromFileSystem(pic_name),
-                Plain(text=f"{player_name_a} VS {player_name_b} 最近 " + str(args) + " 场游戏胜率变化图")
+                Plain(text="最近 " + str(num) + " 场游戏胜率比较图"),
+                Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[WRCP]返回成功")
         return msg
