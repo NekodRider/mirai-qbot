@@ -76,8 +76,8 @@ def getCompWinRateGraph(playerIdList, total=20):
     plt.title('Winrate Comparison in the latest ' + str(total) + " games")
     for no,wr in enumerate(winning_rate_list):
         color = list(np.random.choice(range(256), size=3))
-        plt.plot(graph_index, wr, color=color, label=player_name_list[no] + "'s Winrate")
-        plt.scatter(graph_index, wr, color=color, s=15)
+        plt.plot(graph_index, wr, c=color, label=player_name_list[no] + "'s Winrate")
+        plt.scatter(graph_index, wr, c=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
     x_major_locator=plt.MultipleLocator(total//10)
