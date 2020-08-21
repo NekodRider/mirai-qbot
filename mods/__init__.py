@@ -49,7 +49,7 @@ def load_mod(app: Mirai, module_path: str):
 @sub_app.receiver("GroupMessage")
 async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     message_str = message.toString()
-    pattern = PREFIX + "([a-z0-9]+ )*[a-z0-9]+"
+    pattern = PREFIX + "([a-z0-9.]+ )*[a-z0-9.]+"
     match = re.match(pattern,message_str,re.I)
     command_str = ""
     if match:
