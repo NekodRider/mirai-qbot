@@ -81,7 +81,7 @@ def getCompWinRateGraph(playerIdList, total=20):
         plt.scatter(graph_index, wr, color=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
-    x_major_locator=plt.MultipleLocator(total//10)
+    x_major_locator=plt.MultipleLocator(total//10 if total>=10 else 1)
     ax=plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
     ax.spines['top'].set_visible(False)
