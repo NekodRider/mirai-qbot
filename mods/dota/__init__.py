@@ -158,8 +158,8 @@ async def winrate_compare_handler(*args, sender, event_type):
             SessionLogger.info("[WRCP]用户不存在")
         else:
             msg = [
-                Image.fromFileSystem(pic_name),
-                Plain(text="最近 " + str(args) + " 场游戏胜率比较图")
+                Plain(text="最近 " + str(num) + " 场游戏胜率比较图"),
+                Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[WRCP]返回成功")
         return msg
