@@ -142,12 +142,12 @@ async def winrate_compare_handler(*args, sender, event_type):
         ids = args[:len(args)-1]
     except:
         num = 0
-        ids = args
-    for no,i in ids:
-        if i not in dota_id_dict.keys():
-            SessionLogger.info("[WRCP]未添加用户 "+ i)
-            return [Plain(text="未添加用户 " + i + " ！")]
-        ids[no] = dota_id_dict[i]
+        ids = list(args)
+    for no in range(len(ids)):
+        if ids[no] not in dota_id_dict.keys():
+            SessionLogger.info("[WRCP]未添加用户 "+ ids[no])
+            return [Plain(text="未添加用户 " + ids[no] + " ！")]
+        ids[no] = dota_id_dict[ids[no]]
     else:
         if num<=0 or num > 50:
             num = 20
