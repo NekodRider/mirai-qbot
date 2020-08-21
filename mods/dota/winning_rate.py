@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from functools import reduce
+import random
 
 
 plt.rcParams['font.sans-serif']=['WenQuanYi Micro Hei']
@@ -75,7 +76,7 @@ def getCompWinRateGraph(playerIdList, total=20):
     plt.figure()
     plt.title('Winrate Comparison in the latest ' + str(total) + " games")
     for no,wr in enumerate(winning_rate_list):
-        color = list(np.random.choice(range(256), size=3))
+        color = [random.random() for i in range(3)]
         plt.plot(graph_index, wr, c=color, label=player_name_list[no] + "'s Winrate")
         plt.scatter(graph_index, wr, c=color, s=15)
     plt.xlabel('场次')
