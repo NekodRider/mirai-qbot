@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
-from .winning_rate import getWinningRateGraph
+from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat
 from .._utils import parseMsg, readJSON, updateJSON
 from ..users import getUserInfo
@@ -115,14 +115,14 @@ async def winrate_handler(*args, sender, event_type):
                     args = 20
             except ValueError:
                 args = 20
-        pic_name, player_name = getWinningRateGraph(query_id, args)
+        pic_name, player_name = getWinRateGraph(query_id, args)
         if type(player_name) == type(0):
             msg = [Plain(text=pic_name)]
             SessionLogger.info("[WINRATE]用户不存在")
         else:
             msg = [
                 Image.fromFileSystem(pic_name),
-                Plain(text=player_name + "最近" + str(args) + "场游戏胜率变化图")
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图")
             ]
             SessionLogger.info("[WINRATE]返回成功")
         return msg
@@ -133,8 +133,42 @@ async def setdota_handler(*args, sender, event_type):
     updateJSON(dota_dict_path, dota_id_dict)
     return [Plain(text="添加成功！")]
 
+@args_parser(2,0)
+async def winrate_compare_handler(*args, sender, event_type):
+    if len(args)<2 or len(args)>3:
+        return [Plain(text="缺少参数或参数过多")]
+    [id_a,id_b,*num] = args
+    if id_a not in dota_id_dict.keys():
+        SessionLogger.info("[WRCP]未添加用户 "+ id_a)
+        return [Plain(text="未添加用户 " + id_a + " ！")]
+    elif id_b not in dota_id_dict.keys():
+        SessionLogger.info("[WRCP]未添加用户 "+ id_b)
+        return [Plain(text="未添加用户 " + id_b + " ！")]
+    else:
+        id_a = dota_id_dict[id_a]
+        id_b = dota_id_dict[id_b]
+        args = 20
+        if len(num)!=0:
+            try:
+                args = int(num[0])
+                if args > 50 or args <= 0:
+                    args = 20
+            except ValueError:
+                args = 20
+        pic_name, player_name_a, player_name_b = getCompWinRateGraph(id_a, id_b, args)
+        if type(player_name_a) == type(0):
+            msg = [Plain(text=pic_name)]
+            SessionLogger.info("[WRCP]用户不存在")
+        else:
+            msg = [
+                Image.fromFileSystem(pic_name),
+                Plain(text=f"{player_name_a} VS {player_name_b} 最近 " + str(args) + " 场游戏胜率变化图")
+            ]
+            SessionLogger.info("[WRCP]返回成功")
+        return msg
 
 COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
             "stat": stat_handler, "compare": compare_handler,
             "setdota": setdota_handler,"comp": compare_handler,
+            "wrcp": winrate_compare_handler,
             }
