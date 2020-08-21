@@ -4,6 +4,9 @@ import numpy as np
 from pathlib import Path
 from functools import reduce
 
+
+plt.rcParams['font.sans-serif']=['WenQuanYi Micro Hei']
+
 def getWinRateList(playerId, total=20):
     res = []
     player_data = getDotaPlayerInfo(playerId, "/summary")
@@ -42,6 +45,7 @@ def getWinRateGraph(playerId, total=20):
     graph_min = np.min(winning_rate)
     graph_range = graph_max - graph_min
 
+
     plt.figure()
     plt.title('Winning rate in the latest ' + str(total) + " games")
     plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
@@ -73,6 +77,12 @@ def getCompWinRateGraph(playerIdA, playerIdB, total=20):
     plt.plot(graph_index, winning_rate_b, color="blue", label=player_name_b + "'s Winrate")
     plt.scatter(graph_index, winning_rate_a, color="red", s=15)
     plt.scatter(graph_index, winning_rate_b, color="blue", s=15)
+    plt.xlabel('场次')
+    plt.ylabel('胜率百分比')
+    x_major_locator=plt.MultipleLocator(1)
+    ax=plt.gca()
+    ax.xaxis.set_major_locator(x_major_locator)
+    plt.xlim(-0.5,total)
     plt.legend()
     plt.draw()
     pic_name = str(Path(__file__).parent.joinpath(playerIdA + playerIdB + "_winning_rate.png"))
