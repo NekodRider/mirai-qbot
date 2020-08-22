@@ -48,9 +48,9 @@ def getWinRateGraph(playerId, total=20):
 
 
     plt.figure()
-    plt.title('Winning rate in the latest ' + str(total) + " games")
+    plt.title('最近 ' + str(total) + " 场游戏胜率变化图")
     plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
-    plt.plot(graph_index, winning_rate, color="red", label="Winning rate")
+    plt.plot(graph_index, winning_rate, color="red", label="胜率")
     plt.scatter(graph_index, winning_rate, color="red", s=15)
     plt.legend()
     plt.draw()
