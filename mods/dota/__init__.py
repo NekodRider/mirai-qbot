@@ -94,8 +94,8 @@ async def star_handler(*args, sender, event_type):
             SessionLogger.info("[STAR]用户不存在")
         else:
             msg = [
-                Image.fromFileSystem(pic_name),
-                Plain(text=player_name + " 最近 " + str(args) + " 场游戏五星图")
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏五星图\n"),
+                Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[STAR]返回成功")
         return msg
@@ -151,8 +151,8 @@ async def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]用户不存在")
         else:
             msg = [
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n")
                 Image.fromFileSystem(pic_name),
-                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图")
             ]
             SessionLogger.info("[WINRATE]返回成功")
         return msg
@@ -188,7 +188,7 @@ async def winrate_compare_handler(*args, sender, event_type):
             SessionLogger.info("[WRCP]用户不存在")
         else:
             msg = [
-                Plain(text="最近 " + str(num) + " 场游戏胜率比较图"),
+                Plain(text="最近 " + str(num) + " 场游戏胜率比较图\n"),
                 Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[WRCP]返回成功")
@@ -213,13 +213,13 @@ async def star_compare_handler(*args, sender, event_type):
     else:
         if num<=0 or num > 50:
             num = 20
-        pic_name, player_name_a, player_name_b = getCompStarStat(ids[0],ids[1], num)
+        pic_name, player_name_a, _ = getCompStarStat(ids[0],ids[1], num)
         if type(player_name_a) == type(0):
             msg = [Plain(text=pic_name)]
             SessionLogger.info("[STCP]用户不存在")
         else:
             msg = [
-                Plain(text="最近 " + str(num) + " 场游戏数据比较图"),
+                Plain(text="最近 " + str(num) + " 场游戏数据比较图\n"),
                 Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[STCP]返回成功")
