@@ -88,7 +88,7 @@ def getStarScore(reports, gpm):
         participate = 0
     participate = round(participate/15*10,2)
 
-    winrate = round(reports[0]*10,2)
+    winrate = round(reports[0]*8.5+1.5,2)
     
     hit = reports[4] + reports[5]
     if hit<100:
@@ -104,11 +104,11 @@ def getStarScore(reports, gpm):
     efficiency = round(hit*2 + gpm * 8,2)
 
     damage = reports[6]
-    if damage > 23000:
-        damage = 23000
-    elif damage < 13000:
-        damage = 13000
-    damage = round((damage - 13000) / 1000,2)
+    if damage > 25000:
+        damage = 25000
+    elif damage < 6000:
+        damage = 6000
+    damage = round((damage - 6000) / 1900,2)
 
     push = reports[7] + reports[8]
     if push>6000:
@@ -116,11 +116,14 @@ def getStarScore(reports, gpm):
     push = round(push/600 ,2)
 
     raw_data={"参战能力":participate,"输出能力":damage,"推进能力":push,"胜率":winrate,"打钱能力":efficiency}
-    for k in raw_data.keys():
-        if raw_data[k]==0:
-            raw_data[k] = 0.15
+    res = {}
+    for k,v in raw_data.items():
+        if v<5:
+            res[k] = round(np.tanh(v/5*3)*5,2)
+        else:
+            res[k] = v
 
-    return raw_data
+    return res
 
 def getCompStarStat(playerIdA, playerIdB, total=20):
     reports_a, _, gpm_a, _, player_name_a = getLatestGamesStat(playerIdA,total)
@@ -134,7 +137,7 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
     raw_data_b = getStarScore(reports_b,gpm_b)
 
     fig=plt.figure(figsize=(4, 5))
-    ax1=fig.add_subplot(1,2,1,polar=True)
+    ax1=fig.add_subplot(1,1,1,polar=True)
     ax1.set_title(f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
     ax1.set_rlim(0,10.5)
 
