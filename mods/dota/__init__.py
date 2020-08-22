@@ -6,7 +6,7 @@ from pathlib import Path
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
-from .latest_games import getStat, getLatestComparingStat
+from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
 from .._utils import parseMsg, readJSON, updateJSON
 from ..users import getUserInfo
 
@@ -70,6 +70,36 @@ async def stat_handler(*args, sender, event_type):
         SessionLogger.info("[STAT]返回成功")
         return [Plain(text=res)]
 
+@args_parser(1,0)
+async def star_handler(*args, sender, event_type):
+    if len(args)<1 or len(args)>2:
+        return [Plain(text="缺少参数或参数过多")]
+    query_id,*num = args
+    if query_id not in dota_id_dict.keys():
+        SessionLogger.info("[STAR]未添加该用户")
+        return [Plain(text="未添加该用户！")]
+    else:
+        query_id = dota_id_dict[query_id]
+        args = 20
+        if len(num) == 1:
+            try:
+                args = int(num[0])
+                if args > 50 or args <= 0:
+                    args = 20
+            except ValueError:
+                args = 20
+        pic_name, player_name = getStarStat(query_id, args)
+        if type(player_name) == type(0):
+            msg = [Plain(text=pic_name)]
+            SessionLogger.info("[STAR]用户不存在")
+        else:
+            msg = [
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏五星图\n"),
+                Image.fromFileSystem(pic_name)
+            ]
+            SessionLogger.info("[STAR]返回成功")
+        return msg
+
 @args_parser(2,0)
 async def compare_handler(*args, sender, event_type):
     if len(args)<2 or len(args)>3:
@@ -121,8 +151,8 @@ async def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]用户不存在")
         else:
             msg = [
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n"),
                 Image.fromFileSystem(pic_name),
-                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图")
             ]
             SessionLogger.info("[WINRATE]返回成功")
         return msg
@@ -158,14 +188,46 @@ async def winrate_compare_handler(*args, sender, event_type):
             SessionLogger.info("[WRCP]用户不存在")
         else:
             msg = [
-                Plain(text="最近 " + str(num) + " 场游戏胜率比较图"),
+                Plain(text="最近 " + str(num) + " 场游戏胜率比较图\n"),
                 Image.fromFileSystem(pic_name)
             ]
             SessionLogger.info("[WRCP]返回成功")
         return msg
 
+@args_parser(2,0)
+async def star_compare_handler(*args, sender, event_type):
+    args = list(args)
+    if len(args)<2 or len(args)>3:
+        return [Plain(text="缺少参数或参数过多")]
+    try:
+        num = int(args[-1])
+        ids = args[:len(args)-1]
+    except:
+        num = 0
+        ids = list(args)
+    for no,i in enumerate(ids):
+        if i not in dota_id_dict.keys():
+            SessionLogger.info("[STCP]未添加用户 "+ i)
+            return [Plain(text="未添加用户 " + i + " ！")]
+        ids[no] = dota_id_dict[i]
+    else:
+        if num<=0 or num > 50:
+            num = 20
+        pic_name, player_name_a, _ = getCompStarStat(ids[0],ids[1], num)
+        if type(player_name_a) == type(0):
+            msg = [Plain(text=pic_name)]
+            SessionLogger.info("[STCP]用户不存在")
+        else:
+            msg = [
+                Plain(text="最近 " + str(num) + " 场游戏数据比较图\n"),
+                Image.fromFileSystem(pic_name)
+            ]
+            SessionLogger.info("[STCP]返回成功")
+        return msg
+
 COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
             "stat": stat_handler, "compare": compare_handler,
             "setdota": setdota_handler,"comp": compare_handler,
-            "wrcp": winrate_compare_handler,
+            "wrcp": winrate_compare_handler,"star":star_handler,
+            "stcp":star_compare_handler,
             }

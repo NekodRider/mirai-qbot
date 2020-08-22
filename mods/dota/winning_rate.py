@@ -48,9 +48,9 @@ def getWinRateGraph(playerId, total=20):
 
 
     plt.figure()
-    plt.title('Winning rate in the latest ' + str(total) + " games")
+    plt.title('最近 ' + str(total) + " 场游戏胜率变化图")
     plt.ylim(graph_min - (graph_range) / 25, graph_max + (graph_range) / 25)
-    plt.plot(graph_index, winning_rate, color="red", label="Winning rate")
+    plt.plot(graph_index, winning_rate, color="red", label="胜率")
     plt.scatter(graph_index, winning_rate, color="red", s=15)
     plt.legend()
     plt.draw()
@@ -81,7 +81,7 @@ def getCompWinRateGraph(playerIdList, total=20):
         plt.scatter(graph_index, wr, color=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
-    x_major_locator=plt.MultipleLocator(total//10)
+    x_major_locator=plt.MultipleLocator(total//10 if total>=10 else 1)
     ax=plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
     ax.spines['top'].set_visible(False)
