@@ -171,7 +171,7 @@ def getStarStat(playerId,total=20):
     raw_data=getStarScore(reports,gpm)
 
     fig=plt.figure(figsize=(7.5, 5.5))
-    ax1=fig.add_subplot(1,2,1,polar=True)
+    ax1=fig.add_subplot(1,1,1,polar=True)
     ax1.set_title(player_name + '最近 ' + str(total) + ' 场游戏数据统计')
     ax1.set_rlim(0,10.5)
 
