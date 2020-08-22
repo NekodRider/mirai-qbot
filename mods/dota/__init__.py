@@ -151,7 +151,7 @@ async def winrate_handler(*args, sender, event_type):
             SessionLogger.info("[WINRATE]用户不存在")
         else:
             msg = [
-                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n")
+                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n"),
                 Image.fromFileSystem(pic_name),
             ]
             SessionLogger.info("[WINRATE]返回成功")
