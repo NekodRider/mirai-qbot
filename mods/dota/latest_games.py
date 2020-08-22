@@ -137,7 +137,7 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
     raw_data_b = getStarScore(reports_b,gpm_b)
 
     fig=plt.figure(figsize=(4, 5))
-    ax1=fig.add_subplot(1,2,1,polar=True)
+    ax1=fig.add_subplot(1,1,1,polar=True)
     ax1.set_title(f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
     ax1.set_rlim(0,10.5)
 
