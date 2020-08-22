@@ -80,20 +80,16 @@ def getLatestComparingStat(playerIdA, playerIdB, total=20):
     res += '场均治疗：' + str(reportsA[8]) + " " + cmp_results[8] + " " + str(reportsB[8])
     return res
 
-def getStarStat(playerId,total=20):
-    reports, kda, gpm, xpm, player_name = getLatestGamesStat(playerId,total)
-    if type(reports) == type(""):
-        return reports, 0
-    # 参战 kda str(reports[1:4])
+def getStarScore(reports, gpm):
     participate = (reports[1] + reports[3])-10
     if participate > 15:
         participate = 15
     elif participate < 0:
         participate = 0
     participate = round(participate/15*10,2)
-    # 胜率 reports[0]
+
     winrate = round(reports[0]*10,2)
-    # 效率 正反补 reports[4:6] gpm 2 1 7
+    
     hit = reports[4] + reports[5]
     if hit<100:
         hit = 100
@@ -106,45 +102,99 @@ def getStarStat(playerId,total=20):
         gpm = 600
     gpm = (gpm - 200) / 400
     efficiency = round(hit*2 + gpm * 8,2)
-    # 输出 reports[6]
+
     damage = reports[6]
-    if damage > 21000:
-        damage = 21000
+    if damage > 23000:
+        damage = 23000
     elif damage < 13000:
         damage = 13000
-    damage = round((damage - 13000) / 800,2)
-    # 推进 建筑 治疗 reports[7:9]
+    damage = round((damage - 13000) / 1000,2)
+
     push = reports[7] + reports[8]
-    if push>4000:
-        push = 4000
-    elif push < 2000:
-        push = 2000
-    push = round((push - 2000)/200 ,2)
+    if push>6000:
+        push = 6000
+    push = round(push/600 ,2)
+
+    raw_data={"参战能力":participate,"输出能力":damage,"推进能力":push,"胜率":winrate,"打钱能力":efficiency}
+    for k in raw_data.keys():
+        if raw_data[k]==0:
+            raw_data[k] = 0.15
+
+    return raw_data
+
+def getCompStarStat(playerIdA, playerIdB, total=20):
+    reports_a, _, gpm_a, _, player_name_a = getLatestGamesStat(playerIdA,total)
+    if type(reports_a) == type(""):
+        return reports_a, 0, 0
+    reports_b, _, gpm_b, _, player_name_b = getLatestGamesStat(playerIdB,total)
+    if type(reports_b) == type(""):
+        return reports_b, 0, 0
+
+    raw_data_a = getStarScore(reports_a,gpm_a)
+    raw_data_b = getStarScore(reports_b,gpm_b)
+
+    fig=plt.figure(figsize=(8,4))
+    ax1=fig.add_subplot(1,2,1,polar=True)
+    ax1.set_title(f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
+    ax1.set_rlim(0,10.5)
+
+    value_a=np.array([i for i in raw_data_a.values()]).astype(float)
+    value_b=np.array([i for i in raw_data_b.values()]).astype(float)
+    label=np.array([j for j in raw_data_a.keys()])
+
+    angle = np.linspace(0, 2*np.pi, len(value_a), endpoint=False)
+    angles = np.concatenate((angle, [angle[0]]))
+    value_a = np.concatenate((value_a, [value_a[0]]))
+    value_b = np.concatenate((value_b, [value_b[0]]))
+
+    ax1.set_thetagrids(angle*180/np.pi, label)
+    ax1.plot(angles,value_a,"o-",color='darkorange',label=player_name_a)
+    ax1.plot(angles,value_b,"o-",color='royalblue',label=player_name_b)
+    ax1.tick_params('y', labelleft=False)
+    ax1.set_theta_zero_location('N')
+    
+    ax1.fill(angles,value_a,facecolor='darkorange', alpha=0.2)
+    ax1.fill(angles,value_b,facecolor='royalblue', alpha=0.2)
+
+    plt.legend(loc='upper right',bbox_to_anchor=(1.1, 1.1))
+
+    plt.draw()
+    pic_name = str(Path(__file__).parent.joinpath(playerIdA + playerIdB + "_star.png"))
+    plt.savefig(pic_name)
+    
+    return pic_name, player_name_a, player_name_b
+
+def getStarStat(playerId,total=20):
+    reports, _, gpm, _, player_name = getLatestGamesStat(playerId,total)
+    if type(reports) == type(""):
+        return reports, 0
+    raw_data=getStarScore(reports,gpm)
 
     fig=plt.figure(figsize=(8,4))
     ax1=fig.add_subplot(1,2,1,polar=True)
     ax1.set_title(player_name + '最近 ' + str(total) + ' 场游戏数据统计')
-    ax1.set_rlim(0,10)
+    ax1.set_rlim(0,10.5)
 
-    raw_data={"参战能力":participate,"打钱能力":efficiency,"输出能力":damage,"推进能力":push,"胜率":winrate}
-
-    value=np.array([i for i in raw_data.values()]).astype(int)
+    value=np.array([i for i in raw_data.values()]).astype(float)
     label=np.array([j for j in raw_data.keys()])
 
     angle = np.linspace(0, 2*np.pi, len(value), endpoint=False)
     angles = np.concatenate((angle, [angle[0]]))
     value = np.concatenate((value, [value[0]]))
 
-    #设置第一个坐标轴
-    ax1.set_thetagrids(angles*180/np.pi, label) #设置网格标签
-    ax1.plot(angles,value,"o-")
+    ax1.set_thetagrids(angle*180/np.pi, label)
+    ax1.plot(angles,value,"o-",color='darkorange')
+    ax1.tick_params('y', labelleft=False)
     ax1.set_theta_zero_location('N')
     
-    ax1.fill(angles,value,facecolor='o', alpha=0.2) #填充颜色
-    ax1.set_rlabel_position('255') #设置极径标签位置
+    ax1.fill(angles,value,facecolor='darkorange', alpha=0.2)
+
+    for a, b in zip(angles, value):  
+        plt.text(a, b, b,ha='center', va='center', fontsize=8)  
 
     plt.draw()
     pic_name = str(Path(__file__).parent.joinpath(playerId + "_star.png"))
     plt.savefig(pic_name)
     
     return pic_name, player_name
+
