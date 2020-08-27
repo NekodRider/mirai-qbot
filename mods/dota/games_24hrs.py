@@ -20,7 +20,9 @@ def getGamesIn24Hrs(playerId):
         t['isWin'] = "胜" if match["players"][0]["isVictory"] else "负"
         t['duration'] = "%d:%02d" % (match["durationSeconds"] // 60, match["durationSeconds"] % 60)
         if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
-            t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
+            # official avgImg bug, use 110 as avgImg
+            #t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
+            t['imp'] = round(match["players"][0]["imp"] / 110, 2)
         else:
             t['imp'] = 0
         if 'role' in match["players"][0].keys() and 'lane' in match["players"][0].keys():
