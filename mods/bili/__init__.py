@@ -14,7 +14,7 @@ import asyncio
 BILI_LIVE_JSON_PATH = Path(__file__).parent.joinpath("bili_roomid.json")
 BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
-RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝"]
+RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝", "Google 晕了Orz"]
 
 async def dance_handler(*args,sender,event_type):
     title, author, pic, url, racy = getTop3DanceToday()

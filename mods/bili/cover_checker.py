@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from mirai.logger import Session as SessionLogger
 
 def detectSafeSearchUri(uri):
     """Detects unsafe features in the file located in Google Cloud Storage or
@@ -20,8 +21,6 @@ def detectSafeSearchUri(uri):
     #                    'LIKELY', 'VERY_LIKELY')
 
     if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
+        SessionLogger.exception("[DANCE]Google API Error:" + response.error.message)
+        return 6
     return safe.racy
