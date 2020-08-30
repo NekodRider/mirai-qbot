@@ -21,6 +21,6 @@ def detectSafeSearchUri(uri):
     #                    'LIKELY', 'VERY_LIKELY')
 
     if response.error.message:
-        SessionLogger.exception("[DANCE]Google API Error:" + response.error.message)
+        SessionLogger.info("[DANCE]Google API Error:" + response.error.message)
         return 6
     return safe.racy
