@@ -15,8 +15,7 @@ def getGamesIn24Hrs(playerId):
         if (time.time() - match["startDateTime"]) // 3600 > 24:
             break
         t = {}
-        # server in utc+3
-        t['time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(match["startDateTime"] + 5 * 60 * 60))
+        t['time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(match["startDateTime"]))
         t['isWin'] = "胜" if match["players"][0]["isVictory"] else "负"
         t['duration'] = "%d:%02d" % (match["durationSeconds"] // 60, match["durationSeconds"] % 60)
         if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
