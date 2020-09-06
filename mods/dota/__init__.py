@@ -225,9 +225,9 @@ async def star_compare_handler(*args, sender, event_type):
             SessionLogger.info("[STCP]返回成功")
         return msg
 
-COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
-            "stat": stat_handler, "compare": compare_handler,
-            "setdota": setdota_handler,"comp": compare_handler,
-            "wrcp": winrate_compare_handler,"star":star_handler,
-            "stcp":star_compare_handler,
+COMMANDS = {"dota": (dota_handler,""), "winrate": (winrate_handler,"胜率图展示"),
+            "stat": (stat_handler,"最近数据展示"),
+            "setdota": (setdota_handler,"设置dotaid"),"comp": (compare_handler,"最近数据对比"),
+            "wrcp": (winrate_compare_handler,"胜率对比"),"star":(star_handler,"五星图展示"),
+            "stcp":(star_compare_handler,"五星图对比"),
             }
