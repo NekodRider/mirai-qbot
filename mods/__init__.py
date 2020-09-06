@@ -1,7 +1,9 @@
 import re
 import importlib
 import collections
+import asyncio
 from pathlib import Path
+from threading import Lock
 from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
 from mirai.logger import Session as SessionLogger
 from ._utils import Sender, Type
@@ -9,6 +11,8 @@ from ._utils import Sender, Type
 PREFIX = ""
 commands = {}
 docs = {}
+message_queue = []
+MQ_LOCK = Lock()
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
@@ -72,16 +76,31 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
-            msg = await commands[comm](*args,sender = sender,event_type = event_type)
+            MQ_LOCK.acquire()
+            message_queue.append((commands[comm],args,{"sender":sender,"event_type":event_type}))
+            MQ_LOCK.release()
+
+async def processor(app: Mirai):
+    global message_queue
+    while 1:
+        if len(message_queue)!=0:
+            MQ_LOCK.acquire()
+            message = message_queue[0]
+            message_queue = message_queue[1:]
+            MQ_LOCK.release()
+            msg = await message[0](*message[1],**message[2])
             try:
-                if event_type == "FriendMessage":
-                    await app.sendFriendMessage(sender.id, msg)
-                elif event_type == "GroupMessage":
-                    msg.insert(0, At(sender.id))
-                    await app.sendGroupMessage(sender.group, msg)
+                if message[2]["event_type"] == "FriendMessage":
+                    await app.sendFriendMessage(message[2]["sender"].id, msg)
+                elif message[2]["event_type"] == "GroupMessage":
+                    msg.insert(0, At(message[2]["sender"].id))
+                    await app.sendGroupMessage(message[2]["sender"].group, msg)
                 else:
-                    SessionLogger.error(f"未知事件类型{event_type}")
+                    SessionLogger.error(f"未知事件类型{message[2]['event_type']}")
             except exceptions.BotMutedError:
                 pass
 
-
+def init_processor(app: Mirai, num: int = 5):
+    loop = asyncio.get_event_loop()
+    for _ in range(num):
+        loop.create_task(processor(app))
