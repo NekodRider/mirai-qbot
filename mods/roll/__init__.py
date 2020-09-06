@@ -16,4 +16,4 @@ async def roll_handler(*args,sender,event_type):
     msg = [Plain(text="%dd%d 结果:" % tuple(param) + str(res))]
     return msg
 
-COMMANDS = {"roll":roll_handler}
+COMMANDS = {"roll":(roll_handler, "按照所给参数如6d2形式roll点")}

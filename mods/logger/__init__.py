@@ -9,4 +9,4 @@ async def logger_handler(*args,sender,event_type):
         res = "".join(res[0 if len(res)<11 else len(res)-11:len(res)-1])
     return [Plain(text=res)]
 
-COMMANDS = {"log":logger_handler}
+COMMANDS = {"log":(logger_handler, "")}
