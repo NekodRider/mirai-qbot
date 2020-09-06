@@ -1,5 +1,6 @@
 import re
 import importlib
+import collections
 from pathlib import Path
 from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
 from mirai.logger import Session as SessionLogger
@@ -12,7 +13,9 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
     res_str = "目前支持的指令有：\n"
-    res_str_tail = ""
+    res_str_tail = "其他指令有: "
+    global docs
+    docs = collections.OrderedDict(sorted(docs.items()))
     for comm, doc in docs.items():
         if doc != "":
             res_str += f"{comm}: {doc}\n"
