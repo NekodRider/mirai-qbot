@@ -221,5 +221,8 @@ async def up_monitor(app: Mirai):
             updateJSON(BILI_UP_JSON_PATH,up_dict)
         await asyncio.sleep(60*60)
 
-COMMANDS = {"dance":dance_handler,"recommend":recommend_handler,"live":live_handler,"rmlive":rmlive_handler,
-            "up":up_handler,"rmup":rmup_handler}
+COMMANDS = {
+                "dance":(dance_handler, "舞蹈视频排行榜"),"recommend":(recommend_handler, "td金牌推荐舞见视频"),
+                "live":(live_handler,"根据房间号订阅B站直播间"),"rmlive":(rmlive_handler, "移除对应房间号订阅直播间"),
+                "up":(up_handler, "根据uid订阅UP主投稿"),"rmup":(rmup_handler,"移除对应uid用户投稿订阅")
+            }

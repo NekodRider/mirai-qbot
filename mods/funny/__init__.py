@@ -40,4 +40,4 @@ async def jrrp_handler(*args, sender: Member, event_type):
         postfix = 'NB！！'
     return [Plain(text=(msg+postfix) % (nickname, rp, nickname) + hint)]
 
-COMMANDS = {"jrrp": jrrp_handler}
+COMMANDS = {"jrrp": (jrrp_handler, "查询今日人品")}
