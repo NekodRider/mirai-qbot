@@ -80,7 +80,7 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             message_queue.append((commands[comm],args,{"sender":sender,"event_type":event_type}))
             MQ_LOCK.release()
 
-async def processor(app: Mirai):
+async def processor(app: Mirai, interval: int):
     global message_queue
     while 1:
         if len(message_queue)!=0:
@@ -99,8 +99,9 @@ async def processor(app: Mirai):
                     SessionLogger.error(f"未知事件类型{message[2]['event_type']}")
             except exceptions.BotMutedError:
                 pass
+        await asyncio.sleep(interval)
 
 def init_processor(app: Mirai, num: int = 5):
     loop = asyncio.get_event_loop()
-    for _ in range(num):
-        loop.create_task(processor(app))
+    for i in range(1, num + 1):
+        loop.create_task(processor(app, i))
