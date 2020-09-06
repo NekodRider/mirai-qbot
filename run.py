@@ -2,7 +2,7 @@ import sys
 import os
 from logbook import RotatingFileHandler, INFO, Logger
 from mirai import Mirai
-from mods import load_mods
+from mods import load_mods, init_processor
 import importlib
 
 if __name__ == '__main__':
@@ -19,6 +19,7 @@ if __name__ == '__main__':
     handler.push_application()
     exceptions_logger = Logger('Exceptions')
     load_mods(app,config.PREFIX)
+    init_processor(app)
     try:
         app.run()
     except Exception as e:

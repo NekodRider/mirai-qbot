@@ -1,6 +1,9 @@
 import re
 import importlib
+import collections
+import asyncio
 from pathlib import Path
+from queue import Queue
 from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
 from mirai.logger import Session as SessionLogger
 from ._utils import Sender, Type
@@ -8,11 +11,14 @@ from ._utils import Sender, Type
 PREFIX = ""
 commands = {}
 docs = {}
+message_queue = Queue()
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
     res_str = "目前支持的指令有：\n"
-    res_str_tail = ""
+    res_str_tail = "其他指令有: "
+    global docs
+    docs = collections.OrderedDict(sorted(docs.items()))
     for comm, doc in docs.items():
         if doc != "":
             res_str += f"{comm}: {doc}\n"
@@ -69,16 +75,28 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
-            msg = await commands[comm](*args,sender = sender,event_type = event_type)
+            message_queue.put((commands[comm],args,{"sender":sender,"event_type":event_type}))
+
+async def processor(app: Mirai, interval: int):
+    global message_queue
+    while 1:
+        if not message_queue.empty():
+            message = message_queue.get()
+            msg = await message[0](*message[1],**message[2])
+            message_queue.task_done()
             try:
-                if event_type == "FriendMessage":
-                    await app.sendFriendMessage(sender.id, msg)
-                elif event_type == "GroupMessage":
-                    msg.insert(0, At(sender.id))
-                    await app.sendGroupMessage(sender.group, msg)
+                if message[2]["event_type"] == "FriendMessage":
+                    await app.sendFriendMessage(message[2]["sender"].id, msg)
+                elif message[2]["event_type"] == "GroupMessage":
+                    msg.insert(0, At(message[2]["sender"].id))
+                    await app.sendGroupMessage(message[2]["sender"].group, msg)
                 else:
-                    SessionLogger.error(f"未知事件类型{event_type}")
+                    SessionLogger.error(f"未知事件类型{message[2]['event_type']}")
             except exceptions.BotMutedError:
                 pass
+        await asyncio.sleep(interval)
 
-
+def init_processor(app: Mirai, num: int = 5):
+    loop = asyncio.get_event_loop()
+    for i in range(1, num + 1):
+        loop.create_task(processor(app, i))
