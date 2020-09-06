@@ -21,6 +21,6 @@ async def name_handler(*args,sender,event_type):
     return [Plain(text=('你的名字是 ' + name['nickname'] + ' ！') if name is not None else '还没设定哦，通过 /setname yd 修改名字~')]
 
 COMMANDS = {
-    'setname': setname_handler,
-    'name': name_handler
+    'setname': (setname_handler, "设置昵称"),
+    'name': (name_handler, "显示昵称")
 }

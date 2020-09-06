@@ -7,13 +7,18 @@ from ._utils import Sender, Type
 
 PREFIX = ""
 commands = {}
+docs = {}
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
     res_str = "目前支持的指令有：\n"
-    for comms in commands.keys():
-        res_str += comms + " "
-    msg = [Plain(text=res_str[:-1])]
+    res_str_tail = ""
+    for comm, doc in docs.items():
+        if doc != "":
+            res_str += f"{comm}: {doc}\n"
+        else:
+            res_str_tail += comm + " "
+    msg = [Plain(text=(res_str + res_str_tail)[:-1])]
     return msg
 
 def load_mods(app: Mirai, prefix: str):
@@ -23,6 +28,7 @@ def load_mods(app: Mirai, prefix: str):
     module_prefix = mod_dir.name
 
     commands[PREFIX + "help"] = help_handler
+    docs[PREFIX + "help"] = ""
 
     for mod in mod_dir.iterdir():
         if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath('__init__.py').exists():
@@ -33,12 +39,12 @@ def load_mod(app: Mirai, module_path: str):
     try:
         mod = importlib.import_module(module_path)
         if "COMMANDS" in dir(mod):
-            for comms,func in mod.COMMANDS.items():
-                comms = PREFIX + comms
-                if comms in commands.keys():
-                    SessionLogger.error(f'未能导入 "{module_path}", error: 已存在指令{comms}')
+            for comm, func_doc in mod.COMMANDS.items():
+                comm = PREFIX + comm
+                if comm in commands.keys():
+                    SessionLogger.error(f'未能导入 "{module_path}", error: 已存在指令{comm}')
                 else:
-                    commands[comms] = func
+                    commands[comm], docs[comm] = func_doc
         SessionLogger.info(f'成功导入 "{module_path}"')
     except Exception as e:
         SessionLogger.error(f'未能导入 "{module_path}", error: {e}')
