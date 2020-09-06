@@ -5,7 +5,7 @@
 ### Features
 - 指令列表/help
 - 账户绑定系统 /name /setname 今日人品查询/jrrp
-- dota 24小时战绩查看 /dota /setdota 胜率变化曲线 /winrate 最近20场平均数据/stat 战绩比较/comp
+- dota 24小时战绩查看 /dota /setdota 胜率变化曲线 /winrate 最近20场平均数据/stat 战绩比较/comp 五星图/star
 - 复读机,支持多类型消息
 - 跑团roll点 /roll
 - Actions自动部署 包括dev分支测试和master分支部署
@@ -20,6 +20,8 @@
 - 新功能？
 
 ### Change Logs
+- 2020/09/06 v0.0.4
+  添加 dota 五星图等一系列数据对比指令，对项目结构以及部署进行优化
 
 - 2020/08/13 v0.0.3
   添加B站直播监控，B站舞蹈推荐，今日人品，账户绑定角色等功能 同时优化指令处理逻辑
