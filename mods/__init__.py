@@ -53,7 +53,7 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
     match = re.match(pattern,message_str,re.I)
     command_str = ""
     if match:
-        command_str = message_str[match.span()[0]:match.span()[1]]
+        command_str = message_str[match.span()[0]:match.span()[1]].lower()
         [comm,*args] = command_str.split(" ")
         if comm in commands.keys():
             if event_type == "GroupMessage":
