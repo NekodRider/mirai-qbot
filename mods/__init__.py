@@ -3,7 +3,7 @@ import importlib
 import collections
 import asyncio
 from pathlib import Path
-from threading import Lock
+from queue import Queue
 from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
 from mirai.logger import Session as SessionLogger
 from ._utils import Sender, Type
@@ -11,8 +11,7 @@ from ._utils import Sender, Type
 PREFIX = ""
 commands = {}
 docs = {}
-message_queue = []
-MQ_LOCK = Lock()
+message_queue = Queue()
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
@@ -76,19 +75,15 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
             else:
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
-            MQ_LOCK.acquire()
-            message_queue.append((commands[comm],args,{"sender":sender,"event_type":event_type}))
-            MQ_LOCK.release()
+            message_queue.put((commands[comm],args,{"sender":sender,"event_type":event_type}))
 
 async def processor(app: Mirai, interval: int):
     global message_queue
     while 1:
-        if len(message_queue)!=0:
-            MQ_LOCK.acquire()
-            message = message_queue[0]
-            message_queue = message_queue[1:]
-            MQ_LOCK.release()
+        if not message_queue.empty():
+            message = message_queue.get()
             msg = await message[0](*message[1],**message[2])
+            message_queue.task_done()
             try:
                 if message[2]["event_type"] == "FriendMessage":
                     await app.sendFriendMessage(message[2]["sender"].id, msg)
