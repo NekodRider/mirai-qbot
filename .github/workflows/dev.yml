@@ -31,7 +31,7 @@ jobs:
         username: ${{ secrets.USER }}
         password: ${{ secrets.PASSWORD }}
         source: "./*"
-        target: "/root/mirai-qbot-dev"
+        target: "/root/mirai/mirai-qbot-dev"
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@master
       with:
