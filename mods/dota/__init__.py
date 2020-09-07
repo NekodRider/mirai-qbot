@@ -33,6 +33,9 @@ def args_parser(num, index=None):
 
 @args_parser(1)
 async def dota_handler(*args,sender, event_type):
+    '''展示最近24小时(上限10场)游戏数据
+
+    用法: /dota (id)'''
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     query_id = args[0]
@@ -50,6 +53,9 @@ async def dota_handler(*args,sender, event_type):
 
 @args_parser(1,0)
 async def stat_handler(*args, sender, event_type):
+    '''展示最近指定场数(默认20场)游戏平均数据
+
+    用法: /stat 或 /stat id (num)'''
     if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
     query_id,*num = args
@@ -72,6 +78,9 @@ async def stat_handler(*args, sender, event_type):
 
 @args_parser(1,0)
 async def star_handler(*args, sender, event_type):
+    '''展示最近指定场数(默认20场)游戏五星图数据
+
+    用法: /star 或 /star id (num)'''
     if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
     query_id,*num = args
@@ -102,6 +111,9 @@ async def star_handler(*args, sender, event_type):
 
 @args_parser(2,0)
 async def compare_handler(*args, sender, event_type):
+    '''玩家间最近平均数据对比
+
+    用法: /comp id_b 或 /comp id_a id_b (num)'''
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
     [id_a,id_b,*num] = args
@@ -129,6 +141,9 @@ async def compare_handler(*args, sender, event_type):
 
 @args_parser(1,0)
 async def winrate_handler(*args, sender, event_type):
+    '''最近胜率图展示
+
+    用法: /winrate 或 /winrate id (num)'''
     if len(args)<1 or len(args)>2:
         return [Plain(text="缺少参数或参数过多")]
     query_id,*num = args
@@ -159,12 +174,18 @@ async def winrate_handler(*args, sender, event_type):
 
 @args_parser(2,0)
 async def setdota_handler(*args, sender, event_type):
+    '''设置用户对应的dota id
+
+    用法: /setdota 昵称 id'''
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
     return [Plain(text="添加成功！")]
 
 @args_parser(2,0)
 async def winrate_compare_handler(*args, sender, event_type):
+    '''玩家间最近胜率数据对比
+
+    用法: /wrcp id_b 或 /wrcp id_a id_b (num)'''
     args = list(args)
     if len(args)<2:
         return [Plain(text="缺少参数或参数过多")]
@@ -196,6 +217,9 @@ async def winrate_compare_handler(*args, sender, event_type):
 
 @args_parser(2,0)
 async def star_compare_handler(*args, sender, event_type):
+    '''玩家间最近五星图对比
+
+    用法: /stcp id_b 或 /stcp id_a id_b (num)'''
     args = list(args)
     if len(args)<2 or len(args)>3:
         return [Plain(text="缺少参数或参数过多")]
@@ -225,9 +249,9 @@ async def star_compare_handler(*args, sender, event_type):
             SessionLogger.info("[STCP]返回成功")
         return msg
 
-COMMANDS = {"dota": (dota_handler,""), "winrate": (winrate_handler,"胜率图展示"),
-            "stat": (stat_handler,"最近数据展示"),
-            "setdota": (setdota_handler,"设置dotaid"),"comp": (compare_handler,"最近数据对比"),
-            "wrcp": (winrate_compare_handler,"胜率对比"),"star":(star_handler,"五星图展示"),
-            "stcp":(star_compare_handler,"五星图对比"),
+COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
+            "stat": stat_handler,
+            "setdota": setdota_handler, "comp": compare_handler,
+            "wrcp": winrate_compare_handler,"star": star_handler,
+            "stcp": star_compare_handler,
             }
