@@ -1,4 +1,6 @@
 # encoding=Utf-8
+import functools
+
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At, FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
 from pathlib import Path
@@ -16,6 +18,7 @@ dota_id_dict = readJSON(dota_dict_path)
 
 def args_parser(num, index=None):
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(*args,sender,event_type):
             if len(args) < num:
                 r = getUserInfo(sender.id)
