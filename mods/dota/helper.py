@@ -54,7 +54,7 @@ def getDotaNews():
     now = time.time()
     ret = []
     for i in news_list:
-        if i["date"] - now > 5*60:
+        if now - i["date"] > 5*60:
             break
         tmp = {}
         tmp["title"] = i["title"]
