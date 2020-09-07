@@ -15,9 +15,8 @@ sb_repeat_content = ""
 async def repeat_handler(app: Mirai, group:Group, message:MessageChain, member:Member):
     sender=member.id
     groupId=group.id
-    global repeat_queue
-    global sb_repeat_content
-    pattern = "^\s*\S{2,6}[SNsn][Bb][!！?？.。]{0,10}\s*$"
+    global repeat_queue, sb_repeat_content
+    pattern = r"^\s*\S{2,6}[SNsn][Bb][!！?？.。]{0,10}\s*$"
     # 等之后还是分下群
     message = message.toString()
     if re.match(pattern, message):

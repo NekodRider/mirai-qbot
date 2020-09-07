@@ -6,15 +6,9 @@ from ..users import getUserInfo
 
 
 async def jrrp_handler(*args, sender: Member, event_type):
-    """
-    return 'YD 今日人品为 99,YDNB！
+    '''查询今日人品
 
-    0 -> YDSB!!!
-    1-40 -> 'YD不NB，但TDNB！'
-    41-70 -> YDNB!
-    71-99 -> YDNB!!
-    100 -> YDNB!!!
-    """
+    用法: /jrrp'''
     if event_type != "GroupMessage":
         return [Plain(text="尚未支持该类型")]
     target = getUserInfo(sender.id)
@@ -40,4 +34,4 @@ async def jrrp_handler(*args, sender: Member, event_type):
         postfix = 'NB！！'
     return [Plain(text=(msg+postfix) % (nickname, rp, nickname) + hint)]
 
-COMMANDS = {"jrrp": (jrrp_handler, "查询今日人品")}
+COMMANDS = {"jrrp": jrrp_handler}

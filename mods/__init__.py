@@ -15,42 +15,58 @@ message_queue = Queue()
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 async def help_handler(*args,sender, event_type):
-    res_str = "目前支持的指令有：\n"
-    res_str_tail = "其他指令有: "
     global docs
-    docs = collections.OrderedDict(sorted(docs.items()))
-    for comm, doc in docs.items():
-        if doc != "":
-            res_str += f"{comm}: {doc}\n"
-        else:
-            res_str_tail += comm + " "
-    msg = [Plain(text=(res_str + res_str_tail)[:-1])]
+    if len(args)==0:
+        res_str = "目前支持的指令有：\n"
+        res_str_tail = "其他指令有: "
+        for comm, doc in docs.items():
+            if type(doc)!=str:
+                continue
+            doc = [x.strip() for x in doc.split("\n")]
+            if len(doc)!=3 or doc[0]=="":
+                res_str_tail += comm + " "
+            else:
+                res_str += f"{comm}: {doc[0]}\n"
+        msg = [Plain(text=(res_str + res_str_tail)[:-1])]
+    else:
+        res_str = ""
+        for comm in args:
+            comm = [PREFIX]+comm if comm[0]!=PREFIX else comm
+            if comm in docs.keys() and type(docs[comm]) == str:
+                doc = [x.strip() for x in doc.split("\n")]
+                if len(doc)!=3 or doc[0]=="":
+                    continue
+                res_str += f"{comm}: {doc[2]}\n"
+        msg = [Plain(text=res_str[:-1])]
+
     return msg
 
 def load_mods(app: Mirai, prefix: str):
-    global PREFIX
+    global PREFIX, docs
     PREFIX = prefix
     mod_dir = Path(__file__).parent
     module_prefix = mod_dir.name
 
     commands[PREFIX + "help"] = help_handler
-    docs[PREFIX + "help"] = ""
+    docs[PREFIX + "help"] = "帮助指令\n\n用法: /help"
 
     for mod in mod_dir.iterdir():
         if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath('__init__.py').exists():
             load_mod(app, f'{module_prefix}.{mod.name}')
+    
+    docs = collections.OrderedDict(sorted(docs.items()))
 
 
 def load_mod(app: Mirai, module_path: str):
     try:
         mod = importlib.import_module(module_path)
         if "COMMANDS" in dir(mod):
-            for comm, func_doc in mod.COMMANDS.items():
+            for comm, func in mod.COMMANDS.items():
                 comm = PREFIX + comm
                 if comm in commands.keys():
                     SessionLogger.error(f'未能导入 "{module_path}", error: 已存在指令{comm}')
                 else:
-                    commands[comm], docs[comm] = func_doc
+                    commands[comm], docs[comm] = func, func.__doc__
         SessionLogger.info(f'成功导入 "{module_path}"')
     except Exception as e:
         SessionLogger.error(f'未能导入 "{module_path}", error: {e}')

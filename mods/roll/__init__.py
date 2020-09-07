@@ -4,6 +4,9 @@ import random
 
 
 async def roll_handler(*args,sender,event_type):
+    '''按照所给参数roll点
+
+    用法: /roll 参数 如/roll 2d6代表 roll 2次6面骰子 '''
     params = args
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
@@ -16,4 +19,4 @@ async def roll_handler(*args,sender,event_type):
     msg = [Plain(text="%dd%d 结果:" % tuple(param) + str(res))]
     return msg
 
-COMMANDS = {"roll":(roll_handler, "按照所给参数如6d2形式roll点")}
+COMMANDS = {"roll": roll_handler}
