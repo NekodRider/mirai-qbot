@@ -1,19 +1,23 @@
 # encoding=Utf-8
 import functools
+import re
+import time
+import asyncio
 
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At, FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
 from pathlib import Path
 
-from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path
+from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path, getDotaNews
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
-from .._utils import parseMsg, readJSON, updateJSON
+from .._utils import parseMsg, readJSON, updateJSON, groupFromStr, groupToStr
 from ..users import getUserInfo
 
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
+NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
 dota_id_dict = readJSON(dota_dict_path)
 
 def args_parser(num, index=None):
@@ -252,9 +256,68 @@ async def star_compare_handler(*args, sender, event_type):
             SessionLogger.info("[STCP]返回成功")
         return msg
 
+async def dotanews_handler(*args,sender,event_type):
+    '''DOTA新闻订阅
+
+    用法: /dotanews'''
+    news_dict = readJSON(NEWS_JSON_PATH)
+    if event_type=="GroupMessage" and groupToStr(sender.group) not in news_dict["member"]:
+        news_dict["member"].append(groupToStr(sender.group))
+    if event_type=="FriendMessage" and sender.id not in news_dict["member"]:
+        news_dict["member"].append(sender.id)
+    updateJSON(NEWS_JSON_PATH,news_dict)
+    msg = [Plain(text="已订阅DOTA新闻\n")]
+    SessionLogger.info("[DOTANEWS]返回成功")
+    return msg
+
+async def rmdotanews_handler(*args,sender,event_type):
+    '''DOTA新闻取消订阅
+
+    用法: /rmdotanews'''
+    news_dict = readJSON(NEWS_JSON_PATH)
+    if event_type=="GroupMessage" and groupToStr(sender.group) in news_dict["member"]:
+        news_dict["member"].remove(groupToStr(sender.group))
+    if event_type=="FriendMessage" and sender.id in news_dict["member"]:
+        news_dict["member"].remove(sender.id)
+    updateJSON(NEWS_JSON_PATH,news_dict)
+    msg = [Plain(text="已取消订阅DOTA新闻\n")]
+    SessionLogger.info("[RMDOTANEWS]返回成功")
+    return msg
+
+@sub_app.subroutine
+async def news_monitor(app: Mirai):
+    while 1:
+        news_dict = readJSON(NEWS_JSON_PATH,defaultValue={"time":time.time(),"member":[]})
+        news = getDotaNews()
+        if time.time() - news_dict["time"] >= 5*60 and len(news)>0:
+            msg = []
+            for i in news:
+                img = []
+                res = f"\n{i['title']}\n"
+                if "[img]" in i["contents"]:
+                    pattern = r"\[img\][\S]*\[/img\]"
+                    imgs = re.findall(pattern, i["contents"])
+                    img.append(await Image.fromRemote(imgs[0][5:-6]))
+                    for to_rm in imgs:
+                        i["contents"] = i["contents"].replace(to_rm,"")
+                    res += i["contents"].strip()
+                msg += img
+                msg.append(Plain(text=res))
+            try:
+                for member in news_dict["member"]:
+                    if type(member)==str:
+                        await app.sendGroupMessage(groupFromStr(member),msg)
+                    else:
+                        await app.sendFriendMessage(member,msg)
+            except exceptions.BotMutedError:
+                pass
+            news_dict["time"] = time.time()
+            updateJSON(NEWS_JSON_PATH,news_dict)
+        await asyncio.sleep(5*60)
+
 COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
-            "stat": stat_handler,
-            "setdota": setdota_handler, "comp": compare_handler,
-            "wrcp": winrate_compare_handler,"star": star_handler,
-            "stcp": star_compare_handler,
+            "stat": stat_handler, "setdota": setdota_handler, 
+            "comp": compare_handler, "wrcp": winrate_compare_handler,
+            "star": star_handler, "stcp": star_compare_handler,
+            "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler
             }
