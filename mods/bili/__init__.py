@@ -17,6 +17,9 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝", "Google 晕了Orz"]
 
 async def dance_handler(*args,sender,event_type):
+    '''B站舞蹈区排行
+
+    用法: /dance'''
     title, author, pic, url, racy = getTop3DanceToday()
     msg = [Plain(text="B站舞蹈区实时排名前3（已剔除潜在不适内容）\n")]
     for i, ti in enumerate(title):
@@ -29,6 +32,9 @@ async def dance_handler(*args,sender,event_type):
     return msg
 
 async def recommend_handler(*args,sender,event_type):
+    '''td金牌推荐舞见视频
+
+    用法: /recommend'''
     title, author, pic, url, racy = getRecommendDance()
     msg = [Plain(text="本次核心推荐up随机视频：\n")]
     for i, ti in enumerate(title):
@@ -41,6 +47,9 @@ async def recommend_handler(*args,sender,event_type):
     return msg
 
 async def live_handler(*args,sender,event_type):
+    '''B站直播间开播订阅
+
+    用法: /live 房间号'''
     if len(args)==0:
         msg = []
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
@@ -86,6 +95,9 @@ async def live_handler(*args,sender,event_type):
     return msg
 
 async def rmlive_handler(*args,sender,event_type):
+    '''取消订阅直播间
+
+    用法: /rmlive 房间号'''
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     room_id = args[0]
@@ -106,6 +118,9 @@ async def rmlive_handler(*args,sender,event_type):
     return msg
 
 async def up_handler(*args,sender,event_type):
+    '''订阅UP主投稿
+
+    用法: /up UP主uid'''
     if len(args)==0:
         res = "目前关注的UP主有：\n"
         up_dict = readJSON(BILI_UP_JSON_PATH)
@@ -148,6 +163,9 @@ async def up_handler(*args,sender,event_type):
     return msg
 
 async def rmup_handler(*args,sender,event_type):
+    '''取消订阅UP主投稿
+
+    用法: /rmup UP主uid'''
     if len(args)!=1:
         return [Plain(text="缺少参数或参数过多")]
     up_id = args[0]
@@ -222,7 +240,7 @@ async def up_monitor(app: Mirai):
         await asyncio.sleep(60*60)
 
 COMMANDS = {
-                "dance":(dance_handler, "舞蹈视频排行榜"),"recommend":(recommend_handler, "td金牌推荐舞见视频"),
-                "live":(live_handler,"根据房间号订阅B站直播间"),"rmlive":(rmlive_handler, "移除对应房间号订阅直播间"),
-                "up":(up_handler, "根据uid订阅UP主投稿"),"rmup":(rmup_handler,"移除对应uid用户投稿订阅")
+                "dance": dance_handler, "recommend": recommend_handler,
+                "live": live_handler, "rmlive": rmlive_handler,
+                "up": up_handler, "rmup": rmup_handler
             }
