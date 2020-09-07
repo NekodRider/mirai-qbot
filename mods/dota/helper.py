@@ -2,6 +2,7 @@ from urllib import request
 from pathlib import Path
 import json
 import types
+import time
 
 
 hero_dict = {'1': '敌法师', '2': '斧王', '3': '祸乱之源', '4': '血魔', '5': '水晶室女', '6': '卓尔游侠', '7': '撼地者', '8': '主宰', '9': '米拉娜', '10': '变体精灵', '11': '影魔', '12': '幻影长矛手', '13': '帕克', '14': '帕吉', '15': '剃刀', '16': '沙王', '17': '风暴之灵', '18': '斯温', '19': '小小', '20': ' 复仇之魂', '21': '风行者', '22': '宙斯', '23': '昆卡', '25': '莉娜', '26': '莱恩', '27': '暗影萨满', '28': '斯拉达', '29': '潮汐猎人', '30': '巫医', '31': '巫妖', '32': '力丸', '33': '谜团', '34': '修补匠', '35': '狙击手', '36': '瘟疫法师', '37': '术士', '38': '兽王', '39': '痛苦女王', '40': '剧毒术士', '41': '虚空假面', '42': '冥魂大帝', '43': '死亡先知', '44': '幻影刺客', '45': '帕格纳', '46': '圣堂刺客', '47': '冥界亚龙', '48': '露娜', '49': '龙骑士', '50': '戴泽', '51': '发条技师', '52': '拉席克', '53': '先知', '54': '噬魂鬼', '55': '黑暗贤者', '56': '克林克兹', '57': '全能骑士', '58': '魅惑魔女', '59': '哈斯卡', '60': '暗夜魔王', '61': '育母蜘蛛', '62': '赏金猎人', '63': '编织者',
@@ -29,3 +30,35 @@ def getDotaGamesInfo(playerId, matchesArgs=""):
     html = request.urlopen(url)
     games_data = json.loads(html.read().decode('utf-8'))
     return games_data
+
+def steam_html_process(raw_str):
+    left = 0
+    while 1:
+        l = raw_str[left:].find("[")
+        if l==-1:
+            break
+        elif "img"!=raw_str[left+l+1:left+l+4]:
+            r = raw_str[left:].find("]")
+            raw_str = raw_str[:left+l] + raw_str[left+r+1:]
+            left = left+l
+        else:
+            r = raw_str[left:].find("]")
+            r = raw_str[left+r+1:].find("]")
+            left = left + r + 1
+    return raw_str
+
+def getDotaNews():
+    url = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=570&feeds=steam_community_announcements,steam_updates&count=5"
+    html = request.urlopen(url)
+    news_list = json.loads(html.read().decode('utf-8'))["appnews"]["newsitems"]
+    now = time.time()
+    ret = []
+    for i in news_list:
+        if i["date"] - now > 5*60:
+            break
+        tmp = {}
+        tmp["title"] = i["title"]
+        tmp["url"] = i["url"]
+        tmp["contents"] = steam_html_process(i["contents"])
+        ret.append(tmp)
+    return ret
