@@ -21,6 +21,7 @@ async def help_handler(*args,sender, event_type):
         res_str_tail = "其他指令有: "
         for comm, doc in docs.items():
             if type(doc)!=str:
+                res_str_tail += comm + " "
                 continue
             doc = [x.strip() for x in doc.split("\n")]
             if len(doc)!=3 or doc[0]=="":
@@ -31,13 +32,13 @@ async def help_handler(*args,sender, event_type):
     else:
         res_str = ""
         for comm in args:
-            comm = [PREFIX]+comm if comm[0]!=PREFIX else comm
+            comm = PREFIX + comm if comm[0]!=PREFIX else comm
             if comm in docs.keys() and type(docs[comm]) == str:
-                doc = [x.strip() for x in doc.split("\n")]
+                doc = [x.strip() for x in docs[comm].split("\n")]
                 if len(doc)!=3 or doc[0]=="":
                     continue
-                res_str += f"{comm}: {doc[2]}\n"
-        msg = [Plain(text=res_str[:-1])]
+                res_str += f"{comm[1:]} {doc[2]}\n"
+        msg = [Plain(text="\n"+res_str[:-1].replace("/",PREFIX))]
 
     return msg
 
@@ -48,7 +49,7 @@ def load_mods(app: Mirai, prefix: str):
     module_prefix = mod_dir.name
 
     commands[PREFIX + "help"] = help_handler
-    docs[PREFIX + "help"] = "帮助指令\n\n用法: /help"
+    docs[PREFIX + "help"] = f"帮助指令\n\n用法: {PREFIX}help"
 
     for mod in mod_dir.iterdir():
         if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath('__init__.py').exists():
@@ -77,7 +78,7 @@ def load_mod(app: Mirai, module_path: str):
 @sub_app.receiver("GroupMessage")
 async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", message: MessageChain):
     message_str = message.toString()
-    pattern = PREFIX + "([a-z0-9.]+ )*[a-z0-9.]+"
+    pattern = PREFIX + r"([\S]+ )*[\S]+"
     match = re.match(pattern,message_str,re.I)
     command_str = ""
     if match:
