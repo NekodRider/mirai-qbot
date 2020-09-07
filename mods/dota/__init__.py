@@ -289,17 +289,17 @@ async def news_monitor(app: Mirai):
     while 1:
         news_dict = readJSON(NEWS_JSON_PATH,defaultValue={"time":time.time(),"member":[]})
         news = getDotaNews()
-        if time.time() - news_dict["time"] >= 60*60 and len(news)>0:
+        if time.time() - news_dict["time"] >= 5*60 and len(news)>0:
             msg = []
             for i in news:
                 img = []
-                res = f"\n{i['title']}\n{i['url']}\n"
+                res = f"\n{i['title']}\n"
                 if "[img]" in i["contents"]:
                     pattern = r"\[img\][\S]*\[/img\]"
                     imgs = re.findall(pattern, i["contents"])
-                    img.append(Image.fromRemote(imgs[0][5:-6]))
+                    img.append(await Image.fromRemote(imgs[0][5:-6]))
                     for to_rm in imgs:
-                        i["contents"].replace(to_rm,"")
+                        i["contents"] = i["contents"].replace(to_rm,"")
                     res += i["contents"].strip()
                 msg += img
                 msg.append(Plain(text=res))
@@ -313,7 +313,7 @@ async def news_monitor(app: Mirai):
                 pass
             news_dict["time"] = time.time()
             updateJSON(NEWS_JSON_PATH,news_dict)
-        await asyncio.sleep(60*60)
+        await asyncio.sleep(5*60)
 
 COMMANDS = {"dota": dota_handler, "winrate": winrate_handler,
             "stat": stat_handler, "setdota": setdota_handler, 

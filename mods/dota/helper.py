@@ -31,7 +31,7 @@ def getDotaGamesInfo(playerId, matchesArgs=""):
     games_data = json.loads(html.read().decode('utf-8'))
     return games_data
 
-def steam_html_terminator(raw_str):
+def steam_html_process(raw_str):
     left = 0
     while 1:
         l = raw_str[left:].find("[")
@@ -54,11 +54,11 @@ def getDotaNews():
     now = time.time()
     ret = []
     for i in news_list:
-        if i["date"] - now > 60*60:
+        if i["date"] - now > 5*60:
             break
         tmp = {}
         tmp["title"] = i["title"]
         tmp["url"] = i["url"]
-        tmp["contents"] = i["contents"]
+        tmp["contents"] = steam_html_process(i["contents"])
         ret.append(tmp)
     return ret
