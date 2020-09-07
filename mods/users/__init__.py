@@ -6,6 +6,9 @@ from .user_info_loader import getUserInfo, updateUserInfo
 __all__ = ["getUserInfo", "updateUserInfo"]
 
 async def setname_handler(*args,sender,event_type):
+    '''设置昵称
+
+    用法: /setname 昵称'''
     if len(args) == 0:
         return [Plain(text='USAGE: /setname yd')]
     [name, *_] = args
@@ -17,10 +20,13 @@ async def setname_handler(*args,sender,event_type):
         return [Plain(text="修改失败qwq")]
 
 async def name_handler(*args,sender,event_type):
+    '''显示昵称
+
+    用法: /name'''
     name = getUserInfo(sender.id)
     return [Plain(text=('你的名字是 ' + name['nickname'] + ' ！') if name is not None else '还没设定哦，通过 /setname yd 修改名字~')]
 
 COMMANDS = {
-    'setname': (setname_handler, "设置昵称"),
-    'name': (name_handler, "显示昵称")
+    'setname': setname_handler,
+    'name': name_handler
 }
