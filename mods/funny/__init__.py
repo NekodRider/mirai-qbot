@@ -1,6 +1,5 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from mirai.logger import Session as SessionLogger
-from .._utils import parseMsg
 from .jrrp import calcJrrp
 from ..users import getUserInfo
 from typing import Callable

@@ -12,7 +12,7 @@ from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
-from .._utils import parseMsg, readJSON, updateJSON, groupFromStr, groupToStr
+from .._utils import readJSON, updateJSON, groupFromStr, groupToStr
 from ..users import getUserInfo
 
 

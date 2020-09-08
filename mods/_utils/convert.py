@@ -43,7 +43,7 @@ def stringToMsg(s):
             msg.append(Plain(text=i))
     return msg
 
-# import re
+
 def parseMsg(msg: str):
     if not msg.startswith('/'):
         return [None]
@@ -55,6 +55,3 @@ def parseMsg(msg: str):
         # TODO: 如果有非英文命令再想办法处理一下吧
         return [None]
     return [cmd] + arguments[1:]
-
-# parseMsg('/jrrp yd td  yd   td  ')
-# parseMsg('/卧槽 yd td  yd   td  ')
