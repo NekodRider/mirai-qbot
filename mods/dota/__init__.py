@@ -300,7 +300,7 @@ async def news_monitor(app: Mirai):
                     img.append(await Image.fromRemote(imgs[0][5:-6]))
                     for to_rm in imgs:
                         i["contents"] = i["contents"].replace(to_rm,"")
-                    res += i["contents"].strip()
+                    res += i["contents"].strip() + "\n\n"
                 msg += img
                 msg.append(Plain(text=res))
             try:
