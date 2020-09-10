@@ -188,8 +188,9 @@ async def rmup_handler(*args,sender,event_type):
         SessionLogger.info("[RMUP]返回成功")
     return msg
 
+@sub_app.subroutine
 @schedule_task(name="B站直播订阅",interval=600)
-async def live_monitor():
+async def live_monitor(app: Mirai):
     monitor_dict = readJSON(BILI_LIVE_JSON_PATH,defaultValue={})
     for room_id in monitor_dict.keys():
         if room_id=="time":
@@ -200,17 +201,18 @@ async def live_monitor():
                 Plain(text=res['name'] + " 开播啦! " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
                 await Image.fromRemote(res["keyframe"])
             ]
-        try:
-            for member in monitor_dict[room_id]:
-                if type(member)==str:
-                    message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
-                else:
-                    message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
-        except exceptions.BotMutedError:
-            pass
+            try:
+                for member in monitor_dict[room_id]:
+                    if type(member)==str:
+                        message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
+                    else:
+                        message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+            except exceptions.BotMutedError:
+                pass
 
+@sub_app.subroutine
 @schedule_task(name="B站UP投稿订阅",interval=600)
-async def up_monitor():
+async def up_monitor(app: Mirai):
     up_dict = readJSON(BILI_UP_JSON_PATH,defaultValue={})
     for up_id in up_dict.keys():
         res = getCards(up_id)

@@ -276,8 +276,9 @@ async def rmdotanews_handler(*args, sender, event_type):
     SessionLogger.info("[RMDOTANEWS]返回成功")
     return msg
 
+@sub_app.subroutine
 @schedule_task(name="DOTA更新订阅",interval=300)
-async def news():
+async def news(app: Mirai):
     news_dict = readJSON(NEWS_JSON_PATH, defaultValue={"member": []})
     news = getDotaNews()
     if len(news) > 0:
