@@ -12,7 +12,7 @@ from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
-from .._utils import parseMsg, readJSON, updateJSON, groupFromStr, groupToStr
+from .._utils import readJSON, updateJSON, groupFromStr, groupToStr, args_parser
 from ..users import getUserInfo
 
 
@@ -20,23 +20,6 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
 dota_id_dict = readJSON(dota_dict_path)
 
-def args_parser(num, index=None):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args,sender,event_type):
-            if len(args) < num:
-                r = getUserInfo(sender.id)
-                userId = r and r['nickname']
-                if userId is not None:
-                    if index is not None:
-                        a = list(args)
-                        a.insert(index, userId)
-                        args = tuple(a)
-                    else:
-                        args += (userId, )
-            return func(*args,sender = sender,event_type = event_type)
-        return wrapper
-    return decorator
 
 @args_parser(1)
 async def dota_handler(*args,sender, event_type):
@@ -300,7 +283,7 @@ async def news_monitor(app: Mirai):
                     img.append(await Image.fromRemote(imgs[0][5:-6]))
                     for to_rm in imgs:
                         i["contents"] = i["contents"].replace(to_rm,"")
-                    res += i["contents"].strip()
+                    res += i["contents"].strip() + "\n\n"
                 msg += img
                 msg.append(Plain(text=res))
             try:
