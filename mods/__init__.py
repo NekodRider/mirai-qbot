@@ -2,6 +2,7 @@ import re
 import importlib
 import collections
 import asyncio
+import time
 from pathlib import Path
 from queue import Queue
 from mirai import Mirai, exceptions, MessageChain, Group, At, Friend, Member, Plain
@@ -47,7 +48,13 @@ async def help_handler(*args,sender, event_type):
 async def schedule_handler(*args,sender, event_type):
     res_str = "目前运行的任务有：\n"
     for task in schedule_task_list:
-        res_str += f"{task['name'] if task['name'] else task['func_name']}: {'+'+task['interval'] if task['interval'] else task['specific_time']} | {task['last_scheduled']} | {task['next_scheduled']}\n"
+        last_scheduled = task.get('last_scheduled','')
+        next_scheduled = task.get('next_scheduled','')
+        if last_scheduled!='':
+            last_scheduled = time.strftime("%b %d %H:%M:%S",time.localtime(last_scheduled))
+        if next_scheduled!='':
+            next_scheduled = time.strftime("%b %d %H:%M:%S",time.localtime(next_scheduled))
+        res_str += f"{task['name'] if task['name'] else task['func_name']}: {'+'+str(task['interval']) if task['interval'] else task['specific_time']} | {last_scheduled} | {next_scheduled}\n"
     msg = [Plain(text=res_str[:-1])]
     return msg
 

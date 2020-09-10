@@ -5,6 +5,7 @@ import functools
 import asyncio
 import copy
 from datetime import datetime
+from .. import message_queue
 
 schedule_task_list = []
 
@@ -76,7 +77,7 @@ def schedule_task(name=None, interval=None, specific_time=None):
                 else:
                     schedule_task_list.remove(tmp)
                     raise ValueError("at least need one of interval or specific_time!")
-                func(*args, **kwargs)
+                await func(*args, **kwargs)
                 schedule_task_list[index]["last_scheduled"] = time.time()
         return wrapper
     return decorator
