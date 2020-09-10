@@ -3,6 +3,7 @@ import time
 import hashlib
 import functools
 import asyncio
+import copy
 
 def args_parser(num, index=None):
     def decorator(func):
@@ -41,7 +42,7 @@ def api_cache(timeout = 300):
             if result_time is not sentinel and time.time() - result_time[1] < timeout:
                 return result_time[0]
             result = await func(*args, **kwds)
-            cache[key] = (result, time.time())
+            cache[key] = (copy.deepcopy(result), time.time())
             return result
         return wrapper
     return decorator
