@@ -7,7 +7,8 @@ from .dance_top import getTop3DanceToday, getRecommendDance
 from .live import getLiveInfo, getNameByUid
 from .card import getCards
 from .cover_checker import detectSafeSearchUri
-from .._utils import groupFromStr, groupToStr, readJSON, updateJSON, api_cache
+from .. import message_queue
+from .._utils import groupFromStr, groupToStr, readJSON, updateJSON, api_cache, schedule_task
 import time
 import asyncio
 
@@ -187,59 +188,47 @@ async def rmup_handler(*args,sender,event_type):
         SessionLogger.info("[RMUP]返回成功")
     return msg
 
-@sub_app.subroutine
-async def live_monitor(app: Mirai):
-    while 1:
-        monitor_dict = readJSON(BILI_LIVE_JSON_PATH,defaultValue={"time":time.time()})
-        if time.time() - monitor_dict["time"] >= 3*60:
-            for room_id in monitor_dict.keys():
-                if room_id=="time":
-                    continue
-                res = getLiveInfo(room_id)
-                if res['isLive']==1 and time.time()+5*60*60-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<3*60:
-                    msg = [
-                        Plain(text=res['name'] + " 开播啦! " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
-                        await Image.fromRemote(res["keyframe"])
-                    ]
-                    try:
-                        for member in monitor_dict[room_id]:
-                            if type(member)==str:
-                                await app.sendGroupMessage(groupFromStr(member),msg)
-                            else:
-                                await app.sendFriendMessage(member,msg)
-                    except exceptions.BotMutedError:
-                        pass
-            monitor_dict["time"] = time.time()
-            updateJSON(BILI_LIVE_JSON_PATH,monitor_dict)
-        await asyncio.sleep(3*60)
+@schedule_task(name="B站直播订阅",interval=600)
+async def live_monitor():
+    monitor_dict = readJSON(BILI_LIVE_JSON_PATH,defaultValue={})
+    for room_id in monitor_dict.keys():
+        if room_id=="time":
+            continue
+        res = getLiveInfo(room_id)
+        if res['isLive']==1 and time.time()-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<600:
+            msg = [
+                Plain(text=res['name'] + " 开播啦! " + "[{}]{}\n{}".format(res["area_name"],res["title"],res["url"])),
+                await Image.fromRemote(res["keyframe"])
+            ]
+        try:
+            for member in monitor_dict[room_id]:
+                if type(member)==str:
+                    message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
+                else:
+                    message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+        except exceptions.BotMutedError:
+            pass
 
-@sub_app.subroutine
-async def up_monitor(app: Mirai):
-    while 1:
-        up_dict = readJSON(BILI_UP_JSON_PATH,defaultValue={"time":time.time()})
-        if time.time() - up_dict["time"] >= 60*60:
-            for up_id in up_dict.keys():
-                if up_id=="time":
-                    continue
-                res = getCards(up_id)
-                up_name = getNameByUid(up_id)
-                if len(res)!=0:
-                    msg = []
-                    for i in res:
-                        msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
-                        msg.append(await Image.fromRemote(i["pic"]))
-                        msg.append(Plain(text="\n"))
-                    try:
-                        for member in up_dict[up_id]:
-                            if type(member)==str:
-                                await app.sendGroupMessage(groupFromStr(member),msg)
-                            else:
-                                await app.sendFriendMessage(member,msg)
-                    except exceptions.BotMutedError:
-                        pass
-            up_dict["time"] = time.time()
-            updateJSON(BILI_UP_JSON_PATH,up_dict)
-        await asyncio.sleep(60*60)
+@schedule_task(name="B站UP投稿订阅",interval=600)
+async def up_monitor():
+    up_dict = readJSON(BILI_UP_JSON_PATH,defaultValue={})
+    for up_id in up_dict.keys():
+        res = getCards(up_id)
+        up_name = getNameByUid(up_id)
+        if len(res)!=0:
+            msg = []
+            for i in res:
+                msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
+                msg.append(await Image.fromRemote(i["pic"]))
+                msg.append(Plain(text="\n"))
+            try:
+                for member in up_dict[up_id]:
+                    if type(member)==str:
+                        message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
+                else:
+                    message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+            except exceptions.BotMutedError:
+                pass
 
 COMMANDS = {
                 "dance": dance_handler, "recommend": recommend_handler,
