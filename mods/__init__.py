@@ -93,18 +93,19 @@ async def command_handler(app: Mirai, sender: "Sender", event_type: "Type", mess
                 SessionLogger.error(f"未知事件类型{event_type}")
                 return
             message_queue.put((commands[comm],args,{"sender":sender,"event_type":event_type}))
-        else:
-            msg = [Plain(text=f"未知命令 {comm}")]
-            try:
-                if event_type == "FriendMessage":
-                    await app.sendFriendMessage(sender.id, msg)
-                elif event_type == "GroupMessage":
-                    msg.insert(0, At(sender.id))
-                    await app.sendGroupMessage(sender.group, msg)
-                else:
-                    SessionLogger.error(f"未知事件类型{event_type}")
-            except exceptions.BotMutedError:
-                pass
+        # 因为较新的表情均为 /头秃 等形式与指令冲突, 暂时取消这个功能
+        # else:
+        #     msg = [Plain(text=f"未知命令 {comm}")]
+        #     try:
+        #         if event_type == "FriendMessage":
+        #             await app.sendFriendMessage(sender.id, msg)
+        #         elif event_type == "GroupMessage":
+        #             msg.insert(0, At(sender.id))
+        #             await app.sendGroupMessage(sender.group, msg)
+        #         else:
+        #             SessionLogger.error(f"未知事件类型{event_type}")
+        #     except exceptions.BotMutedError:
+        #         pass
 
 async def processor(app: Mirai, interval: int):
     global message_queue

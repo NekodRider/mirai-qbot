@@ -1,9 +1,20 @@
 from mirai import Mirai, GroupMessage, Group, MessageChain, Member, Plain, exceptions
 from mirai.logger import Session as SessionLogger
-from .._utils import parseMsg
 from .jrrp import calcJrrp
 from ..users import getUserInfo
+from typing import Callable
 
+def humanisticCare(gen: Callable[[int], int], times: int, range: (int, int)):
+    """
+    嘘
+    """
+    # arg: times -> 0
+    res = gen(times)
+    if times == 0:
+        return res
+    if res > range[1] or res < range[0]:
+        return res
+    return max((res, humanisticCare(gen, times-1, range)))
 
 async def jrrp_handler(*args, sender: Member, event_type):
     '''查询今日人品
@@ -22,11 +33,11 @@ async def jrrp_handler(*args, sender: Member, event_type):
 
     nickname = nickname.upper()
     msg = '%s今日人品为%d，%s'
-    rp = calcJrrp(sender.group.id, sender.id)
+    rp = humanisticCare(lambda offset: calcJrrp(sender.group.id, sender.id, 1-offset), 1, (5, 50))
     postfix = 'NB！！！'
     if rp == 0:
         postfix = 'SB!!!!'
-    elif rp < 40:
+    elif rp < 50:
         postfix = '不NB，但%sNB！' % ('YD' if nickname != 'YD' else 'TD')
     elif rp < 71:
         postfix = 'NB！'
