@@ -2,6 +2,7 @@ from ..users import getUserInfo
 import time
 import hashlib
 import functools
+import asyncio
 
 def args_parser(num, index=None):
     def decorator(func):
@@ -34,12 +35,12 @@ def api_cache(timeout = 300):
         sentinel = object()
         cache = {}
         @functools.wraps(func)
-        def wrapper(*args, **kwds):
+        async def wrapper(*args, **kwds):
             key = make_key(args, kwds)
             result_time = cache.get(key, sentinel)
             if result_time is not sentinel and time.time() - result_time[1] < timeout:
                 return result_time[0]
-            result = func(*args, **kwds)
+            result = await func(*args, **kwds)
             cache[key] = (result, time.time())
             return result
         return wrapper
