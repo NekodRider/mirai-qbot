@@ -7,7 +7,7 @@ from .dance_top import getTop3DanceToday, getRecommendDance
 from .live import getLiveInfo, getNameByUid
 from .card import getCards
 from .cover_checker import detectSafeSearchUri
-from .._utils import groupFromStr, groupToStr, readJSON, updateJSON
+from .._utils import groupFromStr, groupToStr, readJSON, updateJSON, api_cache
 import time
 import asyncio
 
@@ -16,6 +16,7 @@ BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝", "Google 晕了Orz"]
 
+@api_cache(24*60*60)
 async def dance_handler(*args,sender,event_type):
     '''B站舞蹈区排行
 
@@ -31,6 +32,7 @@ async def dance_handler(*args,sender,event_type):
     SessionLogger.info("[DANCE]返回成功")
     return msg
 
+@api_cache(60*60)
 async def recommend_handler(*args,sender,event_type):
     '''td金牌推荐舞见视频
 
