@@ -5,7 +5,6 @@ import functools
 import asyncio
 import copy
 from datetime import datetime
-from .. import message_queue
 
 schedule_task_list = []
 
