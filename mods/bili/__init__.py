@@ -107,7 +107,7 @@ async def rmlive_handler(*args,sender,event_type):
     res = getLiveInfo(room_id)
     if res=="error":
         msg = [Plain(text="未找到该直播！")]
-        SessionLogger.info("[LIVE]未找到该直播")
+        SessionLogger.info("[RMLIVE]未找到该直播")
     else:
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         if room_id in monitor_dict.keys():
@@ -115,9 +115,11 @@ async def rmlive_handler(*args,sender,event_type):
                 monitor_dict[room_id].remove(groupToStr(sender.group))
             elif event_type=="FriendMessage":
                 monitor_dict[room_id].remove(sender.id)
+            if len(monitor_dict[room_id])==0:
+                del monitor_dict[room_id]
         updateJSON(BILI_LIVE_JSON_PATH,monitor_dict)
         msg = [Plain(text="已将 {} 移出监视列表\n".format(res['name']))]
-        SessionLogger.info("[LIVE]返回成功")
+        SessionLogger.info("[RMLIVE]返回成功")
     return msg
 
 async def up_handler(*args,sender,event_type):
@@ -162,7 +164,7 @@ async def up_handler(*args,sender,event_type):
                 msg.append(Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
                 msg.append(await Image.fromRemote(i["pic"]))
                 msg.append(Plain(text="\n"))
-        SessionLogger.info("[LIVE]返回成功")
+        SessionLogger.info("[UP]返回成功")
     return msg
 
 async def rmup_handler(*args,sender,event_type):
@@ -183,6 +185,8 @@ async def rmup_handler(*args,sender,event_type):
                 up_dict[up_id].remove(groupToStr(sender.group))
             elif event_type=="FriendMessage":
                 up_dict[up_id].remove(sender.id)
+            if len(up_dict[up_id])==0:
+                del up_dict[up_id]
         updateJSON(BILI_UP_JSON_PATH,up_dict)
         msg = [Plain(text="已将 {} 移出监视列表\n".format(getNameByUid(up_id)))]
         SessionLogger.info("[RMUP]返回成功")
@@ -193,8 +197,6 @@ async def rmup_handler(*args,sender,event_type):
 async def live_monitor(app: Mirai):
     monitor_dict = readJSON(BILI_LIVE_JSON_PATH,defaultValue={})
     for room_id in monitor_dict.keys():
-        if room_id=="time":
-            continue
         res = getLiveInfo(room_id)
         if res['isLive']==1 and time.time()-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S")))<600:
             msg = [
@@ -204,9 +206,9 @@ async def live_monitor(app: Mirai):
             try:
                 for member in monitor_dict[room_id]:
                     if type(member)==str:
-                        message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
+                        await app.sendGroupMessage(groupFromStr(member),msg)
                     else:
-                        message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+                        await app.sendFriendMessage(member,msg)
             except exceptions.BotMutedError:
                 pass
 
@@ -226,9 +228,9 @@ async def up_monitor(app: Mirai):
             try:
                 for member in up_dict[up_id]:
                     if type(member)==str:
-                        message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
-                else:
-                    message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+                        await app.sendGroupMessage(groupFromStr(member),msg)
+                    else:
+                        await app.sendFriendMessage(member,msg)
             except exceptions.BotMutedError:
                 pass
 

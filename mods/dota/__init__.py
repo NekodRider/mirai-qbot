@@ -269,8 +269,10 @@ async def rmdotanews_handler(*args, sender, event_type):
     news_dict = readJSON(NEWS_JSON_PATH)
     if event_type == "GroupMessage" and groupToStr(sender.group) in news_dict["member"]:
         news_dict["member"].remove(groupToStr(sender.group))
-    if event_type == "FriendMessage" and sender.id in news_dict["member"]:
+    elif event_type == "FriendMessage" and sender.id in news_dict["member"]:
         news_dict["member"].remove(sender.id)
+    if len(news_dict["member"])==0:
+        del news_dict["member"]
     updateJSON(NEWS_JSON_PATH, news_dict)
     msg = [Plain(text="已取消订阅DOTA新闻\n")]
     SessionLogger.info("[RMDOTANEWS]返回成功")
@@ -297,10 +299,10 @@ async def news(app: Mirai):
             msg.append(Plain(text=res))
         try:
             for member in news_dict["member"]:
-                if type(member) == str:
-                    message_queue.put((msg,[],{"sender":groupFromStr(member),"event_type":"GroupMessage"}))
+                if type(member)==str:
+                    await app.sendGroupMessage(groupFromStr(member),msg)
                 else:
-                    message_queue.put((msg,[],{"sender":member,"event_type":"FriendMessage"}))
+                    await app.sendFriendMessage(member,msg)
         except exceptions.BotMutedError:
             pass
 
