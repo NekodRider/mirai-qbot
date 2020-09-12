@@ -17,6 +17,7 @@
 /star: 展示最近指定场数(默认20场)游戏五星图数据
 /stat: 展示最近指定场数(默认20场)游戏平均数据
 /stcp: 玩家间最近五星图对比
+/dotanews /rmdotanews: 订阅/取消订阅DOTA2更新
 
 /dance: B站舞蹈区排行
 /recommend: td金牌推荐舞见视频
