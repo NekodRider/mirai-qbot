@@ -50,7 +50,7 @@ def steam_html_process(raw_str):
 
 
 def getDotaNews(timeout=300):
-    url = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=570&feeds=steam_community_announcements,steam_updates&count=5"
+    url = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=570&feeds=steam_community_announcements,steam_updates&count=1"
     html = request.urlopen(url)
     news_list = json.loads(html.read().decode('utf-8'))["appnews"]["newsitems"]
     now = time.time()
