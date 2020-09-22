@@ -75,12 +75,13 @@ def getDotaHero(playerId, heroName):
             break
     if hero_id == -1:
         return 0
+    res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
     url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}"
     html = request.urlopen(url)
     if html.read().decode('utf-8')=="":
-        return (0, f"你也配玩{res['hero']}？")
+        return (0, f"{res['name']} 也配玩 {res['hero']}？")
     data = json.loads(html.read().decode('utf-8'))
-    res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
+    
 
     res["win_stat"] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
     res["kda"] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"
