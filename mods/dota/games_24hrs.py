@@ -18,12 +18,15 @@ def getGamesIn24Hrs(playerId):
         t['time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(match["startDateTime"]))
         t['isWin'] = "胜" if match["players"][0]["isVictory"] else "负"
         t['duration'] = "%d:%02d" % (match["durationSeconds"] // 60, match["durationSeconds"] % 60)
-        if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
-            # official avgImp bug, use 110 as avgImp
-            #t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
-            t['imp'] = round(match["players"][0]["imp"] / 110, 2)
-        else:
-            t['imp'] = 0
+        # imp removed and avgImp so high, using imp2 (imp sub avgImp)
+        # if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
+        #     # official avgImp bug, use 110 as avgImp
+        #     #t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
+        #     t['imp'] = round(match["players"][0]["imp"] / 110, 2)
+        # else:
+        #     t['imp'] = 0
+        if 'imp2' in match["players"][0].keys():
+            t['imp'] = ("+" if match["players"][0]["imp2"]>=0 else "") + str(match["players"][0]["imp2"])
         if 'role' in match["players"][0].keys() and 'lane' in match["players"][0].keys():
             t['role'] = ("优势路" if match["players"][0]["lane"] == 1 else (
                 "中路" if match["players"][0]["lane"] == 2 else "劣势路")) + (
