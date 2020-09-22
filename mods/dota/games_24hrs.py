@@ -29,7 +29,8 @@ def getGamesIn24Hrs(playerId):
             t['imp'] = ("+" if match["players"][0]["imp2"]>=0 else "") + str(match["players"][0]["imp2"])
         if 'role' in match["players"][0].keys() and 'lane' in match["players"][0].keys():
             t['role'] = ("优势路" if match["players"][0]["lane"] == 1 else (
-                "中路" if match["players"][0]["lane"] == 2 else "劣势路")) + (
+                "中路" if match["players"][0]["lane"] == 2 else (
+                "游走" if match["players"][0]["lane"] == 0 else "劣势路"))) + (
                             "核心" if match["players"][0]["role"] == 0 else "辅助")
         else:
             t['role'] = "未知"

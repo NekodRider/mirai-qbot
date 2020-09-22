@@ -8,7 +8,7 @@ from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image
 from mirai.logger import Session as SessionLogger
 from pathlib import Path
 
-from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path, getDotaNews
+from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path, getDotaNews, getDotaHero
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
@@ -278,6 +278,29 @@ async def rmdotanews_handler(*args, sender, event_type):
     SessionLogger.info("[RMDOTANEWS]返回成功")
     return msg
 
+
+@args_parser(2,0)
+async def hero_handler(*args, sender, event_type):
+    '''展示玩家英雄平均数据
+
+    用法: /hero (id) 英雄名'''
+    if len(args) != 2:
+        return [Plain(text="缺少参数或参数过多")]
+    query_id = args[0]
+    if query_id not in dota_id_dict.keys():
+        SessionLogger.info("[HERO]未添加该用户")
+        return [Plain(text="未添加该用户！")]
+    else:
+        query_id = dota_id_dict[query_id]
+        ret = getDotaHero(query_id, args[1])
+        if ret == 0:
+            res = f"参数有误:{args[1]}"
+            SessionLogger.info(f"[HERO]参数有误:{args[1]}")
+        else:
+            res = f"{ret['name']} 使用 {ret['hero']} {ret['role']}\n胜率：{ret['win_stat']}  KDA：{ret['kda']}  GPM：{ret['gpm']}"
+            SessionLogger.info("[HERO]返回成功")
+        return [Plain(text=res)]
+
 @sub_app.subroutine
 @schedule_task(name="DOTA更新订阅",interval=300)
 async def news(app: Mirai):
@@ -312,5 +335,6 @@ COMMANDS = {
                 "stat": stat_handler, "setdota": setdota_handler,
                 "comp": compare_handler, "wrcp": winrate_compare_handler,
                 "star": star_handler, "stcp": star_compare_handler,
-                "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler
+                "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler,
+                "hero": hero_handler
             }
