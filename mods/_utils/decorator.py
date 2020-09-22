@@ -5,6 +5,7 @@ import functools
 import asyncio
 import copy
 from datetime import datetime
+from mirai.logger import Session as SessionLogger
 
 schedule_task_list = []
 
@@ -76,7 +77,10 @@ def schedule_task(name=None, interval=None, specific_time=None):
                 else:
                     schedule_task_list.remove(tmp)
                     raise ValueError("at least need one of interval or specific_time!")
-                await func(*args, **kwargs)
+                try:
+                    await func(*args, **kwargs)
+                except Exception as e:
+                    SessionLogger.exception(e)
                 schedule_task_list[index]["last_scheduled"] = time.time()
         return wrapper
     return decorator
