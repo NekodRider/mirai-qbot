@@ -77,6 +77,8 @@ def getDotaHero(playerId, heroName):
         return 0
     url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}"
     html = request.urlopen(url)
+    if html.read().decode('utf-8')=="":
+        return tuple(0, f"你也配玩{res['hero']}？")
     data = json.loads(html.read().decode('utf-8'))
     res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
 
@@ -98,4 +100,5 @@ def getDotaHero(playerId, heroName):
     res["role"] = f"在{round(role['lanes'][0]['laneMatchCount']/data['matchCount']*100,2)}%的比赛中担任"
     res["role"] += "优势路" if role["lanes"][0]["laneType"] == 1 else ("中路" if role["lanes"][0]["laneType"] == 2 else ("游走" if role["lanes"][0]["laneType"] == 0 else "劣势路"))
     res["role"] += '核心' if role['roleType']==0 else '辅助'
-    return res
+    result = f"{res['name']} 使用 {res['hero']} {res['role']}\n胜率：{res['win_stat']}  KDA：{res['kda']}  GPM：{res['gpm']}"
+    return result
