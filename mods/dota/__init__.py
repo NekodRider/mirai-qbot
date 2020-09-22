@@ -292,12 +292,14 @@ async def hero_handler(*args, sender, event_type):
         return [Plain(text="未添加该用户！")]
     else:
         query_id = dota_id_dict[query_id]
-        ret = getDotaHero(query_id, args[1])
-        if ret == 0:
+        res = getDotaHero(query_id, args[1])
+        if type(res) == tuple:
+            res = res[1]
+            SessionLogger.info("[HERO]返回成功")
+        elif res == 0:
             res = f"参数有误:{args[1]}"
             SessionLogger.info(f"[HERO]参数有误:{args[1]}")
         else:
-            res = f"{ret['name']} 使用 {ret['hero']} {ret['role']}\n胜率：{ret['win_stat']}  KDA：{ret['kda']}  GPM：{ret['gpm']}"
             SessionLogger.info("[HERO]返回成功")
         return [Plain(text=res)]
 
