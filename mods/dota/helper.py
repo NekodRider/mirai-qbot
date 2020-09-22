@@ -14,7 +14,7 @@ dota_dict_path = Path(__file__).parent.joinpath("dota_id.json")
 
 
 def getDotaPlayerInfo(playerId, playerArgs=""):
-    url = "https://api.stratz.com/api/v1/Player/" + playerId + playerArgs
+    url = f"https://api.stratz.com/api/v1/Player/{playerId}{playerArgs}"
     try:
         html = request.urlopen(url)
     except:
@@ -26,7 +26,7 @@ def getDotaPlayerInfo(playerId, playerArgs=""):
 
 
 def getDotaGamesInfo(playerId, matchesArgs=""):
-    url = "https://api.stratz.com/api/v1/Player/" + playerId+"/matches" + matchesArgs
+    url = f"https://api.stratz.com/api/v1/Player/{playerId}/matches{matchesArgs}"
     html = request.urlopen(url)
     games_data = json.loads(html.read().decode('utf-8'))
     return games_data
@@ -64,3 +64,38 @@ def getDotaNews(timeout=300):
         tmp["contents"] = steam_html_process(i["contents"])
         ret.append(tmp)
     return ret
+
+def getDotaHero(playerId, heroName):
+    res = {}
+    hero_id = -1
+    for k,v in hero_dict.items():
+        if v == heroName:
+            res['hero'] = v
+            hero_id = k
+            break
+    if hero_id == -1:
+        return 0
+    url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}"
+    html = request.urlopen(url)
+    data = json.loads(html.read().decode('utf-8'))
+    res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
+
+    res["win_stat"] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
+    res["kda"] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"
+    res["gpm"] = int(data['avgGoldPerMinute'])
+
+    def getLaneMatchCount(elem):
+        return elem["laneMatchCount"]
+    def getRoleLaneMatchCount(elem):
+        return elem["lanes"][0]["laneMatchCount"]
+
+    for role in data["position"]:
+        role["lanes"].sort(key=getLaneMatchCount, reverse=True)
+
+    data["position"].sort(key=getRoleLaneMatchCount, reverse=True)
+    role = data["position"][0]
+
+    res["role"] = f"在{round(role['lanes'][0]['laneMatchCount']/data['matchCount']*100,2)}%的比赛中担任"
+    res["role"] += "优势路" if role["lanes"][0]["laneType"] == 1 else ("中路" if role["lanes"][0]["laneType"] == 2 else ("游走" if role["lanes"][0]["laneType"] == 0 else "劣势路"))
+    res["role"] += '核心' if role['roleType']==0 else '辅助'
+    return res
