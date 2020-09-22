@@ -27,6 +27,8 @@ def getGamesIn24Hrs(playerId):
         #     t['imp'] = 0
         if 'imp2' in match["players"][0].keys():
             t['imp'] = ("+" if match["players"][0]["imp2"]>=0 else "") + str(match["players"][0]["imp2"])
+        else:
+            t['imp'] = 0
         if 'role' in match["players"][0].keys() and 'lane' in match["players"][0].keys():
             t['role'] = ("优势路" if match["players"][0]["lane"] == 1 else (
                 "中路" if match["players"][0]["lane"] == 2 else (
