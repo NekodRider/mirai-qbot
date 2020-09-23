@@ -76,7 +76,7 @@ def getDotaHero(playerId, heroName):
     if hero_id == -1:
         return 0
     res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
-    url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}"
+    url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}?gameMode=1,2,3,4"
     html = request.urlopen(url)
     txt = html.read().decode('utf-8')
     if txt=="":
