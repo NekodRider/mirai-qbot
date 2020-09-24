@@ -42,7 +42,10 @@ def getDotaGamesInfoOpenDota(playerId):
             t['isWin'] = "负" if match["radiant_win"] else "胜"
         t['duration'] = "%d:%02d" % (match["duration"] // 60, match["duration"] % 60)
         lane_roles = {1:"优势路",2:"中路　",3:"劣势路",4:"打野"}
-        t['role'] = lane_roles[match["lane_role"]]
+        if not match["lane_role"]:
+            t['role'] = "未知　"
+        else:
+            t['role'] = lane_roles[match["lane_role"]]
         t['hero'] = hero_dict[str(match["hero_id"])]
         t['kda'] = "%d/%d/%d" % (
             match["kills"], match["deaths"], match["assists"])
