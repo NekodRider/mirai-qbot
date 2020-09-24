@@ -1,50 +1,14 @@
 import time
 import types
-from .helper import getDotaGamesInfo, getDotaPlayerInfo, hero_dict, error_codes
+from .helper import getDotaGamesInfo, getDotaPlayerInfo, hero_dict, error_codes, getDotaGamesInfoOpenDota
 
 
 def getGamesIn24Hrs(playerId):
-    res = []
     player_data = getDotaPlayerInfo(playerId)
     if type(player_data) == type(""):
         return error_codes[player_data]
     player_name = player_data["steamAccount"]["name"]
-    games_data = getDotaGamesInfo(playerId)
-
-    for match in games_data:
-        if (time.time() - match["startDateTime"]) // 3600 > 24:
-            break
-        t = {}
-        t['time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(match["startDateTime"]))
-        t['isWin'] = "胜" if match["players"][0]["isVictory"] else "负"
-        t['duration'] = "%d:%02d" % (match["durationSeconds"] // 60, match["durationSeconds"] % 60)
-        # imp removed and avgImp so high, using imp2 (imp sub avgImp)
-        # if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
-        #     # official avgImp bug, use 110 as avgImp
-        #     #t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
-        #     t['imp'] = round(match["players"][0]["imp"] / 110, 2)
-        # else:
-        #     t['imp'] = 0
-        if 'imp2' in match["players"][0].keys():
-            t['imp'] = ("+" if match["players"][0]["imp2"]>=0 else "") + str(match["players"][0]["imp2"])
-        else:
-            t['imp'] = 0
-        if 'role' in match["players"][0].keys() and 'lane' in match["players"][0].keys():
-            t['role'] = ("优势路" if match["players"][0]["lane"] == 1 else (
-                "中路" if match["players"][0]["lane"] == 2 else (
-                "游走" if match["players"][0]["lane"] == 0 else "劣势路"))) + (
-                            "核心" if match["players"][0]["role"] == 0 else "辅助")
-        else:
-            t['role'] = "未知"
-        t['hero'] = hero_dict[str(match["players"][0]["heroId"])]
-        if len(t['hero']) % 2 == 0:
-            t['hero'] += chr(12288)
-        t['KDA'] = "%d/%d/%d" % (
-            match["players"][0]["numKills"], match["players"][0]["numDeaths"], match["players"][0]["numAssists"])
-        t['HD'] = "%d/%d" % (match["players"][0]["numLastHits"], match["players"][0]["numDenies"])
-        t['GPM'] = match["players"][0]["goldPerMinute"]
-        t['damage'] = match["players"][0]["heroDamage"]
-        res.append(t)
+    res = getDotaGamesInfoOpenDota(playerId)
     report = player_name
     if len(res) == 0:
         return report + ' 今天是一条咸鱼.'
@@ -54,9 +18,8 @@ def getGamesIn24Hrs(playerId):
             lost_count += 1
     report += " 24 小时内白给了 {} 把, 躺赢了 {} 把:\n".format(lost_count, len(res) - lost_count)
     for _, i in enumerate(res):
-        report += "{:<19} 时长{:<6} {:<6} {:<6} {:<8}  补刀{:<6}{}  GPM{:<4}  输出{:<6}{} 表现评分{:<4}{}  {}\n".\
-            format(i['time'],i['duration'],i['role'],i['hero'],
-            i['KDA'], i['HD'],chr(12288),i['GPM'],i['damage'],
-            chr(12288),i["imp"],chr(12288),i['isWin'])
+        report += "{:<11} 时长{:<6} {}  {}{} {:<8} 补刀{:<4}  GPM{:<4}  输出{:<6}  {}\n".\
+            format(i['time'],i['duration'],i['role'],i['hero'],(6-len(i['hero']))*'　',
+            i['kda'], i['hit'], i['gpm'], i['damage'], i['isWin'])
     return report[:-1]
 
