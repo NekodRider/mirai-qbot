@@ -17,9 +17,10 @@ def getGamesIn24Hrs(playerId):
         if i['isWin'] == '负':
             lost_count += 1
     report += " 24 小时内白给了 {} 把, 躺赢了 {} 把:\n".format(lost_count, len(res) - lost_count)
+    hero_str_len = max([len(x['hero']) for x in res])
     for _, i in enumerate(res):
         report += "{:<11} 时长{:<6} {}  {}{} {:<8} 补刀{:<4}  GPM{:<4}  输出{:<6}  {}\n".\
-            format(i['time'],i['duration'],i['role'],i['hero'],(6-len(i['hero']))*'　',
+            format(i['time'],i['duration'],i['role'],i['hero'],(hero_str_len-len(i['hero']))*'　',
             i['kda'], i['hit'], i['gpm'], i['damage'], i['isWin'])
     return report[:-1]
 
