@@ -35,7 +35,8 @@ def getDotaGamesInfoOpenDota(playerId):
         if (time.time() - match["start_time"]) // 3600 > 24:
             break
         t = {}
-        t['time'] = time.strftime("%m-%d %H:%M", time.localtime(match["start_time"]))
+        t['match_id'] = match['match_id']
+        t['time'] = time.strftime("%H:%M", time.localtime(match["start_time"]))
         if match["player_slot"]<128:
             t['isWin'] = "胜" if match["radiant_win"] else "负"
         else:
