@@ -11,9 +11,8 @@ async def getDotaStory(matchId):
     await page.evaluate("localStorage.setItem('localization', 'zh-CN');")
     await page.reload({'waitUntil' : 'networkidle0'})
     name_dict = getNameDict(matchId)
-    print(name_dict)
     for hero,name in name_dict.items():
-        await page.evaluate(f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.replaceAll("{hero}","{name}"); document.querySelector("body").innerHTML = html}})()')
+        await page.evaluate(f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',force_expr=True)
 
     not_found = await page.querySelector(".FourOhFour")
     if not_found:
