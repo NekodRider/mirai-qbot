@@ -1,9 +1,6 @@
 # encoding=Utf-8
-import functools
-import pathlib
+import sys
 import re
-import time
-import asyncio
 
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At, FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
@@ -304,7 +301,7 @@ async def hero_handler(*args, sender, event_type):
             SessionLogger.info("[HERO]返回成功")
         return [Plain(text=res)]
 
-@api_cache(60*60)
+
 async def story_handler(*args,sender,event_type):
     '''dota战报展示
 
@@ -318,11 +315,15 @@ async def story_handler(*args,sender,event_type):
         try:
             path = await getDotaStory(match_id)
             break
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except:
+            pass
     if type(path) != str:
         if path==404:
             msg = [Plain(text=f"参数有误:{match_id}")]
             SessionLogger.info(f"[STORY]参数有误:{match_id}")
-        elif path==0:
+        else:
             msg = [Plain(text=f"请求超时")]
             SessionLogger.info(f"[STORY]请求超时:{match_id}")
     else:
