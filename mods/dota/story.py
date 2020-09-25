@@ -15,9 +15,15 @@ async def getDotaStory(matchId):
         await page.evaluate(f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',force_expr=True)
 
     not_found = await page.querySelector(".FourOhFour")
+    unparsed = await page.querySelector(".unparsed")
     if not_found:
         await browser.close()
         return 404
+    if unparsed:
+        await page.goto(f'https://www.opendota.com/request#{matchId}')
+        await asyncio.sleep(5)
+        await browser.close()
+        return 1
 
     body = await page.querySelector("body")
     body_bb = await body.boundingBox()
