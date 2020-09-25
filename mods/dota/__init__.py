@@ -1,19 +1,17 @@
 # encoding=Utf-8
-import functools
+import sys
 import re
-import time
-import asyncio
 
 from mirai import Mirai, Group, GroupMessage, MessageChain, Member, Plain, Image, Face, AtAll, At, FlashImage, exceptions
 from mirai.logger import Session as SessionLogger
 from pathlib import Path
 
-from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, dota_dict_path, getDotaNews, getDotaHero
+from .helper import dota_dict_path, getDotaNews, getDotaHero
 from .games_24hrs import getGamesIn24Hrs
 from .winning_rate import getWinRateGraph, getCompWinRateGraph
 from .latest_games import getStat, getLatestComparingStat, getStarStat, getCompStarStat
-from .._utils import readJSON, updateJSON, groupFromStr, groupToStr, args_parser, schedule_task
-from ..users import getUserInfo
+from .story import getDotaStory
+from .._utils import readJSON, updateJSON, groupFromStr, groupToStr, args_parser, schedule_task, api_cache
 from .. import message_queue
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -303,6 +301,23 @@ async def hero_handler(*args, sender, event_type):
             SessionLogger.info("[HERO]返回成功")
         return [Plain(text=res)]
 
+
+async def story_handler(*args,sender,event_type):
+    '''dota战报展示
+
+    用法: /story 比赛id'''
+    if len(args) != 1:
+        return [Plain(text="缺少参数或参数过多")]
+    match_id = args[0]
+    path = await getDotaStory(match_id)
+    if type(path) != str:
+        msg = [Plain(text=f"参数有误:{match_id}")]
+        SessionLogger.info(f"[STORY]参数有误:{match_id}")
+    else:
+        msg = [Image.fromFileSystem(path)]
+        SessionLogger.info("[STORY]返回成功")
+    return msg
+
 @sub_app.subroutine
 @schedule_task(name="DOTA更新订阅",interval=300)
 async def news(app: Mirai):
@@ -338,5 +353,5 @@ COMMANDS = {
                 "comp": compare_handler, "wrcp": winrate_compare_handler,
                 "star": star_handler, "stcp": star_compare_handler,
                 "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler,
-                "hero": hero_handler
+                "hero": hero_handler, "story":story_handler
             }
