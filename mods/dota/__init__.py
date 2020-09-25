@@ -312,10 +312,19 @@ async def story_handler(*args,sender,event_type):
     if len(args) != 1:
         return [Plain(text="缺少参数或参数过多")]
     match_id = args[0]
-    path = getDotaStory(match_id)
+    retry_time = 3
+    path = 0
+    for _ in range(retry_time):
+        try:
+            path = await getDotaStory(match_id)
+            break
     if type(path) != str:
-        msg = [Plain(text=f"参数有误:{match_id}")]
-        SessionLogger.info(f"[STORY]参数有误:{match_id}")
+        if path==404:
+            msg = [Plain(text=f"参数有误:{match_id}")]
+            SessionLogger.info(f"[STORY]参数有误:{match_id}")
+        elif path==0:
+            msg = [Plain(text=f"请求超时")]
+            SessionLogger.info(f"[STORY]请求超时:{match_id}")
     else:
         msg = [Image.fromFileSystem(path)]
         SessionLogger.info("[STORY]返回成功")
