@@ -1,5 +1,7 @@
 import time
 import types
+
+from mirai.event.message.components import Unknown
 from .helper import getDotaGamesInfo, getDotaPlayerInfo, hero_dict, error_codes, getDotaGamesInfoOpenDota
 
 
@@ -18,9 +20,10 @@ def getGamesIn24Hrs(playerId):
             lost_count += 1
     report += " 24 小时内白给了 {} 把, 躺赢了 {} 把:\n".format(lost_count, len(res) - lost_count)
     hero_str_len = max([len(x['hero']) for x in res])
+    unknown_flag = all([x['role']=='未知　' for x in res])
     for _, i in enumerate(res):
-        report += "{:<11} 时长{:<6} {}  {}{} {:<8} 补刀{:<4}  GPM{:<4}  输出{:<6}  {}\n".\
-            format(i['time'],i['duration'],i['role'],i['hero'],(hero_str_len-len(i['hero']))*'　',
+        report += "{:<5} {} 时长{:<6} {} {}{} {:<8} 补刀{:<4} GPM{:<4} 输出{:<6} {}\n".\
+            format(i['time'],i['match_id'],i['duration'],i['role'] if not unknown_flag else "",i['hero'],(hero_str_len-len(i['hero']))*'　',
             i['kda'], i['hit'], i['gpm'], i['damage'], i['isWin'])
     return report[:-1]
 
