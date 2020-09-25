@@ -301,7 +301,7 @@ async def hero_handler(*args, sender, event_type):
             SessionLogger.info("[HERO]返回成功")
         return [Plain(text=res)]
 
-
+@api_cache(60*60)
 async def story_handler(*args,sender,event_type):
     '''dota战报展示
 
