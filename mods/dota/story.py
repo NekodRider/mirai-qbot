@@ -3,7 +3,7 @@ from pyppeteer import launch
 from pathlib import Path
 
 async def getDotaStory(matchId):
-    browser = await launch()
+    browser = await launch(args=['--no-sandbox'])
     page = await browser.newPage()
     await page.setViewport({"width": 1400,"height": 900})
     await page.goto(f'https://www.opendota.com/matches/{matchId}/story')
@@ -13,7 +13,7 @@ async def getDotaStory(matchId):
     await page.click("body > div:last-child > div:nth-child(3) > ul > div > div")
     await page.waitForSelector("body > div:last-child > div:nth-child(3) > ul > div > div:nth-child(2) > div > div > div > div > div:last-child")
     await page.click("body > div:last-child > div:nth-child(3) > ul > div > div:nth-child(2) > div > div > div > div > div:last-child")
-    await asyncio.sleep(7)
+    await asyncio.sleep(10)
 
     not_found = await page.querySelector(".FourOhFour")
     if not_found:
