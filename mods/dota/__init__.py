@@ -301,7 +301,7 @@ async def hero_handler(*args, sender, event_type):
             SessionLogger.info("[HERO]返回成功")
         return [Plain(text=res)]
 
-@api_cache(60*60)
+@api_cache(2*60)
 async def story_handler(*args,sender,event_type):
     '''dota战报展示
 
@@ -311,8 +311,12 @@ async def story_handler(*args,sender,event_type):
     match_id = args[0]
     path = await getDotaStory(match_id)
     if type(path) != str:
-        msg = [Plain(text=f"参数有误:{match_id}")]
-        SessionLogger.info(f"[STORY]参数有误:{match_id}")
+        if path == 404:
+            msg = [Plain(text=f"未找到比赛:{match_id}")]
+            SessionLogger.info(f"[STORY]未找到比赛:{match_id}")
+        elif path == 1:
+            msg = [Plain(text=f"比赛{match_id}解析中，请等待2min后重试")]
+            SessionLogger.info(f"[STORY]解析中:{match_id}")
     else:
         msg = [Image.fromFileSystem(path)]
         SessionLogger.info("[STORY]返回成功")
