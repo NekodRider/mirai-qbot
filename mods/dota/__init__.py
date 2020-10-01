@@ -310,6 +310,7 @@ async def story_handler(*args,sender,event_type):
         return [Plain(text="缺少参数或参数过多")]
     match_id = args[0]
     path = await getDotaStory(match_id)
+    msg = []
     if type(path) != str:
         if path == 404:
             msg = [Plain(text=f"未找到比赛:{match_id}")]
