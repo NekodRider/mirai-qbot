@@ -3,7 +3,7 @@
 *.png
 /config.py
 .venv
-*log*
+logs/*
 test.py
 
 # Byte-compiled / optimized / DLL files
