@@ -1,5 +1,6 @@
 *.json
 !mods/bili/Dota-*.json
+mods/test
 *.png
 /config.py
 .venv
