@@ -1,7 +1,6 @@
 from urllib import request
 from pathlib import Path
 import json
-import types
 import time
 
 

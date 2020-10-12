@@ -1,8 +1,9 @@
 from urllib import request
 from pathlib import Path
+from bot.logger import defaultLogger as logger
 import json
 import random
-from .cover_checker import detectSafeSearchUri
+import os
 
 black_lists = ["男"]
 up_lists = ["15385187", "84465926", "632887", "2689967", "5276",
@@ -19,6 +20,38 @@ def checkTitle(title):
         if word in title:
             return -1
     return 0
+
+def detectSafeSearchUri(uri):
+    """Detects unsafe features in the file located in Google Cloud Storage or
+    on the Web."""
+    config_path = Path(__file__).parent.joinpath("Dota-Project-c6dd8c4677d4.json")
+    if not config_path.exists():
+        logger.info("GOOGLE API CREDENTIALS NOT FOUND!")
+        return 6
+    config_file = str(config_path)
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config_file
+
+    from google.cloud import vision
+    from google.api_core.exceptions import ServiceUnavailable
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    try:
+        response = client.safe_search_detection(image=image)
+    except KeyboardInterrupt or SystemExit:
+        return
+    except Exception:
+        return 6
+    if response.error.message:
+        return 6
+    safe = response.safe_search_annotation
+
+    # # Names of likelihood from google.cloud.vision.enums
+    # likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+    #                    'LIKELY', 'VERY_LIKELY')
+
+    return safe.racy
 
 
 def getRecommendDance():
