@@ -1,6 +1,6 @@
 # doto 鱼塘分队群用 qbot
 
-框架采用 mirai 以及 python-mirai
+框架采用 [mirai](https://github.com/mamoe/mirai) 以及 [python-mirai-v4(graia-application)](https://github.com/GraiaProject/Application)
 
 ### Features
 ```
@@ -30,6 +30,9 @@
 ```
 
 ### Change Logs
+- 2020/10/11 v0.1.0
+  整体迁移到 python-mirai-v4
+
 - 2020/09/12 v0.0.5
   添加指令注释机制，订阅机制，缓存机制，底层命令处理优化为消息队列，以及dota更新订阅功能
 
