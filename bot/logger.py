@@ -11,7 +11,7 @@ class DefaultLogger(AbstractLogger):
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
-
+        
         log_path = Path(__file__).parent.parent.joinpath(
             'logs', 'mirai_bot.log')
         file_handler = TimedRotatingFileHandler(
