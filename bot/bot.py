@@ -7,6 +7,8 @@ from re import sub
 import time
 
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import Callable, Dict, Any, Union, Tuple
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
@@ -20,9 +22,10 @@ from graia.scheduler import SchedulerTask, Timer
 from graia.scheduler.timers import *
 
 from .functions import help_handler, schedule_handler
-
+from .logger import defaultLogger
 
 class Bot(object):
+    directs = {}
     commands = {}
     schedules = {}
     docs = {}
@@ -30,44 +33,66 @@ class Bot(object):
     bcc = None
     logger = None
     prefix = None
-    message_queue = asyncio.Queue()
+    message_queue = Queue()
+    command_queue = Queue()
     loop = asyncio.get_event_loop()
     schedule_task_list = []
 
-    def __init__(self, app_configs: Dict, configs: Dict, logger):
+    def __init__(self, app_configs: Dict, configs: Dict, logger = None):
         self.commands = {}
         self.bcc = Broadcast(loop=self.loop)
-        self.logger = logger
+        self.logger = logger or defaultLogger
         self.app = GraiaMiraiApplication(
             broadcast=self.bcc,
             connect_info=Session(**app_configs),
-            logger=logger
+            logger=self.logger
         )
         self.prefix = configs['prefix']
         self.load_mods()
 
-    async def processor(self, interval: int):
-        message_queue = self.message_queue
+    async def processor(self):
         while True:
-            if not message_queue.empty():
-                message = await message_queue.get()
+            command_queue = self.command_queue
+            if not command_queue.empty():
+                message = command_queue.get()
                 if type(message[0]) == list:
                     msg = message[0]
                 else:
-                    msg = await message[0](*message[1], **message[2])
-                message_queue.task_done()
+                    try:
+                        msg = await message[0](*message[1], **message[2])
+                    except KeyboardInterrupt or SystemExit:
+                        return 
+                    except Exception as e:
+                        self.logger.exception(e)
+                        return
+                command_queue.task_done()
+                self.message_queue.put((message[2]["subject"], msg))
+            await asyncio.sleep(1)
+
+    async def sender(self):
+        while True:
+            message_queue = self.message_queue
+            if not message_queue.empty():
+                subject, msg = self.message_queue.get()
                 try:
-                    await self.sendMessage(message[2]["subject"], msg)
-                except KeyboardInterrupt:
-                    pass
+                    await self.sendMessage(subject, msg)
+                except KeyboardInterrupt or SystemExit:
+                    return 
                 except Exception as e:
                     self.logger.exception(e)
-            await asyncio.sleep(interval)
+            await asyncio.sleep(1)
 
     def init_processors(self, num: int = 5):
-        loop = asyncio.get_event_loop()
-        for i in range(1, num + 1):
-            loop.create_task(self.processor(i))
+        def start_loop(loop):
+            asyncio.set_event_loop(loop)
+            loop.run_forever()
+        for _ in range(1, num + 1):
+            sub_loop = asyncio.new_event_loop()
+            sub_thread = Thread(target=start_loop, args=(sub_loop,))
+            sub_thread.setDaemon(True)
+            sub_thread.start()
+            asyncio.run_coroutine_threadsafe(self.processor(),sub_loop)
+            self.loop.create_task(self.sender())
 
     def load_mods(self):
         mod_dir = Path(__file__).parent.parent.joinpath("mods")
@@ -98,6 +123,9 @@ class Bot(object):
             if "SCHEDULES" in dir(mod):
                 for name, kwargs in mod.SCHEDULES.items():
                     self.loop.create_task(self.schedule(name, **kwargs))
+            if "DIRECTS" in dir(mod):
+                for name, func in mod.DIRECTS.items():
+                    self.directs[name], self.docs[name] = func, func.__doc__
             self.logger.info(f'成功导入 "{module_path}"')
         except Exception as e:
             self.logger.error(f'未能导入 "{module_path}", error: {e}')
@@ -121,6 +149,8 @@ class Bot(object):
 
     async def judge(self, subject: Union[Member, Friend], message: MessageChain):
         try:
+            for direct in self.directs.values():
+                asyncio.create_task(direct(self, message, subject))
             message_str = message.asDisplay()
             pattern = self.prefix + r"([\S]+ )*[\S]+"
             match = re.match(pattern, message_str, re.I)
@@ -136,7 +166,7 @@ class Bot(object):
                     else:
                         self.logger.info(
                             f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:" + message_str)
-                    await self.message_queue.put((self.commands[comm], args, {"subject": subject}))
+                    self.command_queue.put((self.commands[comm], args, {"subject": subject}))
         except KeyboardInterrupt:
             pass
         except Exception as e:

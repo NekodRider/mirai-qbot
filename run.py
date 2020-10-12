@@ -1,7 +1,7 @@
 import os
 import importlib
 
-from bot import Bot, DefaultLogger
+from bot import Bot
 
 if __name__ == '__main__':
     if not os.path.exists('config.py'):
@@ -9,6 +9,6 @@ if __name__ == '__main__':
         exit(1)
     config = importlib.import_module("config")
 
-    bot = Bot(config.app_configs, config.bot_configs, DefaultLogger())
+    bot = Bot(config.app_configs, config.bot_configs)
 
     bot.activate()
