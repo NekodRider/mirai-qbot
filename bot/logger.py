@@ -40,3 +40,5 @@ class DefaultLogger(AbstractLogger):
 
     def exception(self, msg):
         self.logger.exception(msg, exc_info=True)
+
+defaultLogger = DefaultLogger()
