@@ -336,7 +336,7 @@ async def news_scheduler(bot: Bot):
             if "[img]" in i["contents"]:
                 pattern = r"\[img\][\S]*\[/img\]"
                 imgs = re.findall(pattern, i["contents"])
-                img.append(await Image.fromRemote(imgs[0][5:-6]))
+                img.append(Image.fromNetworkAddress(imgs[0][5:-6]))
                 for to_rm in imgs:
                     i["contents"] = i["contents"].replace(to_rm, "")
                 res += i["contents"].strip() + "\n\n"
