@@ -1,20 +1,22 @@
 # encoding=Utf-8
 import re
 import typing as T
-from graia.application.group import Member
-from graia.application.friend import Friend
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image
 from pathlib import Path
 
 from bot import Bot
-from mods.user import args_parser
 from bot.logger import defaultLogger as logger
-from .helper import dota_dict_path, getDotaNews, getDotaHero
-from .games import getGamesIn24Hrs, getStat, getLatestComparingStat
-from .diagrams import getWinRateGraph, getCompWinRateGraph, getStarStat, getCompStarStat, getDotaStory
-from mods._utils.storage import readJSON, updateJSON
+from graia.application.friend import Friend
+from graia.application.group import Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Image, Plain
 from mods._utils.convert import groupFromStr, groupToStr
+from mods._utils.storage import readJSON, updateJSON
+from mods.user import args_parser
+
+from .diagrams import (getCompStarStat, getCompWinRateGraph, getDotaStory,
+                       getStarStat, getWinRateGraph)
+from .games import getGamesIn24Hrs, getLatestComparingStat, getStat
+from .helper import dota_dict_path, getDotaHero, getDotaNews
 
 NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
 dota_id_dict = readJSON(dota_dict_path)
@@ -171,6 +173,9 @@ async def setdota_handler(*args, subject: T.Union[Member, Friend]):
     '''设置用户对应的dota id
 
     用法: /setdota 昵称 id'''
+    if re.match(r'^\d+$', args[1]) is None:
+        return MessageChain.create([Plain("ID 应由数字组成")])
+
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
     return MessageChain.create([Plain("添加成功！")])
