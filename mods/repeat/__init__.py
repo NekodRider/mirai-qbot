@@ -29,7 +29,7 @@ async def repeat_handler(bot: Bot, message: MessageChain, subject: T.Union[Membe
     pattern = r"^\s*\S{2,6}[SNsn][Bb][!！?？.。]{0,10}\s*$"
     message = message.asSendable()
     message_str = message.asDisplay()
-    if re.match(pattern, message_str):
+    if re.match(pattern, message_str) and message_str[0] != bot.prefix:
         if not is_equal(sb_repeat_content, message):
             sb_repeat_content = message
             await bot.sendMessage(subject.group, message)
