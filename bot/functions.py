@@ -2,6 +2,7 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain
 import time
 
+
 async def help_handler(bot, *args, subject):
     docs = bot.docs
     if len(args) == 0:
@@ -27,7 +28,7 @@ async def help_handler(bot, *args, subject):
                     continue
                 res_str += f"{comm[1:]} {doc[2]}\n"
         msg = MessageChain.create(
-            [Plain("\n"+res_str[:-1].replace("/", bot.prefix))])
+            [Plain("\n" + res_str[:-1].replace("/", bot.prefix))])
 
     return msg
 
@@ -40,11 +41,11 @@ async def schedule_handler(bot, *args, subject):
         last_scheduled = task.get('last_scheduled', '')
         next_scheduled = task.get('next_scheduled', '')
         if last_scheduled != '':
-            last_scheduled = time.strftime(
-                "%b %d %H:%M:%S", time.localtime(last_scheduled))
+            last_scheduled = time.strftime("%b %d %H:%M:%S",
+                                           time.localtime(last_scheduled))
         if next_scheduled != '':
-            next_scheduled = time.strftime(
-                "%b %d %H:%M:%S", time.localtime(next_scheduled))
+            next_scheduled = time.strftime("%b %d %H:%M:%S",
+                                           time.localtime(next_scheduled))
         res_str += f"{task['name'] if task['name'] else task['func_name']}: {'+'+str(task['interval']) if task['interval'] else task['specific_time']} | {last_scheduled} | {next_scheduled}\n"
     msg = MessageChain.create([Plain(res_str[:-1])])
     return msg
