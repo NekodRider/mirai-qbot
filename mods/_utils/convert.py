@@ -1,7 +1,9 @@
 from graia.application.group import Group, MemberPerm
 
+
 def groupToStr(g):
     return f"{g.id}|{g.name}|{g.accountPerm}"
+
 
 def groupFromStr(s):
     sl = s.split("|")

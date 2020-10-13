@@ -25,7 +25,7 @@ with open(rc_file, "r", encoding="utf-8") as f:
         elif not b and "font.sans-serif:" in line:
             b = True
             flist[
-                no] = """font.sans-serif : WenQuanYi Micro Hei, Arial, Bitstream Vera Sans, Lucida Grande,Verdana, Geneva, Lucid, Helvetica, Avant Garde, sans-serif\n"""
+                no] = "font.sans-serif : WenQuanYi Micro Hei, Arial, Bitstream Vera Sans, Lucida Grande, Verdana, Geneva, Lucid, Helvetica, Avant Garde, sans-serif\n"
         if a and b:
             break
 with open(rc_file, "w", encoding="utf-8") as f:

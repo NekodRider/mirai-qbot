@@ -1,28 +1,28 @@
 import asyncio
-import re
 import collections
 import importlib
-from functools import partial
-from re import sub
+import re
 import time
-
+from functools import partial
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Callable, Dict, Any, Union, Tuple
+from typing import Any, Callable, Dict, Tuple, Union
+from logging import DEBUG
+
 from graia.application import GraiaMiraiApplication, Session
-from graia.application.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain
-from graia.application.group import Group, Member
+from graia.application.event.lifecycle import (ApplicationLaunched,
+                                               ApplicationShutdowned)
 from graia.application.friend import Friend
-from graia.application.message.elements.internal import At
+from graia.application.group import Group, Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import At, Plain
 from graia.broadcast import Broadcast
 from graia.scheduler import SchedulerTask, Timer
 from graia.scheduler.timers import *
 
 from .functions import help_handler, schedule_handler
-from .logger import defaultLogger
+from .logger import defaultLogger, DefaultLogger
 
 
 class Bot(object):
@@ -39,10 +39,14 @@ class Bot(object):
     loop = asyncio.get_event_loop()
     schedule_task_list = []
 
-    def __init__(self, app_configs: Dict, configs: Dict, logger=None):
+    def __init__(self, app_configs: Dict, configs: Dict):
         self.commands = {}
         self.bcc = Broadcast(loop=self.loop)
-        self.logger = logger or defaultLogger
+        if configs['debug']:
+            global defaultLogger
+            defaultLogger.close()
+            defaultLogger = DefaultLogger(level=DEBUG)
+        self.logger = defaultLogger
         self.app = GraiaMiraiApplication(broadcast=self.bcc,
                                          connect_info=Session(**app_configs),
                                          logger=self.logger)
@@ -82,13 +86,14 @@ class Bot(object):
             await asyncio.sleep(1)
 
     def init_processors(self, num: int = 5):
+
         def start_loop(loop):
             asyncio.set_event_loop(loop)
             loop.run_forever()
 
         for _ in range(1, num + 1):
             sub_loop = asyncio.new_event_loop()
-            sub_thread = Thread(target=start_loop, args=(sub_loop, ))
+            sub_thread = Thread(target=start_loop, args=(sub_loop,))
             sub_thread.setDaemon(True)
             sub_thread.start()
             asyncio.run_coroutine_threadsafe(self.processor(), sub_loop)
@@ -139,7 +144,7 @@ class Bot(object):
             new_msg = MessageChain.create([At(subject.id)])
             new_msg.plus(msg)
             await self.app.sendGroupMessage(subject.group, new_msg)
-        elif isinstance(subject, Group):
+        if isinstance(subject, Group):
             await self.app.sendGroupMessage(subject, msg)
         elif isinstance(subject, Friend):
             await self.app.sendFriendMessage(subject, msg)
@@ -170,8 +175,8 @@ class Bot(object):
                             + message_str)
                     else:
                         self.logger.info(
-                            f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
-                            + message_str)
+                            f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:" +
+                            message_str)
                     self.command_queue.put((self.commands[comm], args, {
                         "subject": subject
                     }))
@@ -181,6 +186,7 @@ class Bot(object):
             self.logger.exception(e)
 
     def activate(self):
+
         @self.bcc.receiver("GroupMessage")
         async def _(member: Member, message: MessageChain):
             await self.judge(member, message)

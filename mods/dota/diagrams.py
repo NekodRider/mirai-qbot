@@ -6,21 +6,22 @@ import random
 import asyncio
 from pyppeteer import launch
 
-from .helper import getDotaPlayerInfo, getDotaGamesInfo, error_codes, getNameDict
+from .constants import error_codes
+from .helper import getDotaPlayerInfo, getDotaGamesInfo, getNameDict
 from .games import getLatestGamesStat
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei']
 
 
 def getStarScore(reports, gpm):
-    participate = (reports[1] + reports[3])-10
+    participate = (reports[1] + reports[3]) - 10
     if participate > 15:
         participate = 15
     elif participate < 0:
         participate = 0
-    participate = round(participate/15*10, 2)
+    participate = round(participate / 15 * 10, 2)
 
-    winrate = round(reports[0]*8.5+1.5, 2)
+    winrate = round(reports[0] * 8.5 + 1.5, 2)
 
     hit = reports[4] + reports[5]
     if hit < 100:
@@ -33,7 +34,7 @@ def getStarScore(reports, gpm):
     elif gpm > 600:
         gpm = 600
     gpm = (gpm - 200) / 400
-    efficiency = round(hit*2 + gpm * 8, 2)
+    efficiency = round(hit * 2 + gpm * 8, 2)
 
     damage = reports[6]
     if damage > 25000:
@@ -45,14 +46,19 @@ def getStarScore(reports, gpm):
     push = reports[7] + reports[8]
     if push > 6000:
         push = 6000
-    push = round(push/600, 2)
+    push = round(push / 600, 2)
 
-    raw_data = {"参战能力": participate, "输出能力": damage,
-                "推进能力": push, "胜率": winrate, "打钱能力": efficiency}
+    raw_data = {
+        "参战能力": participate,
+        "输出能力": damage,
+        "推进能力": push,
+        "胜率": winrate,
+        "打钱能力": efficiency
+    }
     res = {}
     for k, v in raw_data.items():
         if v < 5:
-            res[k] = round(np.tanh(v/5*3)*5, 2)
+            res[k] = round(np.tanh(v / 5 * 3) * 5, 2)
         else:
             res[k] = v
 
@@ -60,12 +66,10 @@ def getStarScore(reports, gpm):
 
 
 def getCompStarStat(playerIdA, playerIdB, total=20):
-    reports_a, _, gpm_a, _, player_name_a = getLatestGamesStat(
-        playerIdA, total)
+    reports_a, _, gpm_a, _, player_name_a = getLatestGamesStat(playerIdA, total)
     if type(reports_a) == type(""):
         return reports_a, 0, 0
-    reports_b, _, gpm_b, _, player_name_b = getLatestGamesStat(
-        playerIdB, total)
+    reports_b, _, gpm_b, _, player_name_b = getLatestGamesStat(playerIdB, total)
     if type(reports_b) == type(""):
         return reports_b, 0, 0
 
@@ -74,20 +78,19 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
 
     fig = plt.figure(figsize=(4, 4.5))
     ax1 = fig.add_subplot(1, 1, 1, polar=True)
-    ax1.set_title(
-        f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
+    ax1.set_title(f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
     ax1.set_rlim(0, 10.5)
 
     value_a = np.array([i for i in raw_data_a.values()]).astype(float)
     value_b = np.array([i for i in raw_data_b.values()]).astype(float)
     label = np.array([j for j in raw_data_a.keys()])
 
-    angle = np.linspace(0, 2*np.pi, len(value_a), endpoint=False)
+    angle = np.linspace(0, 2 * np.pi, len(value_a), endpoint=False)
     angles = np.concatenate((angle, [angle[0]]))
     value_a = np.concatenate((value_a, [value_a[0]]))
     value_b = np.concatenate((value_b, [value_b[0]]))
 
-    ax1.set_thetagrids(angle*180/np.pi, label)
+    ax1.set_thetagrids(angle * 180 / np.pi, label)
     ax1.plot(angles, value_a, "o-", color='darkorange', label=player_name_a)
     ax1.plot(angles, value_b, "o-", color='royalblue', label=player_name_b)
     ax1.tick_params('y', labelleft=False)
@@ -99,8 +102,8 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
     plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
 
     plt.draw()
-    pic_name = str(Path(__file__).parent.joinpath(
-        playerIdA + playerIdB + "_star.png"))
+    pic_name = str(
+        Path(__file__).parent.joinpath(playerIdA + playerIdB + "_star.png"))
     plt.savefig(pic_name)
 
     return pic_name, player_name_a, player_name_b
@@ -120,11 +123,11 @@ def getStarStat(playerId, total=20):
     value = np.array([i for i in raw_data.values()]).astype(float)
     label = np.array([j for j in raw_data.keys()])
 
-    angle = np.linspace(0, 2*np.pi, len(value), endpoint=False)
+    angle = np.linspace(0, 2 * np.pi, len(value), endpoint=False)
     angles = np.concatenate((angle, [angle[0]]))
     value = np.concatenate((value, [value[0]]))
 
-    ax1.set_thetagrids(angle*180/np.pi, label)
+    ax1.set_thetagrids(angle * 180 / np.pi, label)
     ax1.plot(angles, value, "o-", color='darkorange')
     ax1.tick_params('y', labelleft=False)
     ax1.set_theta_zero_location('N')
@@ -146,8 +149,8 @@ def getWinRateList(playerId, total=20):
     player_data = getDotaPlayerInfo(playerId, "/summary")
     if type(player_data) == type(""):
         return error_codes[player_data], 0
-    games_data = getDotaGamesInfo(
-        playerId, "?take=" + str(total) + "&include=Player")
+    games_data = getDotaGamesInfo(playerId,
+                                  "?take=" + str(total) + "&include=Player")
 
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
     for _, match in enumerate(games_data):
@@ -161,15 +164,15 @@ def getWinRateList(playerId, total=20):
     pre_win = total_win - latest_win
 
     winning_rate = []
-    winning_rate.append(round(pre_win / pre_total * 100, 4)
-                        if (pre_total != 0) else 100)
+    winning_rate.append(
+        round(pre_win / pre_total * 100, 4) if (pre_total != 0) else 100)
     res.reverse()
     for _, result in enumerate(res):
         pre_total += 1
         if result == 1:
             pre_win += 1
-        winning_rate.append(round(pre_win / pre_total * 100, 4)
-                            if (pre_total != 0) else 100)
+        winning_rate.append(
+            round(pre_win / pre_total * 100, 4) if (pre_total != 0) else 100)
     return winning_rate, player_name
 
 
@@ -189,8 +192,8 @@ def getWinRateGraph(playerId, total=20):
     plt.scatter(graph_index, winning_rate, color="red", s=15)
     plt.legend()
     plt.draw()
-    pic_name = str(Path(__file__).parent.joinpath(
-        playerId + "_winning_rate.png"))
+    pic_name = str(
+        Path(__file__).parent.joinpath(playerId + "_winning_rate.png"))
     plt.savefig(pic_name)
     return pic_name, player_name
 
@@ -218,23 +221,27 @@ def getCompWinRateGraph(playerIdList, total=20):
         plt.scatter(graph_index, wr, color=color, s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
-    x_major_locator = plt.MultipleLocator(total//10 if total >= 10 else 1)
+    x_major_locator = plt.MultipleLocator(total // 10 if total >= 10 else 1)
     ax = plt.gca()
     ax.xaxis.set_major_locator(x_major_locator)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    plt.xlim(-0.5, total+0.5)
-    plt.ylim(graph_min-0.5, graph_max+1.5)
+    plt.xlim(-0.5, total + 0.5)
+    plt.ylim(graph_min - 0.5, graph_max + 1.5)
     plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
     plt.draw()
-    pic_name = str(Path(__file__).parent.joinpath(
-        "".join(playerIdList[:2]) + "_winning_rate.png"))
+    pic_name = str(
+        Path(__file__).parent.joinpath("".join(playerIdList[:2]) +
+                                       "_winning_rate.png"))
     plt.savefig(pic_name)
     return pic_name, player_name_list
 
 
 async def getDotaStory(matchId):
-    browser = await launch(args=['--no-sandbox'], handleSIGINT=False, handleSIGTERM=False, handleSIGHUP=False)
+    browser = await launch(args=['--no-sandbox'],
+                           handleSIGINT=False,
+                           handleSIGTERM=False,
+                           handleSIGHUP=False)
     page = await browser.newPage()
     await page.setViewport({"width": 800, "height": 900})
     await page.goto(f'https://www.opendota.com/matches/{matchId}/story')
@@ -242,7 +249,9 @@ async def getDotaStory(matchId):
     await page.reload({'waitUntil': 'networkidle0'})
     name_dict = getNameDict(matchId)
     for hero, name in name_dict.items():
-        await page.evaluate(f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()', force_expr=True)
+        await page.evaluate(
+            f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',
+            force_expr=True)
 
     not_found = await page.querySelector(".FourOhFour")
     unparsed = await page.querySelector(".unparsed")
@@ -259,6 +268,14 @@ async def getDotaStory(matchId):
     body_bb = await body.boundingBox()
     height = body_bb['height']
     path = str(Path(__file__).parent.joinpath(f'story_{matchId}.png'))
-    await page.screenshot({'path': path, 'clip': {'x': 0, 'y': 180, 'width': 800, 'height': height-320}})
+    await page.screenshot({
+        'path': path,
+        'clip': {
+            'x': 0,
+            'y': 180,
+            'width': 800,
+            'height': height - 320
+        }
+    })
     await browser.close()
     return path
