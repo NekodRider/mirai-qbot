@@ -5,7 +5,6 @@ import time
 
 from .constants import hero_dict, hero_dict_en
 
-
 dota_dict_path = Path(__file__).parent.joinpath("dota_id.json")
 
 
@@ -43,13 +42,13 @@ def steam_html_process(raw_str):
         l = raw_str[left:].find("[")
         if l == -1:
             break
-        elif "img" != raw_str[left + l + 1 : left + l + 4]:
+        elif "img" != raw_str[left + l + 1:left + l + 4]:
             r = raw_str[left:].find("]")
-            raw_str = raw_str[: left + l] + raw_str[left + r + 1 :]
+            raw_str = raw_str[:left + l] + raw_str[left + r + 1:]
             left = left + l
         else:
             r = raw_str[left:].find("]")
-            r = raw_str[left + r + 1 :].find("]")
+            r = raw_str[left + r + 1:].find("]")
             left = left + r + 1
     return raw_str
 
@@ -89,12 +88,8 @@ def getDotaHero(playerId, heroName):
         return (0, f"{res['name']} 也配玩 {res['hero']}？")
     data = json.loads(txt)
 
-    res[
-        "win_stat"
-    ] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
-    res[
-        "kda"
-    ] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"
+    res["win_stat"] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
+    res["kda"] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"
     res["gpm"] = int(data["avgGoldPerMinute"])
 
     def getLaneMatchCount(elem):
@@ -109,18 +104,10 @@ def getDotaHero(playerId, heroName):
     data["position"].sort(key=getRoleLaneMatchCount, reverse=True)
     role = data["position"][0]
 
-    res[
-        "role"
-    ] = f"在{round(role['lanes'][0]['laneMatchCount']/data['matchCount']*100,2)}%的比赛中担任"
-    res["role"] += (
-        "优势路"
-        if role["lanes"][0]["laneType"] == 1
-        else (
-            "中路"
-            if role["lanes"][0]["laneType"] == 2
-            else ("游走" if role["lanes"][0]["laneType"] == 0 else "劣势路")
-        )
-    )
+    res["role"] = f"在{round(role['lanes'][0]['laneMatchCount']/data['matchCount']*100,2)}%的比赛中担任"
+    res["role"] += ("优势路" if role["lanes"][0]["laneType"] == 1 else
+                    ("中路" if role["lanes"][0]["laneType"] == 2 else
+                     ("游走" if role["lanes"][0]["laneType"] == 0 else "劣势路")))
     res["role"] += "核心" if role["roleType"] == 0 else "辅助"
     result = f"{res['name']} 使用 {res['hero']} {res['role']}\n胜率：{res['win_stat']}  KDA：{res['kda']}  GPM：{res['gpm']}"
     return result

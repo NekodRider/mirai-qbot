@@ -1,20 +1,22 @@
 # encoding=Utf-8
 import re
 import typing as T
-from graia.application.group import Member
-from graia.application.friend import Friend
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image
 from pathlib import Path
 
 from bot import Bot
-from mods.user import args_parser
 from bot.logger import defaultLogger as logger
-from .helper import dota_dict_path, getDotaNews, getDotaHero
-from .games import getGamesIn24Hrs, getStat, getLatestComparingStat
-from .diagrams import getWinRateGraph, getCompWinRateGraph, getStarStat, getCompStarStat, getDotaStory
-from mods._utils.storage import readJSON, updateJSON
+from graia.application.friend import Friend
+from graia.application.group import Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Image, Plain
 from mods._utils.convert import groupFromStr, groupToStr
+from mods._utils.storage import readJSON, updateJSON
+from mods.user import args_parser
+
+from .diagrams import (getCompStarStat, getCompWinRateGraph, getDotaStory,
+                       getStarStat, getWinRateGraph)
+from .games import getGamesIn24Hrs, getLatestComparingStat, getStat
+from .helper import dota_dict_path, getDotaHero, getDotaNews
 
 NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
 dota_id_dict = readJSON(dota_dict_path)
@@ -35,7 +37,7 @@ async def dota_handler(*args, subject: T.Union[Member, Friend]):
         query_id = dota_id_dict[query_id]
         res = getGamesIn24Hrs(query_id)
         if res in ('请输入正确steam ID!', '该玩家不存在!'):
-            logger.info("[DOTA]"+res)
+            logger.info("[DOTA]" + res)
         else:
             logger.info("[DOTA]返回成功")
         return MessageChain.create([Plain(res)])
@@ -171,6 +173,9 @@ async def setdota_handler(*args, subject: T.Union[Member, Friend]):
     '''设置用户对应的dota id
 
     用法: /setdota 昵称 id'''
+    if re.match(r'^\d+$', args[1]) is None:
+        return MessageChain.create([Plain("ID 应由数字组成")])
+
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
     return MessageChain.create([Plain("添加成功！")])
@@ -186,7 +191,7 @@ async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数或参数过多")])
     try:
         num = int(args[-1])
-        ids = args[:len(args)-1]
+        ids = args[:len(args) - 1]
     except:
         num = 0
         ids = list(args)
@@ -221,7 +226,7 @@ async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数或参数过多")])
     try:
         num = int(args[-1])
-        ids = args[:len(args)-1]
+        ids = args[:len(args) - 1]
     except:
         num = 0
         ids = list(args)
@@ -251,7 +256,8 @@ async def dotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /dotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
-    if isinstance(subject, Member) and groupToStr(subject.group) not in news_dict["member"]:
+    if isinstance(subject, Member) and groupToStr(
+            subject.group) not in news_dict["member"]:
         news_dict["member"].append(groupToStr(subject.group))
     if isinstance(subject, Friend) and subject.id not in news_dict["member"]:
         news_dict["member"].append(subject.id)
@@ -266,7 +272,8 @@ async def rmdotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /rmdotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
-    if isinstance(subject, Member) and groupToStr(subject.group) in news_dict["member"]:
+    if isinstance(subject, Member) and groupToStr(
+            subject.group) in news_dict["member"]:
         news_dict["member"].remove(groupToStr(subject.group))
     elif isinstance(subject, Friend) and subject.id in news_dict["member"]:
         news_dict["member"].remove(subject.id)
@@ -350,12 +357,18 @@ async def news_scheduler(bot: Bot):
 
 
 COMMANDS = {
-    "dota": dota_handler, "winrate": winrate_handler,
-    "stat": stat_handler, "setdota": setdota_handler,
-    "comp": compare_handler, "wrcp": winrate_compare_handler,
-    "star": star_handler, "stcp": star_compare_handler,
-    "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler,
-    "hero": hero_handler, "story": story_handler
+    "dota": dota_handler,
+    "winrate": winrate_handler,
+    "stat": stat_handler,
+    "setdota": setdota_handler,
+    "comp": compare_handler,
+    "wrcp": winrate_compare_handler,
+    "star": star_handler,
+    "stcp": star_compare_handler,
+    "dotanews": dotanews_handler,
+    "rmdotanews": rmdotanews_handler,
+    "hero": hero_handler,
+    "story": story_handler
 }
 
 SCHEDULES = {

@@ -5,7 +5,13 @@ from graia.application.group import Member
 from graia.application.friend import Friend
 import typing as T
 
-from .helper import args_parser, getUserInfo, updateUserInfo, humanisticCare, calcJrrp
+from graia.application.friend import Friend
+from graia.application.group import Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Plain
+
+from .helper import (args_parser, calcJrrp, getUserInfo, humanisticCare,
+                     updateUserInfo)
 
 __all__ = (getUserInfo, updateUserInfo, args_parser)
 
