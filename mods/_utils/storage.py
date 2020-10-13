@@ -2,10 +2,10 @@ import json
 import os
 
 
-def readJSON(path, shouldCreateFileIfNotExisted=True, defaultValue={}):
+def readJSON(path, shouldCreateFileIfNotExisted=True, defaultValue={}) -> dict:
     if not os.path.exists(path):
         if not shouldCreateFileIfNotExisted:
-            return None
+            return {}
         updateJSON(path, defaultValue)
     with open(path, encoding='utf-8') as f:
         d = json.loads(f.read())
