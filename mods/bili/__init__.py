@@ -229,7 +229,7 @@ async def up_scheduler(bot: Bot):
             for i in res:
                 msg.append(
                     Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
-                msg.append(await Image.fromRemote(i["pic"]))
+                msg.append(Image.fromNetworkAddress(i["pic"]))
                 msg.append(Plain(text="\n"))
             msg = MessageChain.create(msg)
             for member in up_dict[up_id]:
