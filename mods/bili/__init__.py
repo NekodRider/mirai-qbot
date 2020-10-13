@@ -68,8 +68,9 @@ async def live_handler(*args, subject: T.Union[Member, Friend]):
                 if res['isLive'] == 0:
                     msg.append(Plain(res['name'] + " 未在直播.\n"))
                 else:
-                    msg.append(Plain(
-                        res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"], res["title"], res["url"])))
+                    msg.append(
+                        Plain(res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
+                            res["area_name"], res["title"], res["url"])))
                     msg.append(Image.fromNetworkAddress(res["keyframe"]))
         return MessageChain.create(msg)
 
@@ -81,9 +82,12 @@ async def live_handler(*args, subject: T.Union[Member, Friend]):
     else:
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
         if room_id in monitor_dict.keys():
-            if isinstance(subject, Member) and groupToStr(subject.group) not in monitor_dict[room_id]:
+            if isinstance(subject, Member) and groupToStr(
+                    subject.group) not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(groupToStr(subject.group))
-            elif isinstance(subject, Friend) and subject.id not in monitor_dict[room_id]:
+            elif isinstance(
+                    subject,
+                    Friend) and subject.id not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(subject.id)
         else:
             if isinstance(subject, Member):
@@ -95,8 +99,9 @@ async def live_handler(*args, subject: T.Union[Member, Friend]):
             msg = [Plain("已加入监视列表\n" + res['name'] + " 未在直播.")]
         else:
             msg = [
-                Plain("已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
-                    res["area_name"], res["title"], res["url"])),
+                Plain("已加入监视列表\n" +
+                      res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
+                          res["area_name"], res["title"], res["url"])),
                 Image.fromNetworkAddress(res["keyframe"])
             ]
         logger.info("[LIVE]返回成功")
@@ -153,9 +158,11 @@ async def up_handler(*args, subject: T.Union[Member, Friend]):
     else:
         up_dict = readJSON(BILI_UP_JSON_PATH)
         if up_id in up_dict.keys():
-            if isinstance(subject, Member) and groupToStr(subject.group) not in up_dict[up_id]:
+            if isinstance(subject, Member) and groupToStr(
+                    subject.group) not in up_dict[up_id]:
                 up_dict[up_id].append(groupToStr(subject.group))
-            if isinstance(subject, Friend) and subject.id not in up_dict[up_id]:
+            if isinstance(subject,
+                          Friend) and subject.id not in up_dict[up_id]:
                 up_dict[up_id].append(subject.id)
         else:
             if isinstance(subject, Member):
@@ -206,10 +213,13 @@ async def live_scheduler(bot: Bot):
     monitor_dict = readJSON(BILI_LIVE_JSON_PATH, defaultValue={})
     for room_id in monitor_dict.keys():
         res = getLiveInfo(room_id)
-        if res['isLive'] == 1 and time.time()-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S"))) < 600:
+        if res['isLive'] == 1 and time.time() - int(
+                time.mktime(
+                    time.strptime(res['live_time'],
+                                  "%Y-%m-%d %H:%M:%S"))) < 600:
             msg = MessageChain.create([
-                Plain(res['name'] + " 开播啦! " +
-                      "[{}]{}\n{}".format(res["area_name"], res["title"], res["url"])),
+                Plain(res['name'] + " 开播啦! " + "[{}]{}\n{}".format(
+                    res["area_name"], res["title"], res["url"])),
                 Image.fromNetworkAddress(res["keyframe"])
             ])
             for member in monitor_dict[room_id]:
@@ -238,10 +248,14 @@ async def up_scheduler(bot: Bot):
                 else:
                     await bot.sendMessage(member, msg)
 
+
 COMMANDS = {
-    "dance": dance_handler, "recommend": recommend_handler,
-    "live": live_handler, "rmlive": rmlive_handler,
-    "up": up_handler, "rmup": rmup_handler
+    "dance": dance_handler,
+    "recommend": recommend_handler,
+    "live": live_handler,
+    "rmlive": rmlive_handler,
+    "up": up_handler,
+    "rmup": rmup_handler
 }
 
 SCHEDULES = {

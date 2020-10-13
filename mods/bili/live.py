@@ -1,17 +1,19 @@
 from urllib import request
 import json
 
+
 def getNameByUid(uid):
     url = "https://api.bilibili.com/x/space/acc/info?mid=" + str(uid)
     html = request.urlopen(url)
     live_data = json.loads(html.read().decode('utf-8'))
     return live_data["data"]["name"]
 
+
 def getLiveInfo(room_id):
     url = "https://api.live.bilibili.com/room/v1/Room/get_info?id=" + room_id
     html = request.urlopen(url)
     live_data = json.loads(html.read().decode('utf-8'))
-    if live_data["code"]!=0:
+    if live_data["code"] != 0:
         return "error"
     uid = live_data["data"]["uid"]
     res = {}

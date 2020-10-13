@@ -6,8 +6,10 @@ import random
 import os
 
 black_lists = ["男"]
-up_lists = ["15385187", "84465926", "632887", "2689967", "5276",
-            "8366990", "7375428", "466272", "13346799", "8581342"]
+up_lists = [
+    "15385187", "84465926", "632887", "2689967", "5276", "8366990", "7375428",
+    "466272", "13346799", "8581342"
+]
 
 black_ups = ["399752044", "10139490", "643928765", "348470", "32782335"]
 
@@ -21,10 +23,12 @@ def checkTitle(title):
             return -1
     return 0
 
+
 def detectSafeSearchUri(uri):
     """Detects unsafe features in the file located in Google Cloud Storage or
     on the Web."""
-    config_path = Path(__file__).parent.joinpath("Dota-Project-c6dd8c4677d4.json")
+    config_path = Path(__file__).parent.joinpath(
+        "Dota-Project-c6dd8c4677d4.json")
     if not config_path.exists():
         logger.info("GOOGLE API CREDENTIALS NOT FOUND!")
         return 6

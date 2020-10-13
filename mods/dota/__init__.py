@@ -35,7 +35,7 @@ async def dota_handler(*args, subject: T.Union[Member, Friend]):
         query_id = dota_id_dict[query_id]
         res = getGamesIn24Hrs(query_id)
         if res in ('请输入正确steam ID!', '该玩家不存在!'):
-            logger.info("[DOTA]"+res)
+            logger.info("[DOTA]" + res)
         else:
             logger.info("[DOTA]返回成功")
         return MessageChain.create([Plain(res)])
@@ -186,7 +186,7 @@ async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数或参数过多")])
     try:
         num = int(args[-1])
-        ids = args[:len(args)-1]
+        ids = args[:len(args) - 1]
     except:
         num = 0
         ids = list(args)
@@ -221,7 +221,7 @@ async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数或参数过多")])
     try:
         num = int(args[-1])
-        ids = args[:len(args)-1]
+        ids = args[:len(args) - 1]
     except:
         num = 0
         ids = list(args)
@@ -251,7 +251,8 @@ async def dotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /dotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
-    if isinstance(subject, Member) and groupToStr(subject.group) not in news_dict["member"]:
+    if isinstance(subject, Member) and groupToStr(
+            subject.group) not in news_dict["member"]:
         news_dict["member"].append(groupToStr(subject.group))
     if isinstance(subject, Friend) and subject.id not in news_dict["member"]:
         news_dict["member"].append(subject.id)
@@ -266,7 +267,8 @@ async def rmdotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /rmdotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
-    if isinstance(subject, Member) and groupToStr(subject.group) in news_dict["member"]:
+    if isinstance(subject, Member) and groupToStr(
+            subject.group) in news_dict["member"]:
         news_dict["member"].remove(groupToStr(subject.group))
     elif isinstance(subject, Friend) and subject.id in news_dict["member"]:
         news_dict["member"].remove(subject.id)
@@ -350,12 +352,18 @@ async def news_scheduler(bot: Bot):
 
 
 COMMANDS = {
-    "dota": dota_handler, "winrate": winrate_handler,
-    "stat": stat_handler, "setdota": setdota_handler,
-    "comp": compare_handler, "wrcp": winrate_compare_handler,
-    "star": star_handler, "stcp": star_compare_handler,
-    "dotanews": dotanews_handler, "rmdotanews": rmdotanews_handler,
-    "hero": hero_handler, "story": story_handler
+    "dota": dota_handler,
+    "winrate": winrate_handler,
+    "stat": stat_handler,
+    "setdota": setdota_handler,
+    "comp": compare_handler,
+    "wrcp": winrate_compare_handler,
+    "star": star_handler,
+    "stcp": star_compare_handler,
+    "dotanews": dotanews_handler,
+    "rmdotanews": rmdotanews_handler,
+    "hero": hero_handler,
+    "story": story_handler
 }
 
 SCHEDULES = {
