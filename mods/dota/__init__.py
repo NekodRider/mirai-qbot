@@ -28,11 +28,11 @@ async def dota_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /dota (id)'''
     if len(args) != 1:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create([Plain(f"缺少参数或参数过多:{args}, 用法: /dota (id)")])
     query_id = args[0]
     if query_id not in dota_id_dict.keys():
-        logger.info("[DOTA]未添加该用户")
-        return MessageChain.create([Plain("未添加该用户！")])
+        logger.info(f"[DOTA]未添加该用户{query_id}")
+        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
         query_id = dota_id_dict[query_id]
         res = getGamesIn24Hrs(query_id)
@@ -43,18 +43,21 @@ async def dota_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain(res)])
 
 
-@args_parser(1, 0)
+@args_parser(2, 0)
 async def stat_handler(*args, subject: T.Union[Member, Friend]):
     '''展示最近指定场数(默认20场)游戏平均数据
 
-    用法: /stat 或 /stat id (num)'''
+    用法: /stat (id) (num)'''
     if len(args) < 1 or len(args) > 2:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /stat (id) (num)")])
     query_id, *num = args
     if query_id not in dota_id_dict.keys():
-        logger.info("[STAT]未添加该用户")
-        return MessageChain.create([Plain("未添加该用户！")])
+        logger.info(f"[STAT]未添加该用户{query_id}")
+        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
+        if type(num[0]) == type(query_id) and query_id == num[0]:
+            num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
         if len(num) == 1:
@@ -69,18 +72,21 @@ async def stat_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain(res)])
 
 
-@args_parser(1, 0)
+@args_parser(2, 0)
 async def star_handler(*args, subject: T.Union[Member, Friend]):
     '''展示最近指定场数(默认20场)游戏五星图数据
 
-    用法: /star 或 /star id (num)'''
+    用法: /star (id) (num)'''
     if len(args) < 1 or len(args) > 2:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /star (id) (num)")])
     query_id, *num = args
     if query_id not in dota_id_dict.keys():
-        logger.info("[STAR]未添加该用户")
-        return MessageChain.create([Plain("未添加该用户！")])
+        logger.info(f"[STAR]未添加该用户{query_id}")
+        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
+        if type(num[0]) == type(query_id) and query_id == num[0]:
+            num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
         if len(num) == 1:
@@ -103,14 +109,17 @@ async def star_handler(*args, subject: T.Union[Member, Friend]):
         return msg
 
 
-@args_parser(2, 0)
+@args_parser(3, 0)
 async def compare_handler(*args, subject: T.Union[Member, Friend]):
     '''玩家间最近平均数据对比
 
-    用法: /comp id_b 或 /comp id_a id_b (num)'''
+    用法: /comp (id_a) id_b (num)'''
     if len(args) < 2 or len(args) > 3:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /comp (id_a) id_b (num)")])
     [id_a, id_b, *num] = args
+    if type(id_a) == type(id_b) and id_a == id_b:
+        id_b = num[0]
     if id_a not in dota_id_dict.keys():
         logger.info("[COMP]未添加用户 " + id_a)
         return MessageChain.create([Plain("未添加用户 " + id_a + " ！")])
@@ -134,18 +143,21 @@ async def compare_handler(*args, subject: T.Union[Member, Friend]):
         return msg
 
 
-@args_parser(1, 0)
+@args_parser(2, 0)
 async def winrate_handler(*args, subject: T.Union[Member, Friend]):
     '''最近胜率图展示
 
-    用法: /winrate 或 /winrate id (num)'''
+    用法: /winrate (id) (num)'''
     if len(args) < 1 or len(args) > 2:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /winrate (id) (num)")])
     query_id, *num = args
     if query_id not in dota_id_dict.keys():
-        logger.info("[WINRATE]未添加该用户")
-        return MessageChain.create([Plain("未添加该用户！")])
+        logger.info(f"[WINRATE]未添加该用户{query_id}")
+        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
+        if type(num[0]) == type(query_id) and query_id == num[0]:
+            num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
         if len(num) == 1:
@@ -172,10 +184,12 @@ async def winrate_handler(*args, subject: T.Union[Member, Friend]):
 async def setdota_handler(*args, subject: T.Union[Member, Friend]):
     '''设置用户对应的dota id
 
-    用法: /setdota 昵称 id'''
+    用法: /setdota 昵称 数字id'''
+    if len(args) != 2:
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args}, 用法: /setdota 昵称 数字id")])
     if re.match(r'^\d+$', args[1]) is None:
         return MessageChain.create([Plain("ID 应由数字组成")])
-
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
     return MessageChain.create([Plain("添加成功！")])
@@ -185,10 +199,11 @@ async def setdota_handler(*args, subject: T.Union[Member, Friend]):
 async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
     '''玩家间最近胜率数据对比
 
-    用法: /wrcp id_b 或 /wrcp id_a id_b (num)'''
+    用法: /wrcp (id_a) id_b (num)'''
     args = list(args)
     if len(args) < 2:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /wrcp (id_a) id_b (num)")])
     try:
         num = int(args[-1])
         ids = args[:len(args) - 1]
@@ -220,10 +235,11 @@ async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
 async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
     '''玩家间最近五星图对比
 
-    用法: /stcp id_b 或 /stcp id_a id_b (num)'''
+    用法: /stcp (id_a) id_b (num)'''
     args = list(args)
     if len(args) < 2 or len(args) > 3:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /stcp (id_a) id_b (num)")])
     try:
         num = int(args[-1])
         ids = args[:len(args) - 1]
@@ -291,11 +307,12 @@ async def hero_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /hero (id) 英雄名'''
     if len(args) != 2:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create(
+            [Plain(f"缺少参数或参数过多:{args},用法: /hero (id) 英雄名")])
     query_id = args[0]
     if query_id not in dota_id_dict.keys():
-        logger.info("[HERO]未添加该用户")
-        return MessageChain.create([Plain("未添加该用户！")])
+        logger.info(f"[HERO]未添加该用户{query_id}")
+        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
         query_id = dota_id_dict[query_id]
         res = getDotaHero(query_id, args[1])
@@ -315,7 +332,7 @@ async def story_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /story 比赛id'''
     if len(args) != 1:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain.create([Plain(f"缺少参数或参数过多:{args},用法: /story 比赛id")])
     match_id = args[0]
     path = await getDotaStory(match_id)
     msg = None
