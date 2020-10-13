@@ -5,5 +5,7 @@ app_configs = {
     "websocket": True
 }
 bot_configs = {
-    "prefix": "/"
+    "prefix": "/",
+    "debugPrefix": "XX_DEBUG:\n",
+    "debug": False
 }

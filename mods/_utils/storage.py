@@ -1,6 +1,7 @@
 import json
 import os
 
+
 def readJSON(path, shouldCreateFileIfNotExisted=True, defaultValue={}):
     if not os.path.exists(path):
         if not shouldCreateFileIfNotExisted:

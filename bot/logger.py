@@ -11,15 +11,19 @@ class DefaultLogger(AbstractLogger):
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
-        
+
         log_path = Path(__file__).parent.parent.joinpath(
             'logs', 'mirai_bot.log')
-        file_handler = TimedRotatingFileHandler(
-            log_path, when='h', interval=12, backupCount=5, encoding='utf-8')
+        file_handler = TimedRotatingFileHandler(log_path,
+                                                when='h',
+                                                interval=12,
+                                                backupCount=5,
+                                                encoding='utf-8')
         file_handler.setLevel(level)
 
         formatter = logging.Formatter(
-            fmt_str or "%(asctime)s - %(levelname)s: %(message)s", datefmt='%Y-%m-%d %H:%M:%S')
+            fmt_str or "%(asctime)s - %(levelname)s: %(message)s",
+            datefmt='%Y-%m-%d %H:%M:%S')
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         console_handler.setFormatter(formatter)
@@ -40,5 +44,6 @@ class DefaultLogger(AbstractLogger):
 
     def exception(self, msg):
         self.logger.exception(msg, exc_info=True)
+
 
 defaultLogger = DefaultLogger()
