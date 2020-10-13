@@ -1,8 +1,4 @@
 from bot import defaultLogger as logger
-from graia.application.message.elements.internal import Plain
-from graia.application.message.chain import MessageChain
-from graia.application.group import Member
-from graia.application.friend import Friend
 import typing as T
 
 from graia.application.friend import Friend
@@ -54,18 +50,16 @@ async def jrrp_handler(*args, subject: T.Union[Member, Friend]):
     if isinstance(subject, Friend):
         return MessageChain.create([Plain("尚未支持该类型")])
     target = getUserInfo(subject.id)
-
     nickname = subject.name
     hint = ''
     if not target:
         hint = '\n\n可以通过 /setname 为自己设定名字哦！'
     else:
         nickname = target['nickname']
-
     nickname = nickname.upper()
     msg = '%s今日人品为%d，%s'
     rp = humanisticCare(
-        lambda offset: calcJrrp(subject.group.id, subject.id, 1 - offset), 1,
+        lambda offset: calcJrrp(subject.group.id, subject.id, 1 - offset), 1, #type: ignore
         (5, 50))
     postfix = 'NB！！！'
     if rp == 0:

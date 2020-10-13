@@ -39,11 +39,11 @@ def detectSafeSearchUri(uri):
     from google.cloud import vision
     from google.api_core.exceptions import ServiceUnavailable
     client = vision.ImageAnnotatorClient()
-    image = vision.types.Image()
+    image = vision.types.Image()  #type: ignore
     image.source.image_uri = uri
 
     try:
-        response = client.safe_search_detection(image=image)
+        response = client.safe_search_detection(image=image)  #type: ignore
     except KeyboardInterrupt or SystemExit:
         return
     except Exception as e:
@@ -73,10 +73,10 @@ def getRecommendDance():
         try:
             html = request.urlopen(cur_url)
         except KeyboardInterrupt or SystemExit:
-            return
+            exit()
         except Exception as e:
             logger.exception(e)
-            return -1
+            exit()
         data = json.loads(html.read().decode('utf-8'))
         dance_list = data["data"]["list"]["vlist"]
         rand_dance = dance_list[random.randint(0, len(dance_list) - 1)]
@@ -96,10 +96,10 @@ def getTop3DanceToday():
     try:
         html = request.urlopen(dance_api)
     except KeyboardInterrupt or SystemExit:
-        return
+        exit()
     except Exception as e:
         logger.exception(e)
-        return -1
+        exit()
     count = 0
     dance_data = json.loads(html.read().decode('utf-8'))
     author = []

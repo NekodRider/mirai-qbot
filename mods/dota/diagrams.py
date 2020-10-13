@@ -1,3 +1,4 @@
+# type: ignore
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
@@ -148,7 +149,7 @@ def getStarStat(playerId, total=20):
 def getWinRateList(playerId, total=20):
     res = []
     player_data = getDotaPlayerInfo(playerId, "/summary")
-    if type(player_data) == type(""):
+    if isinstance(player_data, str):
         return error_codes[player_data], 0
     games_data = getDotaGamesInfo(playerId,
                                   "?take=" + str(total) + "&include=Player")
@@ -179,7 +180,7 @@ def getWinRateList(playerId, total=20):
 
 def getWinRateGraph(playerId, total=20):
     winning_rate, player_name = getWinRateList(playerId, total)
-    if type(winning_rate) == type(""):
+    if isinstance(winning_rate, str):
         return winning_rate, 0
     graph_index = range(0, total + 1)
     graph_max = np.max(winning_rate)
@@ -205,7 +206,7 @@ def getCompWinRateGraph(playerIdList, total=20):
     graph_max, graph_min = 0, 100
     for pid in playerIdList:
         wr, pn = getWinRateList(pid, total)
-        if type(wr) == type(""):
+        if isinstance(wr, str):
             return wr, 0
         graph_max = np.max(wr + [graph_max])
         graph_min = np.min(wr + [graph_min])

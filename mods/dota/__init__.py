@@ -1,4 +1,5 @@
 # encoding=Utf-8
+# type: ignore
 import re
 import typing as T
 from pathlib import Path
@@ -20,6 +21,8 @@ from .helper import dota_dict_path, getDotaHero, getDotaNews
 
 NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
 dota_id_dict = readJSON(dota_dict_path)
+if not isinstance(dota_id_dict, dict):
+    raise TypeError("Expected dict but found:", dota_id_dict)
 
 
 @args_parser(1)
@@ -97,7 +100,7 @@ async def star_handler(*args, subject: T.Union[Member, Friend]):
             except ValueError:
                 args = 20
         pic_name, player_name = getStarStat(query_id, args)
-        if type(player_name) == type(0):
+        if isinstance(player_name, int):
             msg = MessageChain.create([Plain(pic_name)])
             logger.info("[STAR]用户不存在")
         else:
@@ -168,7 +171,7 @@ async def winrate_handler(*args, subject: T.Union[Member, Friend]):
             except ValueError:
                 args = 20
         pic_name, player_name = getWinRateGraph(query_id, args)
-        if type(player_name) == type(0):
+        if isinstance(player_name, int):
             msg = MessageChain.create([Plain(pic_name)])
             logger.info("[WINRATE]用户不存在")
         else:
@@ -255,7 +258,7 @@ async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
         if num <= 0 or num > 50:
             num = 20
         pic_name, player_name_a, _ = getCompStarStat(ids[0], ids[1], num)
-        if type(player_name_a) == type(0):
+        if isinstance(player_name_a, int):
             msg = MessageChain.create([Plain(pic_name)])
             logger.info("[STCP]用户不存在")
         else:
@@ -272,6 +275,8 @@ async def dotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /dotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
+    if not isinstance(news_dict, dict):
+        raise TypeError("Expected dict but found:", news_dict)
     if isinstance(subject, Member) and groupToStr(
             subject.group) not in news_dict["member"]:
         news_dict["member"].append(groupToStr(subject.group))
@@ -288,6 +293,8 @@ async def rmdotanews_handler(*args, subject: T.Union[Member, Friend]):
 
     用法: /rmdotanews'''
     news_dict = readJSON(NEWS_JSON_PATH)
+    if not isinstance(news_dict, dict):
+        raise TypeError("Expected dict but found:", news_dict)
     if isinstance(subject, Member) and groupToStr(
             subject.group) in news_dict["member"]:
         news_dict["member"].remove(groupToStr(subject.group))
@@ -316,7 +323,7 @@ async def hero_handler(*args, subject: T.Union[Member, Friend]):
     else:
         query_id = dota_id_dict[query_id]
         res = getDotaHero(query_id, args[1])
-        if type(res) == tuple:
+        if isinstance(res, tuple):
             res = res[1]
             logger.info("[HERO]返回成功")
         elif res == 0:
@@ -336,7 +343,7 @@ async def story_handler(*args, subject: T.Union[Member, Friend]):
     match_id = args[0]
     path = await getDotaStory(match_id)
     msg = None
-    if type(path) != str:
+    if not isinstance(path, str):
         if path == 404:
             msg = MessageChain.create([Plain(f"未找到比赛:{match_id}")])
             logger.info(f"[STORY]未找到比赛:{match_id}")
@@ -351,6 +358,8 @@ async def story_handler(*args, subject: T.Union[Member, Friend]):
 
 async def news_scheduler(bot: Bot):
     news_dict = readJSON(NEWS_JSON_PATH, defaultValue={"member": []})
+    if not isinstance(news_dict, dict):
+        raise TypeError("Expected dict but found:", news_dict)
     news = getDotaNews()
     if len(news) > 0:
         msg = []
@@ -366,6 +375,7 @@ async def news_scheduler(bot: Bot):
                 res += i["contents"].strip() + "\n\n"
             msg += img
             msg.append(Plain(text=res))
+        msg = MessageChain.create(msg)
         for member in news_dict["member"]:
             if type(member) == str:
                 await bot.sendMessage(groupFromStr(member), msg)

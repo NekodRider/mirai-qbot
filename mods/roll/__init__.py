@@ -16,7 +16,7 @@ async def roll_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数")])
     msg = [Plain("\n")]
     for arg in args:
-        if not (res := re.match("(\d+d\d+)(\+\d+)*", arg)):
+        if not (res := re.match(r"(\d+d\d+)(\+\d+)*", arg)):
             return MessageChain.create([Plain("参数格式不对 请输入 2d6+4 形式")])
         d, p = res[1], res[2]
         param = [int(x) if x != '' else 0 for x in d.split("d")]

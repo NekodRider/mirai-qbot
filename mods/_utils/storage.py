@@ -1,8 +1,11 @@
 import json
 import os
+from typing import Union
 
 
-def readJSON(path, shouldCreateFileIfNotExisted=True, defaultValue={}) -> dict:
+def readJSON(path,
+             shouldCreateFileIfNotExisted=True,
+             defaultValue={}) -> Union[dict, list]:
     if not os.path.exists(path):
         if not shouldCreateFileIfNotExisted:
             return {}
