@@ -43,6 +43,8 @@ def getUserInfo(qq: int):
 
 def updateUserInfo(qq: int, info: dict):
     data = readJSON(USER_DATA_PATH, True, [])
+    if isinstance(data, dict):
+        raise TypeError("Expected list but found:", data)
     targets = list(filter(lambda a: a["qq"] == qq, data))
     if len(targets) == 0:
         info["qq"] = qq
