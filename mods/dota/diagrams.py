@@ -11,6 +11,7 @@ from .helper import getDotaPlayerInfo, getDotaGamesInfo, getNameDict
 from .games import getLatestGamesStat
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei']
+plt.switch_backend('agg')
 
 
 def getStarScore(reports, gpm):
