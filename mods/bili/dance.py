@@ -1,3 +1,4 @@
+from logging import log
 from urllib import request
 from pathlib import Path
 from bot.logger import defaultLogger as logger
@@ -6,8 +7,10 @@ import random
 import os
 
 black_lists = ["男"]
-up_lists = ["15385187", "84465926", "632887", "2689967", "5276",
-            "8366990", "7375428", "466272", "13346799", "8581342"]
+up_lists = [
+    "15385187", "84465926", "632887", "2689967", "5276", "8366990", "7375428",
+    "466272", "13346799", "8581342"
+]
 
 black_ups = ["399752044", "10139490", "643928765", "348470", "32782335"]
 
@@ -21,10 +24,12 @@ def checkTitle(title):
             return -1
     return 0
 
+
 def detectSafeSearchUri(uri):
     """Detects unsafe features in the file located in Google Cloud Storage or
     on the Web."""
-    config_path = Path(__file__).parent.joinpath("Dota-Project-c6dd8c4677d4.json")
+    config_path = Path(__file__).parent.joinpath(
+        "Dota-Project-c6dd8c4677d4.json")
     if not config_path.exists():
         logger.info("GOOGLE API CREDENTIALS NOT FOUND!")
         return 6
@@ -41,9 +46,11 @@ def detectSafeSearchUri(uri):
         response = client.safe_search_detection(image=image)
     except KeyboardInterrupt or SystemExit:
         return
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         return 6
     if response.error.message:
+        logger.error(f"GOOGLE API ERROR: {response.error.message}")
         return 6
     safe = response.safe_search_annotation
 
@@ -65,7 +72,10 @@ def getRecommendDance():
         cur_url = "http://api.bilibili.com/x/space/arc/search?mid=" + rand_user + "&pn=1&ps=10&tid=129"
         try:
             html = request.urlopen(cur_url)
-        except:
+        except KeyboardInterrupt or SystemExit:
+            return
+        except Exception as e:
+            logger.exception(e)
             return -1
         data = json.loads(html.read().decode('utf-8'))
         dance_list = data["data"]["list"]["vlist"]
@@ -85,7 +95,10 @@ def getRecommendDance():
 def getTop3DanceToday():
     try:
         html = request.urlopen(dance_api)
-    except:
+    except KeyboardInterrupt or SystemExit:
+        return
+    except Exception as e:
+        logger.exception(e)
         return -1
     count = 0
     dance_data = json.loads(html.read().decode('utf-8'))
