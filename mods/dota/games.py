@@ -82,9 +82,10 @@ def processInfo(playerId, matchesArgs=""):
 
 def getGamesIn24Hrs(playerId):
     player_data = getDotaPlayerInfo(playerId)
-    if type(player_data) == type(""):
+    if isinstance(player_data, dict):
+        player_name = player_data["steamAccount"]["name"]
+    else:
         return error_codes[player_data]
-    player_name = player_data["steamAccount"]["name"]
     res = processInfoOpenDota(playerId)
     report = player_name
     if len(res) == 0:
@@ -125,8 +126,8 @@ def getStat(playerId, total=20):
 def getLatestGamesStat(playerId, total=20):
     res = {}
     player_data = getDotaPlayerInfo(playerId, "/summary")
-    if type(player_data) == type(""):
-        return error_codes[player_data]
+    if isinstance(player_data, str):
+        return error_codes[player_data], 0, 0, 0, ""
     games_data = getDotaGamesInfo(playerId,
                                   "?take=" + str(total) + "&include=Player")
 
@@ -160,11 +161,11 @@ def getLatestGamesStat(playerId, total=20):
 def getLatestComparingStat(playerIdA, playerIdB, total=20):
     reportsA, kdaA, gpmA, xpmA, player_nameA = getLatestGamesStat(
         playerIdA, total)
-    if type(reportsA) == type(""):
+    if isinstance(reportsA, str):
         return reportsA
     reportsB, kdaB, gpmB, xpmB, player_nameB = getLatestGamesStat(
         playerIdB, total)
-    if type(reportsB) == type(""):
+    if isinstance(reportsB, str):
         return reportsB
     cmp_results = list(
         map(lambda a, b: '<' if a < b else '='

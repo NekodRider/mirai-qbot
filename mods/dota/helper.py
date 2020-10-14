@@ -1,5 +1,6 @@
 from urllib import request
 from pathlib import Path
+import typing as T
 import json
 import time
 
@@ -8,7 +9,7 @@ from .constants import hero_dict, hero_dict_en
 dota_dict_path = Path(__file__).parent.joinpath("dota_id.json")
 
 
-def getDotaPlayerInfo(playerId, playerArgs=""):
+def getDotaPlayerInfo(playerId, playerArgs="") -> T.Union[dict, str]:
     url = f"https://api.stratz.com/api/v1/Player/{playerId}{playerArgs}"
     try:
         html = request.urlopen(url)
@@ -80,7 +81,10 @@ def getDotaHero(playerId, heroName):
             break
     if hero_id == -1:
         return 0
-    res["name"] = getDotaPlayerInfo(playerId)["steamAccount"]["name"]
+    res["name"] = getDotaPlayerInfo(playerId)
+    if type(res["name"]) != dict:
+        raise TypeError("Expected dict but found:", res["name"])
+    res["name"] = res["name"]["steamAccount"]["name"]
     url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}?gameMode=1,2,3,4"
     html = request.urlopen(url)
     txt = html.read().decode("utf-8")

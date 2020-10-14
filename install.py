@@ -30,7 +30,7 @@ with open(rc_file, "r", encoding="utf-8") as f:
             break
 with open(rc_file, "w", encoding="utf-8") as f:
     f.writelines(flist)
-font_cache_path = matplotlib.get_cachedir()
+font_cache_path = matplotlib.get_cachedir()  #type: ignore
 shutil.rmtree(font_cache_path)
 os.system("timedatectl set-timezone Asia/Shanghai")
 os.system(
