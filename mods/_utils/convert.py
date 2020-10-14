@@ -13,4 +13,4 @@ def groupFromStr(s):
         p = MemberPerm.Owner
     else:
         p = MemberPerm.Administrator
-    return Group(id=int(sl[0]), name=sl[1], accountPerm=p)
+    return Group(id=int(sl[0]), name=sl[1], permission=p)
