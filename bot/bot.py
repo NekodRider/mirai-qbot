@@ -39,6 +39,7 @@ class Bot(object):
     command_queue = Queue()
     loop = asyncio.get_event_loop()
     schedule_task_list = []
+    history = None
 
     def __init__(self, app_configs: Dict, configs: Dict):
         self.commands = {}
@@ -139,22 +140,25 @@ class Bot(object):
             self.logger.error(f'未能导入 "{module_path}", error: {e}')
             self.logger.exception(e)
 
+    async def simpleRecallLastMessage(self):
+        await self.app.revokeMessage(self.history)
+
     async def sendMessage(self, subject: Union[Tuple[str, int], Group, Member,
                                                Friend], msg: MessageChain):
         if isinstance(subject, Member):
             new_msg = MessageChain.create([At(subject.id)])
             new_msg.plus(msg)
-            await self.app.sendGroupMessage(subject.group, new_msg)
+            ret = await self.app.sendGroupMessage(subject.group, new_msg)
         if isinstance(subject, Group):
-            await self.app.sendGroupMessage(subject, msg)
+            ret = await self.app.sendGroupMessage(subject, msg)
         elif isinstance(subject, Friend):
-            await self.app.sendFriendMessage(subject, msg)
+            ret = await self.app.sendFriendMessage(subject, msg)
         elif isinstance(subject, tuple):
             if subject[0] == "Friend":
-                await self.app.sendFriendMessage(subject[1], msg)
+                ret = await self.app.sendFriendMessage(subject[1], msg)
             else:
-                await self.app.sendGroupMessage(subject[1], msg)
-        pass
+                ret = await self.app.sendGroupMessage(subject[1], msg)
+        self.history = ret
 
     async def judge(self, subject: Union[Member, Friend],
                     message: MessageChain):
