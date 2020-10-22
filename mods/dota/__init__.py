@@ -59,7 +59,7 @@ async def stat_handler(*args, subject: T.Union[Member, Friend]):
         logger.info(f"[STAT]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        if type(num[0]) == type(query_id) and query_id == num[0]:
+        if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
@@ -88,7 +88,7 @@ async def star_handler(*args, subject: T.Union[Member, Friend]):
         logger.info(f"[STAR]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        if type(num[0]) == type(query_id) and query_id == num[0]:
+        if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
@@ -159,7 +159,7 @@ async def winrate_handler(*args, subject: T.Union[Member, Friend]):
         logger.info(f"[WINRATE]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        if type(num[0]) == type(query_id) and query_id == num[0]:
+        if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
         query_id = dota_id_dict[query_id]
         args = 20
@@ -195,24 +195,23 @@ async def setdota_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("ID 应由数字组成")])
     dota_id_dict[args[0]] = args[1]
     updateJSON(dota_dict_path, dota_id_dict)
-    return MessageChain.create([Plain("添加成功！")])
+    return MessageChain.create([Plain(f"添加成功！{args[0]}->{args[1]}")])
 
 
-@args_parser(2, 0)
 async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
     '''玩家间最近胜率数据对比
-
-    用法: /wrcp (id_a) id_b (num)'''
+        
+    用法: /wrcp id_a id_b (num)'''
     args = list(args)
     if len(args) < 2:
         return MessageChain.create(
-            [Plain(f"缺少参数或参数过多:{args},用法: /wrcp (id_a) id_b (num)")])
+            [Plain(f"缺少参数或参数过多:{args},用法: /wrcp id_a id_b (num)")])
     try:
         num = int(args[-1])
         ids = args[:len(args) - 1]
-    except:
+    except ValueError:
         num = 0
-        ids = list(args)
+        ids = args
     for no, i in enumerate(ids):
         if i not in dota_id_dict.keys():
             logger.info("[WRCP]未添加用户 " + i)
