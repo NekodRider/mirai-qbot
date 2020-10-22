@@ -56,23 +56,27 @@ class Bot(object):
         self.load_mods()
 
     async def processor(self):
-        while True:
-            command_queue = self.command_queue
-            if not command_queue.empty():
-                message = command_queue.get()
-                if type(message[0]) == list:
-                    msg = message[0]
-                else:
-                    try:
-                        msg = await message[0](*message[1], **message[2])
-                    except KeyboardInterrupt or SystemExit:
-                        return
-                    except Exception as e:
-                        self.logger.exception(e)
-                        return
-                command_queue.task_done()
-                self.message_queue.put((message[2]["subject"], msg))
-            await asyncio.sleep(1)
+        try:
+            while True:
+                command_queue = self.command_queue
+                if not command_queue.empty():
+                    message = command_queue.get()
+                    if type(message[0]) == list:
+                        msg = message[0]
+                    else:
+                        try:
+                            msg = await message[0](*message[1], **message[2])
+                        except KeyboardInterrupt or SystemExit:
+                            return
+                        except Exception as e:
+                            self.logger.exception(e)
+                            return
+                    command_queue.task_done()
+                    self.message_queue.put((message[2]["subject"], msg))
+                await asyncio.sleep(1)
+        except Exception as e:
+            self.logger.exception(e)
+            self.init_processors(1)
 
     async def sender(self):
         while True:
