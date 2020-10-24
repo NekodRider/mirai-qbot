@@ -147,12 +147,18 @@ class Bot(object):
     async def simpleRecallLastMessage(self):
         await self.app.revokeMessage(self.history)
 
-    async def sendMessage(self, subject: Union[Tuple[str, int], Group, Member,
-                                               Friend], msg: MessageChain):
+    async def sendMessage(self,
+                          subject: Union[Tuple[str, int], Group, Member,
+                                         Friend],
+                          msg: MessageChain,
+                          withAt=True):
         if isinstance(subject, Member):
-            new_msg = MessageChain.create([At(subject.id)])
-            new_msg.plus(msg)
-            ret = await self.app.sendGroupMessage(subject.group, new_msg)
+            if not withAt:
+                ret = await self.app.sendGroupMessage(subject.group, msg)
+            else:
+                new_msg = MessageChain.create([At(subject.id)])
+                new_msg.plus(msg)
+                ret = await self.app.sendGroupMessage(subject.group, new_msg)
         if isinstance(subject, Group):
             ret = await self.app.sendGroupMessage(subject, msg)
         elif isinstance(subject, Friend):
