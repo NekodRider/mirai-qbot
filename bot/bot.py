@@ -4,7 +4,7 @@ import collections
 import importlib
 import re
 import time
-from functools import partial
+from functools import lru_cache, partial
 from pathlib import Path
 from queue import Queue
 from threading import Thread
@@ -24,6 +24,7 @@ from graia.scheduler.timers import *
 
 from .functions import help_handler, schedule_handler
 from .logger import defaultLogger, DefaultLogger
+from .db import Storage
 
 
 class Bot(object):
@@ -40,6 +41,7 @@ class Bot(object):
     loop = asyncio.get_event_loop()
     schedule_task_list = []
     history = None
+    db = None
 
     def __init__(self, app_configs: Dict, configs: Dict):
         self.commands = {}
@@ -53,6 +55,7 @@ class Bot(object):
                                          connect_info=Session(**app_configs),
                                          logger=self.logger)
         self.prefix = configs['prefix']
+        self.db = Storage.load()
         self.load_mods()
 
     async def processor(self):
@@ -187,6 +190,7 @@ class Bot(object):
                             f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:" +
                             message_str)
                     self.command_queue.put((self.commands[comm], args, {
+                        "bot": self,
                         "subject": subject
                     }))
         except KeyboardInterrupt or SystemExit:

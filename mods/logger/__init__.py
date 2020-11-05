@@ -5,8 +5,10 @@ from graia.application.friend import Friend
 from pathlib import Path
 import typing as T
 
+from bot import Bot
 
-async def logger_handler(*args, subject: T.Union[Member, Friend]):
+
+async def logger_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     with open(Path(__file__).parent.parent.parent.joinpath(
             "logs", "mirai_bot.log"),
               "r",

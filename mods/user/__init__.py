@@ -8,11 +8,12 @@ from graia.application.message.elements.internal import Plain
 
 from .helper import (args_parser, calcJrrp, getUserInfo, humanisticCare,
                      updateUserInfo)
+from bot import Bot
 
 __all__ = (getUserInfo, updateUserInfo, args_parser)
 
 
-async def setname_handler(*args, subject: T.Union[Member, Friend]):
+async def setname_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''设置昵称
 
     用法: /setname 昵称'''
@@ -32,7 +33,7 @@ async def setname_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("修改失败qwq")])
 
 
-async def name_handler(*args, subject: T.Union[Member, Friend]):
+async def name_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''显示昵称
 
     用法: /name'''
@@ -43,7 +44,7 @@ async def name_handler(*args, subject: T.Union[Member, Friend]):
     ])
 
 
-async def jrrp_handler(*args, subject: T.Union[Member, Friend]):
+async def jrrp_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''查询今日人品
 
     用法: /jrrp'''
@@ -59,7 +60,8 @@ async def jrrp_handler(*args, subject: T.Union[Member, Friend]):
     nickname = nickname.upper()
     msg = '%s今日人品为%d，%s'
     rp = humanisticCare(
-        lambda offset: calcJrrp(subject.group.id, subject.id, 1 - offset), 1, #type: ignore
+        lambda offset: calcJrrp(subject.group.id, subject.id, 1 - offset),  #type: ignore
+        1,
         (5, 50))
     postfix = 'NB！！！'
     if rp == 0:

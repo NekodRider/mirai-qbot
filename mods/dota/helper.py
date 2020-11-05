@@ -13,7 +13,8 @@ def getDotaPlayerInfo(playerId, playerArgs="") -> T.Union[dict, str]:
     url = f"https://api.stratz.com/api/v1/Player/{playerId}{playerArgs}"
     try:
         html = request.urlopen(url)
-    except:
+    except Exception as e:
+        print(url, e)
         return "404_NOT_FOUND"
     player_data = json.loads(html.read().decode("utf-8"))
     if playerArgs == "" and player_data["steamAccount"]["name"] == "Unknown":

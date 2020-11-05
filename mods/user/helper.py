@@ -14,7 +14,7 @@ def args_parser(num, index=None):
     def decorator(func):
 
         @functools.wraps(func)
-        def wrapper(*args, subject):
+        def wrapper(*args, bot, subject):
             if len(args) < num:
                 r = getUserInfo(subject.id)
                 userId = r and r["nickname"]
@@ -25,7 +25,7 @@ def args_parser(num, index=None):
                         args = tuple(a)
                     else:
                         args += (userId,)
-            return func(*args, subject=subject)
+            return func(*args, bot=bot, subject=subject)
 
         return wrapper
 

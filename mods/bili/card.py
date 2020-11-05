@@ -15,7 +15,8 @@ def getCards(uid, timeout=600):
     for card in cards:
         if card["desc"]["type"] != 8:
             continue
-        if time.time() - card["desc"]["timestamp"] > timeout:
+        if time.time() - card["desc"]["timestamp"] > timeout or time.time(
+        ) < card["desc"]["timestamp"]:
             break
         tmp = {}
         card_info = json.loads(card["card"])
