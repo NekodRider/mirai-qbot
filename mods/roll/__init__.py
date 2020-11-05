@@ -6,8 +6,10 @@ import typing as T
 import random
 import re
 
+from bot import Bot
 
-async def roll_handler(*args, subject: T.Union[Member, Friend]):
+
+async def roll_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''按照所给参数roll点
 
     用法: /roll 参数 如/roll 2d6+4代表 roll 2次6面骰子再加4 '''
@@ -19,7 +21,7 @@ async def roll_handler(*args, subject: T.Union[Member, Friend]):
         res = re.match(r"(\d+d\d+)(\+\d+)*", arg)
         if not res:
             return MessageChain.create([Plain("参数格式不对 请输入 2d6+4 形式")])
-        d, p = res[1], res[2]   
+        d, p = res[1], res[2]
         param = [int(x) if x != '' else 0 for x in d.split("d")]
         if param[0] > 100 or param[1] > 999999 or 0 in param:
             msg.append(Plain(f"{param[0]}d{param[1]} 参数为0或过大\n"))

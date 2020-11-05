@@ -203,13 +203,10 @@ def getWinRateGraph(playerId, total=20):
 def getCompWinRateGraph(playerIdList, total=20):
     winning_rate_list = []
     player_name_list = []
-    graph_max, graph_min = 0, 100
     for pid in playerIdList:
         wr, pn = getWinRateList(pid, total)
         if isinstance(wr, str):
             return wr, 0
-        graph_max = np.max(wr + [graph_max])
-        graph_min = np.min(wr + [graph_min])
         winning_rate_list.append(wr)
         player_name_list.append(pn)
 
@@ -217,10 +214,11 @@ def getCompWinRateGraph(playerIdList, total=20):
 
     plt.figure(figsize=(7.5, 5.5))
     plt.title('最近 ' + str(total) + " 场游戏胜率对比")
-    for no, wr in enumerate(winning_rate_list):
-        color = [random.random() for i in range(3)]
-        plt.plot(graph_index, wr, color=color, label=player_name_list[no])
-        plt.scatter(graph_index, wr, color=color, s=15)
+    pltr = plt.twinx()
+    plt.plot(graph_index, wr[0], c="r", label=player_name_list[0])
+    plt.scatter(graph_index, wr[0], color="r", s=15)
+    pltr.plot(graph_index, wr[1], c="b", label=player_name_list[1])
+    pltr.scatter(graph_index, wr[1], color="b", s=15)
     plt.xlabel('场次')
     plt.ylabel('胜率百分比')
     x_major_locator = plt.MultipleLocator(total // 10 if total >= 10 else 1)
@@ -229,7 +227,6 @@ def getCompWinRateGraph(playerIdList, total=20):
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.xlim(-0.5, total + 0.5)
-    plt.ylim(graph_min - 0.5, graph_max + 1.5)
     plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
     plt.draw()
     pic_name = str(
@@ -237,6 +234,46 @@ def getCompWinRateGraph(playerIdList, total=20):
                                        "_winning_rate.png"))
     plt.savefig(pic_name)
     return pic_name, player_name_list
+
+
+# old one
+# def getCompWinRateGraph(playerIdList, total=20):
+#     winning_rate_list = []
+#     player_name_list = []
+#     graph_max, graph_min = 0, 100
+#     for pid in playerIdList:
+#         wr, pn = getWinRateList(pid, total)
+#         if isinstance(wr, str):
+#             return wr, 0
+#         graph_max = np.max(wr + [graph_max])
+#         graph_min = np.min(wr + [graph_min])
+#         winning_rate_list.append(wr)
+#         player_name_list.append(pn)
+
+#     graph_index = range(0, total + 1)
+
+#     plt.figure(figsize=(7.5, 5.5))
+#     plt.title('最近 ' + str(total) + " 场游戏胜率对比")
+#     for no, wr in enumerate(winning_rate_list):
+#         color = [random.random() for i in range(3)]
+#         plt.plot(graph_index, wr, color=color, label=player_name_list[no])
+#         plt.scatter(graph_index, wr, color=color, s=15)
+#     plt.xlabel('场次')
+#     plt.ylabel('胜率百分比')
+#     x_major_locator = plt.MultipleLocator(total // 10 if total >= 10 else 1)
+#     ax = plt.gca()
+#     ax.xaxis.set_major_locator(x_major_locator)
+#     ax.spines['top'].set_visible(False)
+#     ax.spines['right'].set_visible(False)
+#     plt.xlim(-0.5, total + 0.5)
+#     plt.ylim(graph_min - 0.5, graph_max + 1.5)
+#     plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
+#     plt.draw()
+#     pic_name = str(
+#         Path(__file__).parent.joinpath("".join(playerIdList[:2]) +
+#                                        "_winning_rate.png"))
+#     plt.savefig(pic_name)
+#     return pic_name, player_name_list
 
 
 async def getDotaStory(matchId):

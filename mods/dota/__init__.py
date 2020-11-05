@@ -26,7 +26,7 @@ if not isinstance(dota_id_dict, dict):
 
 
 @args_parser(1)
-async def dota_handler(*args, subject: T.Union[Member, Friend]):
+async def dota_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''展示最近24小时(上限10场)游戏数据
 
     用法: /dota (id)'''
@@ -40,14 +40,14 @@ async def dota_handler(*args, subject: T.Union[Member, Friend]):
         query_id = dota_id_dict[query_id]
         res = getGamesIn24Hrs(query_id)
         if res in ('请输入正确steam ID!', '该玩家不存在!'):
-            logger.info("[DOTA]" + res)
+            logger.info(f"[DOTA]{res}, {args}")
         else:
             logger.info("[DOTA]返回成功")
-        return MessageChain.create([Plain(res)])
+        return MessageChain.create([Plain(f"{res}, {args}")])
 
 
 @args_parser(2, 0)
-async def stat_handler(*args, subject: T.Union[Member, Friend]):
+async def stat_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''展示最近指定场数(默认20场)游戏平均数据
 
     用法: /stat (id) (num)'''
@@ -76,7 +76,7 @@ async def stat_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(2, 0)
-async def star_handler(*args, subject: T.Union[Member, Friend]):
+async def star_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''展示最近指定场数(默认20场)游戏五星图数据
 
     用法: /star (id) (num)'''
@@ -113,7 +113,7 @@ async def star_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(3, 0)
-async def compare_handler(*args, subject: T.Union[Member, Friend]):
+async def compare_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''玩家间最近平均数据对比
 
     用法: /comp (id_a) id_b (num)'''
@@ -147,7 +147,7 @@ async def compare_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(2, 0)
-async def winrate_handler(*args, subject: T.Union[Member, Friend]):
+async def winrate_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''最近胜率图展示
 
     用法: /winrate (id) (num)'''
@@ -184,7 +184,7 @@ async def winrate_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(2, 0)
-async def setdota_handler(*args, subject: T.Union[Member, Friend]):
+async def setdota_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''设置用户对应的dota id
 
     用法: /setdota 昵称 数字id'''
@@ -198,7 +198,8 @@ async def setdota_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create([Plain(f"添加成功！{args[0]}->{args[1]}")])
 
 
-async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
+async def winrate_compare_handler(*args, bot: Bot, subject: T.Union[Member,
+                                                                    Friend]):
     '''玩家间最近胜率数据对比
         
     用法: /wrcp id_a id_b (num)'''
@@ -234,7 +235,8 @@ async def winrate_compare_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(2, 0)
-async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
+async def star_compare_handler(*args, bot: Bot, subject: T.Union[Member,
+                                                                 Friend]):
     '''玩家间最近五星图对比
 
     用法: /stcp (id_a) id_b (num)'''
@@ -269,7 +271,7 @@ async def star_compare_handler(*args, subject: T.Union[Member, Friend]):
         return msg
 
 
-async def dotanews_handler(*args, subject: T.Union[Member, Friend]):
+async def dotanews_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''DOTA新闻订阅
 
     用法: /dotanews'''
@@ -287,7 +289,7 @@ async def dotanews_handler(*args, subject: T.Union[Member, Friend]):
     return msg
 
 
-async def rmdotanews_handler(*args, subject: T.Union[Member, Friend]):
+async def rmdotanews_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''DOTA新闻取消订阅
 
     用法: /rmdotanews'''
@@ -308,7 +310,7 @@ async def rmdotanews_handler(*args, subject: T.Union[Member, Friend]):
 
 
 @args_parser(2, 0)
-async def hero_handler(*args, subject: T.Union[Member, Friend]):
+async def hero_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''展示玩家英雄平均数据
 
     用法: /hero (id) 英雄名'''
@@ -333,7 +335,7 @@ async def hero_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain(res)])
 
 
-async def story_handler(*args, subject: T.Union[Member, Friend]):
+async def story_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''dota战报展示
 
     用法: /story 比赛id'''

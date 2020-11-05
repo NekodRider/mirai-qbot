@@ -20,7 +20,7 @@ BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝", "Google 晕了Orz"]
 
 
-async def dance_handler(*args, subject: T.Union[Member, Friend]):
+async def dance_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''B站舞蹈区排行
 
     用法: /dance'''
@@ -36,7 +36,7 @@ async def dance_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def recommend_handler(*args, subject: T.Union[Member, Friend]):
+async def recommend_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''td金牌推荐舞见视频
 
     用法: /recommend'''
@@ -52,7 +52,7 @@ async def recommend_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def live_handler(*args, subject: T.Union[Member, Friend]):
+async def live_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''B站直播间开播订阅
 
     用法: /live 房间号'''
@@ -113,7 +113,7 @@ async def live_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def rmlive_handler(*args, subject: T.Union[Member, Friend]):
+async def rmlive_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''取消订阅直播间
 
     用法: /rmlive 房间号'''
@@ -141,7 +141,7 @@ async def rmlive_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def up_handler(*args, subject: T.Union[Member, Friend]):
+async def up_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''订阅UP主投稿
 
     用法: /up UP主uid'''
@@ -192,7 +192,7 @@ async def up_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def rmup_handler(*args, subject: T.Union[Member, Friend]):
+async def rmup_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''取消订阅UP主投稿
 
     用法: /rmup UP主uid'''
