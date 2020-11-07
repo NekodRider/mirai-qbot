@@ -6,11 +6,10 @@ from graia.application.group import Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain
 
-from .helper import (args_parser, calcJrrp, getUserInfo, humanisticCare,
-                     updateUserInfo)
+from .helper import (args_parser, calcJrrp, humanisticCare)
 from bot import Bot
 
-__all__ = (getUserInfo, updateUserInfo, args_parser)
+__all__ = (args_parser)
 
 
 async def setname_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
@@ -20,14 +19,11 @@ async def setname_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     if len(args) == 0:
         return MessageChain.create([Plain('使用示例: /setname yd')])
     [name, *_] = args
-    oldName = getUserInfo(subject.id)
+    oldName = bot.db.get(subject, "nickname")
     try:
-        updateUserInfo(subject.id, {'nickname': name})
-        return MessageChain.create([
-            Plain('成功从' +
-                  (oldName['nickname'] if oldName is not None else '-未设定-') +
-                  '变更为' + name)
-        ])
+        bot.db.set(subject, {'nickname': name})
+        return MessageChain.create(
+            [Plain('成功从' + (oldName if oldName else '-未设定-') + '变更为' + name)])
     except Exception as e:
         logger.debug(e)
         return MessageChain.create([Plain("修改失败qwq")])
@@ -37,10 +33,9 @@ async def name_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''显示昵称
 
     用法: /name'''
-    name = getUserInfo(subject.id)
+    name = bot.db.get(subject, "nickname")
     return MessageChain.create([
-        Plain(('你的名字是 ' + name['nickname'] +
-               ' ！') if name is not None else '还没设定哦，通过 /setname yd 修改名字~')
+        Plain(('你的名字是 ' + name + ' ！') if name else '还没设定哦，通过 /setname 修改名字~')
     ])
 
 
@@ -48,21 +43,17 @@ async def jrrp_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''查询今日人品
 
     用法: /jrrp'''
-    if isinstance(subject, Friend):
-        return MessageChain.create([Plain("尚未支持该类型")])
-    target = getUserInfo(subject.id)
-    nickname = subject.name
+    nickname = bot.db.get(subject, "nickname")
     hint = ''
-    if not target:
+    if not nickname:
         hint = '\n\n可以通过 /setname 为自己设定名字哦！'
     else:
-        nickname = target['nickname']
-    nickname = nickname.upper()
+        nickname = nickname.upper()
     msg = '%s今日人品为%d，%s'
     rp = humanisticCare(
-        lambda offset: calcJrrp(subject.group.id, subject.id, 1 - offset),  #type: ignore
-        1,
-        (5, 50))
+        lambda offset: calcJrrp(
+            subject.id if isinstance(subject, Friend) else subject.group.id,
+            subject.id, 1 - offset), 1, (5, 50))
     postfix = 'NB！！！'
     if rp == 0:
         postfix = 'SB!!!!'
