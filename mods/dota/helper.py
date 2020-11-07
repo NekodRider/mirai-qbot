@@ -1,12 +1,9 @@
 from urllib import request
-from pathlib import Path
 import typing as T
 import json
 import time
 
 from .constants import hero_dict, hero_dict_en
-
-dota_dict_path = Path(__file__).parent.joinpath("dota_id.json")
 
 
 def getDotaPlayerInfo(playerId, playerArgs="") -> T.Union[dict, str]:

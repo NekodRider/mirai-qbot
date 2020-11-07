@@ -5,6 +5,7 @@ import typing as T
 from pathlib import Path
 
 from bot import Bot
+import bot
 from bot.logger import defaultLogger as logger
 from graia.application.friend import Friend
 from graia.application.group import Member
@@ -17,12 +18,9 @@ from mods.user import args_parser
 from .diagrams import (getCompStarStat, getCompWinRateGraph, getDotaStory,
                        getStarStat, getWinRateGraph)
 from .games import getGamesIn24Hrs, getLatestComparingStat, getStat
-from .helper import dota_dict_path, getDotaHero, getDotaNews
+from .helper import getDotaHero, getDotaNews
 
 NEWS_JSON_PATH = Path(__file__).parent.joinpath("news.json")
-dota_id_dict = readJSON(dota_dict_path)
-if not isinstance(dota_id_dict, dict):
-    raise TypeError("Expected dict but found:", dota_id_dict)
 
 
 @args_parser(1)
@@ -33,17 +31,20 @@ async def dota_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     if len(args) != 1:
         return MessageChain.create([Plain(f"缺少参数或参数过多:{args}, 用法: /dota (id)")])
     query_id = args[0]
-    if query_id not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+    else:
+        dota_id = bot.db.get(subject, "dota_id").get(query_id)
+    if not dota_id:
         logger.info(f"[DOTA]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        query_id = dota_id_dict[query_id]
-        res = getGamesIn24Hrs(query_id)
+        res = getGamesIn24Hrs(dota_id)
         if res in ('请输入正确steam ID!', '该玩家不存在!'):
             logger.info(f"[DOTA]{res}, {args}")
         else:
             logger.info("[DOTA]返回成功")
-        return MessageChain.create([Plain(f"{res}, {args}")])
+        return MessageChain.create([Plain(f"{res}")])
 
 
 @args_parser(2, 0)
@@ -55,13 +56,17 @@ async def stat_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
         return MessageChain.create(
             [Plain(f"缺少参数或参数过多:{args},用法: /stat (id) (num)")])
     query_id, *num = args
-    if query_id not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+    else:
+        dota_id = bot.db.get(subject, "dota_id").get(query_id)
+    if not dota_id:
         logger.info(f"[STAT]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
         if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
-        query_id = dota_id_dict[query_id]
+        query_id = dota_id
         args = 20
         if len(num) == 1:
             try:
@@ -84,13 +89,17 @@ async def star_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
         return MessageChain.create(
             [Plain(f"缺少参数或参数过多:{args},用法: /star (id) (num)")])
     query_id, *num = args
-    if query_id not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+    else:
+        dota_id = bot.db.get(subject, "dota_id").get(query_id)
+    if not dota_id:
         logger.info(f"[STAR]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
         if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
-        query_id = dota_id_dict[query_id]
+        query_id = dota_id
         args = 20
         if len(num) == 1:
             try:
@@ -123,15 +132,21 @@ async def compare_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     [id_a, id_b, *num] = args
     if type(id_a) == type(id_b) and id_a == id_b:
         id_b = num[0]
-    if id_a not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id_a = bot.db.get(subject.group, "dota_id").get(id_a)
+        dota_id_b = bot.db.get(subject.group, "dota_id").get(id_b)
+    else:
+        dota_id_a = bot.db.get(subject, "dota_id").get(id_a)
+        dota_id_b = bot.db.get(subject, "dota_id").get(id_b)
+    if not dota_id_a:
         logger.info("[COMP]未添加用户 " + id_a)
         return MessageChain.create([Plain("未添加用户 " + id_a + " ！")])
-    elif id_b not in dota_id_dict.keys():
+    elif not dota_id_b:
         logger.info("[COMP]未添加用户 " + id_b)
         return MessageChain.create([Plain("未添加用户 " + id_b + " ！")])
     else:
-        id_a = dota_id_dict[id_a]
-        id_b = dota_id_dict[id_b]
+        id_a = dota_id_a
+        id_b = dota_id_b
         args = 20
         if len(num) != 0:
             try:
@@ -155,13 +170,17 @@ async def winrate_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
         return MessageChain.create(
             [Plain(f"缺少参数或参数过多:{args},用法: /winrate (id) (num)")])
     query_id, *num = args
-    if query_id not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+    else:
+        dota_id = bot.db.get(subject, "dota_id").get(query_id)
+    if not dota_id:
         logger.info(f"[WINRATE]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
         if num and type(num[0]) == type(query_id) and query_id == num[0]:
             num = [20]
-        query_id = dota_id_dict[query_id]
+        query_id = dota_id
         args = 20
         if len(num) == 1:
             try:
@@ -193,8 +212,10 @@ async def setdota_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
             [Plain(f"缺少参数或参数过多:{args}, 用法: /setdota 昵称 数字id")])
     if re.match(r'^\d+$', args[1]) is None:
         return MessageChain.create([Plain("ID 应由数字组成")])
-    dota_id_dict[args[0]] = args[1]
-    updateJSON(dota_dict_path, dota_id_dict)
+    if isinstance(subject, Member):
+        bot.db.set(subject.group, {"dota_id": {args[0]: args[1]}})
+    else:
+        bot.db.set(subject, {"dota_id": {args[0]: args[1]}})
     return MessageChain.create([Plain(f"添加成功！{args[0]}->{args[1]}")])
 
 
@@ -214,10 +235,14 @@ async def winrate_compare_handler(*args, bot: Bot, subject: T.Union[Member,
         num = 0
         ids = args
     for no, i in enumerate(ids):
-        if i not in dota_id_dict.keys():
+        if isinstance(subject, Member):
+            dota_id = bot.db.get(subject.group, "dota_id").get(i)
+        else:
+            dota_id = bot.db.get(subject, "dota_id").get(i)
+        if not dota_id:
             logger.info("[WRCP]未添加用户 " + i)
             return MessageChain.create([Plain("未添加用户 " + i + " ！")])
-        ids[no] = dota_id_dict[i]
+        ids[no] = dota_id
     else:
         if num <= 0 or num > 50:
             num = 20
@@ -251,10 +276,14 @@ async def star_compare_handler(*args, bot: Bot, subject: T.Union[Member,
         num = 0
         ids = list(args)
     for no, i in enumerate(ids):
-        if i not in dota_id_dict.keys():
+        if isinstance(subject, Member):
+            dota_id = bot.db.get(subject.group, "dota_id").get(i)
+        else:
+            dota_id = bot.db.get(subject, "dota_id").get(i)
+        if not dota_id:
             logger.info("[STCP]未添加用户 " + i)
             return MessageChain.create([Plain("未添加用户 " + i + " ！")])
-        ids[no] = dota_id_dict[i]
+        ids[no] = dota_id
     else:
         if num <= 0 or num > 50:
             num = 20
@@ -318,11 +347,15 @@ async def hero_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
         return MessageChain.create(
             [Plain(f"缺少参数或参数过多:{args},用法: /hero (id) 英雄名")])
     query_id = args[0]
-    if query_id not in dota_id_dict.keys():
+    if isinstance(subject, Member):
+        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+    else:
+        dota_id = bot.db.get(subject, "dota_id").get(query_id)
+    if not dota_id:
         logger.info(f"[HERO]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        query_id = dota_id_dict[query_id]
+        query_id = dota_id
         res = getDotaHero(query_id, args[1])
         if isinstance(res, tuple):
             res = res[1]

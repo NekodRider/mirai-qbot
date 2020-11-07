@@ -1,3 +1,4 @@
+from bot.bot import Bot
 from re import sub
 import time
 import random
@@ -14,44 +15,21 @@ def args_parser(num, index=None):
     def decorator(func):
 
         @functools.wraps(func)
-        def wrapper(*args, bot, subject):
+        def wrapper(*args, bot: Bot, subject):
             if len(args) < num:
-                r = getUserInfo(subject.id)
-                userId = r and r["nickname"]
-                if userId is not None:
-                    if index is not None:
+                nickname = bot.db.get(subject, "nickname")
+                if nickname:
+                    if index:
                         a = list(args)
-                        a.insert(index, userId)
+                        a.insert(index, nickname)
                         args = tuple(a)
                     else:
-                        args += (userId,)
+                        args += (nickname,)
             return func(*args, bot=bot, subject=subject)
 
         return wrapper
 
     return decorator
-
-
-def getUserInfo(qq: int):
-    try:
-        return list(
-            filter(lambda a: a["qq"] == qq, readJSON(USER_DATA_PATH, True,
-                                                     [])))[0]
-    except IndexError:
-        return None
-
-
-def updateUserInfo(qq: int, info: dict):
-    data = readJSON(USER_DATA_PATH, True, [])
-    if isinstance(data, dict):
-        raise TypeError("Expected list but found:", data)
-    targets = list(filter(lambda a: a["qq"] == qq, data))
-    if len(targets) == 0:
-        info["qq"] = qq
-        return updateJSON(USER_DATA_PATH, data + [info])
-    index = data.index(targets[0])
-    data[index].update(info)
-    return updateJSON(USER_DATA_PATH, data)
 
 
 def humanisticCare(gen: Callable[[int], int], times: int, range: Tuple[int,
