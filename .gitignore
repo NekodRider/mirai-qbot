@@ -5,6 +5,7 @@ mods/test
 .venv
 logs/*
 test.py
+data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

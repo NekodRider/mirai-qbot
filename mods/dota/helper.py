@@ -11,8 +11,7 @@ def getDotaPlayerInfo(playerId, playerArgs="") -> T.Union[dict, str]:
     try:
         html = request.urlopen(url)
     except Exception as e:
-        print(url, e)
-        return "404_NOT_FOUND"
+        return f"{e}"
     player_data = json.loads(html.read().decode("utf-8"))
     if playerArgs == "" and player_data["steamAccount"]["name"] == "Unknown":
         return "NO_SUCH_PLAYER"

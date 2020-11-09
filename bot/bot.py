@@ -3,6 +3,7 @@ import asyncio
 import collections
 import importlib
 import re
+from re import sub
 import time
 from functools import lru_cache, partial
 from pathlib import Path
@@ -22,13 +23,14 @@ from graia.broadcast import Broadcast
 from graia.scheduler import SchedulerTask, Timer
 from graia.scheduler.timers import *
 
-from .functions import help_handler, schedule_handler
+from .handlers import help_handler, task_handler, on_handler, off_handler, mods_handler
 from .logger import defaultLogger, DefaultLogger
 from .db import Storage
 
 
 class Bot(object):
     directs = {}
+    inner_commands = {}
     commands = {}
     schedules = {}
     docs = {}
@@ -112,10 +114,16 @@ class Bot(object):
         mod_dir = Path(__file__).parent.parent.joinpath("mods")
         module_prefix = mod_dir.name
 
-        self.commands[self.prefix + "help"] = partial(help_handler, self)
-        self.commands[self.prefix + "task"] = partial(schedule_handler, self)
+        self.inner_commands[self.prefix + "help"] = help_handler
+        self.inner_commands[self.prefix + "task"] = task_handler
+        self.inner_commands[self.prefix + "on"] = on_handler
+        self.inner_commands[self.prefix + "off"] = off_handler
+        self.inner_commands[self.prefix + "mods"] = mods_handler
         self.docs[self.prefix + "help"] = f"帮助指令\n\n用法: {self.prefix}help"
         self.docs[self.prefix + "task"] = f"任务指令\n\n用法: {self.prefix}task"
+        self.docs[self.prefix + "on"] = f"启用模块指令\n\n用法: {self.prefix}on 模块名"
+        self.docs[self.prefix + "off"] = f"关闭模块指令\n\n用法: {self.prefix}off 模块名"
+        self.docs[self.prefix + "mods"] = f"模块查询指令\n\n用法: {self.prefix}mods 关键字"
 
         for mod in mod_dir.iterdir():
             if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath(
@@ -186,7 +194,7 @@ class Bot(object):
                 command_str = message_str[match.span()[0]:match.span(
                 )[1]].lower()
                 [comm, *args] = command_str.split(" ")
-                if comm in self.commands.keys():
+                if comm in self.inner_commands.keys():
                     if isinstance(subject, Member):
                         self.logger.info(
                             f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
@@ -195,10 +203,47 @@ class Bot(object):
                         self.logger.info(
                             f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:" +
                             message_str)
-                    self.command_queue.put((self.commands[comm], args, {
+                    self.command_queue.put((self.inner_commands[comm], args, {
                         "bot": self,
                         "subject": subject
                     }))
+                elif comm in self.commands.keys():
+                    if isinstance(subject, Member):
+                        cur_mods = self.db.get(subject.group, "mods", [])
+                        if comm[len(self.prefix):] in cur_mods:
+                            self.logger.info(
+                                f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
+                                + message_str)
+                            self.command_queue.put((self.commands[comm], args, {
+                                "bot": self,
+                                "subject": subject
+                            }))
+                        else:
+                            await self.sendMessage(
+                                subject,
+                                MessageChain.create([
+                                    Plain(
+                                        f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
+                                    )
+                                ]))
+                    else:
+                        cur_mods = self.db.get(subject, "mods", [])
+                        if comm[len(self.prefix):] in cur_mods:
+                            self.logger.info(
+                                f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
+                                + message_str)
+                            self.command_queue.put((self.commands[comm], args, {
+                                "bot": self,
+                                "subject": subject
+                            }))
+                        else:
+                            await self.sendMessage(
+                                subject,
+                                MessageChain.create([
+                                    Plain(
+                                        f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
+                                    )
+                                ]))
         except KeyboardInterrupt or SystemExit:
             pass
         except Exception as e:
@@ -267,3 +312,12 @@ class Bot(object):
                           logger=self.logger)
 
         t.setup_task()
+
+    async def subscribe(self, subject: Union[Group, Friend], mod: str):
+        self.db.set(subject, {"mods": [mod]})
+
+    async def unsubscribe(self, subject: Union[Group, Friend], mod: str):
+        cur_mods = self.db.get(subject, "mods", [])
+        if cur_mods and mod in cur_mods:
+            cur_mods.remove(mod)
+        self.db.set(subject, {"mods": cur_mods}, replace=True)
