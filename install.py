@@ -11,6 +11,10 @@ sys_font_dir = "/usr/share/fonts/truetype"
 # 查找字体路径
 rc_file = matplotlib.matplotlib_fname()
 font_path = Path(rc_file).parent.joinpath("fonts", "ttf")
+if not os.path.exists(font_path):
+    os.makedirs(font_path)
+if not os.path.exists(sys_font_dir):
+    os.makedirs(sys_font_dir)
 shutil.copyfile(font_file, font_path.joinpath("wqy-microhei.ttc"))
 shutil.copyfile(font_file, Path(sys_font_dir).joinpath("wqy-microhei.ttc"))
 shutil.copy(rc_file, Path(rc_file).parent.joinpath("matplotlibrc.bak"))
