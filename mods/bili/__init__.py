@@ -20,7 +20,7 @@ BILI_UP_JSON_PATH = Path(__file__).parent.joinpath("bili_upid.json")
 RACY_LIST = ["🌚🌚🌚🌚🌝", "🌚🌚🌚🌝🌝", "🌚🌚🌝🌝🌝", "🌚🌝🌝🌝🌝", "🌝🌝🌝🌝🌝", "Google 晕了Orz"]
 
 
-async def dance_handler(*args, subject: T.Union[Member, Friend]):
+async def dance_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''B站舞蹈区排行
 
     用法: /dance'''
@@ -30,13 +30,13 @@ async def dance_handler(*args, subject: T.Union[Member, Friend]):
         msg.append(Plain(str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(url[i] + "\n"))
         msg.append(Plain("se指数（by Google）：" + RACY_LIST[racy[i] - 1] + "\n"))
-        msg.append(Image.fromNetworkAddress(pic[i]))
+        msg.append(Image.fromNetworkAddress(pic[i]))  # type: ignore
         msg.append(Plain("\n"))
     logger.info("[DANCE]返回成功")
     return MessageChain.create(msg)
 
 
-async def recommend_handler(*args, subject: T.Union[Member, Friend]):
+async def recommend_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''td金牌推荐舞见视频
 
     用法: /recommend'''
@@ -46,44 +46,53 @@ async def recommend_handler(*args, subject: T.Union[Member, Friend]):
         msg.append(Plain(str(i + 1) + "：" + ti + " by " + author[i] + "\n"))
         msg.append(Plain(url[i] + "\n"))
         msg.append(Plain("se指数（by Google）：" + RACY_LIST[racy[i] - 1] + "\n"))
-        msg.append(Image.fromNetworkAddress(pic[i]))
+        msg.append(Image.fromNetworkAddress(pic[i]))  # type: ignore
         msg.append(Plain("\n"))
     logger.info("[RECOMMEND]返回成功")
     return MessageChain.create(msg)
 
 
-async def live_handler(*args, subject: T.Union[Member, Friend]):
+async def live_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''B站直播间开播订阅
 
     用法: /live 房间号'''
     if len(args) == 0:
         msg = []
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
+        if not isinstance(monitor_dict, dict):
+            raise TypeError("Expected dict but found:", monitor_dict)
         for room_id, target in monitor_dict.items():
             if room_id == "time":
                 continue
             if (isinstance(subject, Member) and groupToStr(subject.group) in target) \
                     or (isinstance(subject, Friend) and subject.id in target):
                 res = getLiveInfo(room_id)
+                if isinstance(res, str):
+                    continue
                 if res['isLive'] == 0:
                     msg.append(Plain(res['name'] + " 未在直播.\n"))
                 else:
-                    msg.append(Plain(
-                        res['name'] + " 正在直播 " + "[{}]{}\n{}".format(res["area_name"], res["title"], res["url"])))
+                    msg.append(
+                        Plain(res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
+                            res["area_name"], res["title"], res["url"])))
                     msg.append(Image.fromNetworkAddress(res["keyframe"]))
         return MessageChain.create(msg)
 
     room_id = args[0]
     res = getLiveInfo(room_id)
-    if res == "error":
+    if isinstance(res, str):
         msg = [Plain("未找到该直播！")]
         logger.info("[LIVE]未找到该直播")
     else:
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
+        if not isinstance(monitor_dict, dict):
+            raise TypeError("Expected dict but found:", monitor_dict)
         if room_id in monitor_dict.keys():
-            if isinstance(subject, Member) and groupToStr(subject.group) not in monitor_dict[room_id]:
+            if isinstance(subject, Member) and groupToStr(
+                    subject.group) not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(groupToStr(subject.group))
-            elif isinstance(subject, Friend) and subject.id not in monitor_dict[room_id]:
+            elif isinstance(subject,
+                            Friend) and subject.id not in monitor_dict[room_id]:
                 monitor_dict[room_id].append(subject.id)
         else:
             if isinstance(subject, Member):
@@ -95,15 +104,16 @@ async def live_handler(*args, subject: T.Union[Member, Friend]):
             msg = [Plain("已加入监视列表\n" + res['name'] + " 未在直播.")]
         else:
             msg = [
-                Plain("已加入监视列表\n" + res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
-                    res["area_name"], res["title"], res["url"])),
+                Plain("已加入监视列表\n" +
+                      res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
+                          res["area_name"], res["title"], res["url"])),
                 Image.fromNetworkAddress(res["keyframe"])
             ]
         logger.info("[LIVE]返回成功")
     return MessageChain.create(msg)
 
 
-async def rmlive_handler(*args, subject: T.Union[Member, Friend]):
+async def rmlive_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''取消订阅直播间
 
     用法: /rmlive 房间号'''
@@ -111,11 +121,13 @@ async def rmlive_handler(*args, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("缺少参数或参数过多")])
     room_id = args[0]
     res = getLiveInfo(room_id)
-    if res == "error":
+    if isinstance(res, str):
         msg = [Plain("未找到该直播！")]
         logger.info("[RMLIVE]未找到该直播")
     else:
         monitor_dict = readJSON(BILI_LIVE_JSON_PATH)
+        if not isinstance(monitor_dict, dict):
+            raise TypeError("Expected dict but found:", monitor_dict)
         if room_id in monitor_dict.keys():
             if isinstance(subject, Member):
                 monitor_dict[room_id].remove(groupToStr(subject.group))
@@ -129,13 +141,15 @@ async def rmlive_handler(*args, subject: T.Union[Member, Friend]):
     return MessageChain.create(msg)
 
 
-async def up_handler(*args, subject: T.Union[Member, Friend]):
+async def up_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''订阅UP主投稿
 
     用法: /up UP主uid'''
     if len(args) == 0:
         res = "目前关注的UP主有：\n"
         up_dict = readJSON(BILI_UP_JSON_PATH)
+        if not isinstance(up_dict, dict):
+            raise TypeError("Expected dict but found:", up_dict)
         for up, target in up_dict.items():
             if up == "time":
                 continue
@@ -147,13 +161,16 @@ async def up_handler(*args, subject: T.Union[Member, Friend]):
     up_id = args[0]
     up_name = getNameByUid(up_id)
     res = getCards(up_id)
-    if res == "error":
+    if isinstance(res, str):
         msg = [Plain("未找到该UP主！")]
         logger.info("[UP]未找到该UP主")
     else:
         up_dict = readJSON(BILI_UP_JSON_PATH)
+        if not isinstance(up_dict, dict):
+            raise TypeError("Expected dict but found:", up_dict)
         if up_id in up_dict.keys():
-            if isinstance(subject, Member) and groupToStr(subject.group) not in up_dict[up_id]:
+            if isinstance(subject, Member) and groupToStr(
+                    subject.group) not in up_dict[up_id]:
                 up_dict[up_id].append(groupToStr(subject.group))
             if isinstance(subject, Friend) and subject.id not in up_dict[up_id]:
                 up_dict[up_id].append(subject.id)
@@ -168,15 +185,14 @@ async def up_handler(*args, subject: T.Union[Member, Friend]):
         else:
             msg = [Plain(f"已加入关注列表 {up_name}\n")]
             for i in res:
-                msg.append(
-                    Plain(f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
-                msg.append(Image.fromNetworkAddress(i["pic"]))
+                msg.append(Plain(f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
+                msg.append(Image.fromNetworkAddress(i["pic"]))  # type: ignore
                 msg.append(Plain("\n"))
         logger.info("[UP]返回成功")
     return MessageChain.create(msg)
 
 
-async def rmup_handler(*args, subject: T.Union[Member, Friend]):
+async def rmup_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     '''取消订阅UP主投稿
 
     用法: /rmup UP主uid'''
@@ -189,6 +205,8 @@ async def rmup_handler(*args, subject: T.Union[Member, Friend]):
         logger.info("[RMUP]未找到该UP主")
     else:
         up_dict = readJSON(BILI_UP_JSON_PATH)
+        if not isinstance(up_dict, dict):
+            raise TypeError("Expected dict but found:", up_dict)
         if up_id in up_dict.keys():
             if isinstance(subject, Member):
                 up_dict[up_id].remove(groupToStr(subject.group))
@@ -204,12 +222,16 @@ async def rmup_handler(*args, subject: T.Union[Member, Friend]):
 
 async def live_scheduler(bot: Bot):
     monitor_dict = readJSON(BILI_LIVE_JSON_PATH, defaultValue={})
+    if not isinstance(monitor_dict, dict):
+        raise TypeError("Expected dict but found:", monitor_dict)
     for room_id in monitor_dict.keys():
         res = getLiveInfo(room_id)
-        if res['isLive'] == 1 and time.time()-int(time.mktime(time.strptime(res['live_time'], "%Y-%m-%d %H:%M:%S"))) < 600:
+        if isinstance(res, dict) and res['isLive'] == 1 and time.time() - int(
+                time.mktime(time.strptime(res['live_time'],
+                                          "%Y-%m-%d %H:%M:%S"))) < 600:
             msg = MessageChain.create([
-                Plain(res['name'] + " 开播啦! " +
-                      "[{}]{}\n{}".format(res["area_name"], res["title"], res["url"])),
+                Plain(res['name'] + " 开播啦! " + "[{}]{}\n{}".format(
+                    res["area_name"], res["title"], res["url"])),
                 Image.fromNetworkAddress(res["keyframe"])
             ])
             for member in monitor_dict[room_id]:
@@ -221,15 +243,17 @@ async def live_scheduler(bot: Bot):
 
 async def up_scheduler(bot: Bot):
     up_dict = readJSON(BILI_UP_JSON_PATH, defaultValue={})
+    if not isinstance(up_dict, dict):
+        raise TypeError("Expected dict but found:", up_dict)
     for up_id in up_dict.keys():
         res = getCards(up_id)
         up_name = getNameByUid(up_id)
-        if len(res) != 0:
+        if isinstance(res, list) and len(res) != 0:
             msg = []
             for i in res:
                 msg.append(
                     Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
-                msg.append(await Image.fromRemote(i["pic"]))
+                msg.append(Image.fromNetworkAddress(i["pic"]))
                 msg.append(Plain(text="\n"))
             msg = MessageChain.create(msg)
             for member in up_dict[up_id]:
@@ -238,10 +262,14 @@ async def up_scheduler(bot: Bot):
                 else:
                     await bot.sendMessage(member, msg)
 
+
 COMMANDS = {
-    "dance": dance_handler, "recommend": recommend_handler,
-    "live": live_handler, "rmlive": rmlive_handler,
-    "up": up_handler, "rmup": rmup_handler
+    "dance": dance_handler,
+    "recommend": recommend_handler,
+    "live": live_handler,
+    "rmlive": rmlive_handler,
+    "up": up_handler,
+    "rmup": rmup_handler
 }
 
 SCHEDULES = {

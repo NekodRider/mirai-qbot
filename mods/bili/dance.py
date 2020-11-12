@@ -1,3 +1,4 @@
+from logging import log
 from urllib import request
 from pathlib import Path
 from bot.logger import defaultLogger as logger
@@ -6,8 +7,10 @@ import random
 import os
 
 black_lists = ["男"]
-up_lists = ["15385187", "84465926", "632887", "2689967", "5276",
-            "8366990", "7375428", "466272", "13346799", "8581342"]
+up_lists = [
+    "15385187", "84465926", "632887", "2689967", "5276", "8366990", "7375428",
+    "466272", "13346799", "8581342", "475250", "13346799"
+]
 
 black_ups = ["399752044", "10139490", "643928765", "348470", "32782335"]
 
@@ -21,10 +24,12 @@ def checkTitle(title):
             return -1
     return 0
 
+
 def detectSafeSearchUri(uri):
     """Detects unsafe features in the file located in Google Cloud Storage or
     on the Web."""
-    config_path = Path(__file__).parent.joinpath("Dota-Project-c6dd8c4677d4.json")
+    config_path = Path(__file__).parent.joinpath(
+        "Dota-Project-c6dd8c4677d4.json")
     if not config_path.exists():
         logger.info("GOOGLE API CREDENTIALS NOT FOUND!")
         return 6
@@ -34,16 +39,18 @@ def detectSafeSearchUri(uri):
     from google.cloud import vision
     from google.api_core.exceptions import ServiceUnavailable
     client = vision.ImageAnnotatorClient()
-    image = vision.types.Image()
+    image = vision.types.Image()  #type: ignore
     image.source.image_uri = uri
 
     try:
-        response = client.safe_search_detection(image=image)
+        response = client.safe_search_detection(image=image)  #type: ignore
     except KeyboardInterrupt or SystemExit:
         return
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         return 6
     if response.error.message:
+        logger.error(f"GOOGLE API ERROR: {response.error.message}")
         return 6
     safe = response.safe_search_annotation
 
@@ -65,8 +72,11 @@ def getRecommendDance():
         cur_url = "http://api.bilibili.com/x/space/arc/search?mid=" + rand_user + "&pn=1&ps=10&tid=129"
         try:
             html = request.urlopen(cur_url)
-        except:
-            return -1
+        except KeyboardInterrupt or SystemExit:
+            exit()
+        except Exception as e:
+            logger.exception(e)
+            exit()
         data = json.loads(html.read().decode('utf-8'))
         dance_list = data["data"]["list"]["vlist"]
         rand_dance = dance_list[random.randint(0, len(dance_list) - 1)]
@@ -85,8 +95,11 @@ def getRecommendDance():
 def getTop3DanceToday():
     try:
         html = request.urlopen(dance_api)
-    except:
-        return -1
+    except KeyboardInterrupt or SystemExit:
+        exit()
+    except Exception as e:
+        logger.exception(e)
+        exit()
     count = 0
     dance_data = json.loads(html.read().decode('utf-8'))
     author = []
