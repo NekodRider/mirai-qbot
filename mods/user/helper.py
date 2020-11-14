@@ -1,16 +1,11 @@
 from bot.bot import Bot
-from re import sub
 import time
 import random
 import functools
-from pathlib import Path
-from typing import Callable, Tuple
-from .._utils.storage import readJSON, updateJSON
-
-USER_DATA_PATH = Path(__file__).parent.joinpath("users.json")
+from typing import Callable, Tuple, Union
 
 
-def args_parser(num, index=None):
+def args_parser(num: int, index: Union[int, None] = None):
 
     def decorator(func):
 
