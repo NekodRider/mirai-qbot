@@ -123,7 +123,6 @@ class Bot(object):
                 try:
                     m = importlib.import_module(module_path)
                     if "COMMANDS" in dir(m):
-                        print(module_path)
                         for comm, func in m.COMMANDS.items():
                             comm = self.prefix + comm
                             if comm in self.commands.keys(
