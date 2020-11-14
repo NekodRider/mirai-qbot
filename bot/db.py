@@ -8,9 +8,6 @@ import pickle
 
 
 class Storage(object):
-    groups = {}
-    friends = {}
-    path = ""
 
     def __init__(self):
         self.groups = {}

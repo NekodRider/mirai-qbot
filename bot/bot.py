@@ -2,6 +2,7 @@
 import asyncio
 import collections
 import importlib
+from logging import handlers
 import re
 from re import sub
 import time
@@ -23,30 +24,24 @@ from graia.broadcast import Broadcast
 from graia.scheduler import SchedulerTask, Timer
 from graia.scheduler.timers import *
 
-from .handlers import help_handler, task_handler, on_handler, off_handler, mods_handler
+from .handlers import INNER_COMMANDS
 from .logger import defaultLogger, DefaultLogger
 from .db import Storage
 
 
 class Bot(object):
-    directs = {}
-    inner_commands = {}
-    commands = {}
-    schedules = {}
-    docs = {}
-    app = None
-    bcc = None
-    logger = None
-    prefix = None
-    message_queue = Queue()
-    command_queue = Queue()
-    loop = asyncio.get_event_loop()
-    schedule_task_list = []
-    history = None
-    db = None
 
     def __init__(self, app_configs: Dict, configs: Dict):
+        self.directs = {}
+        self.docs = {}
+        self.schedules = {}
+        self.inner_commands = {}
         self.commands = {}
+        self.schedule_task_list = []
+        self.message_queue = Queue()
+        self.command_queue = Queue()
+        self.history = None
+        self.loop = asyncio.get_event_loop()
         self.bcc = Broadcast(loop=self.loop)
         if configs['debug']:
             global defaultLogger
@@ -55,7 +50,8 @@ class Bot(object):
         self.logger = defaultLogger
         self.app = GraiaMiraiApplication(broadcast=self.bcc,
                                          connect_info=Session(**app_configs),
-                                         logger=self.logger)
+                                         logger=self.logger,
+                                         debug=configs['debug'])
         self.prefix = configs['prefix']
         self.db = Storage.load()
         self.load_mods()
@@ -111,49 +107,47 @@ class Bot(object):
             self.loop.create_task(self.sender())
 
     def load_mods(self):
+        for comm, func in INNER_COMMANDS.items():
+            comm = self.prefix + comm
+            self.inner_commands[comm], self.docs[
+                comm] = func, func.__doc__.replace("$", self.prefix)
+
         mod_dir = Path(__file__).parent.parent.joinpath("mods")
         module_prefix = mod_dir.name
 
-        self.inner_commands[self.prefix + "help"] = help_handler
-        self.inner_commands[self.prefix + "task"] = task_handler
-        self.inner_commands[self.prefix + "on"] = on_handler
-        self.inner_commands[self.prefix + "off"] = off_handler
-        self.inner_commands[self.prefix + "mods"] = mods_handler
-        self.docs[self.prefix + "help"] = f"帮助指令\n\n用法: {self.prefix}help"
-        self.docs[self.prefix + "task"] = f"任务指令\n\n用法: {self.prefix}task"
-        self.docs[self.prefix + "on"] = f"启用模块指令\n\n用法: {self.prefix}on 模块名"
-        self.docs[self.prefix + "off"] = f"关闭模块指令\n\n用法: {self.prefix}off 模块名"
-        self.docs[self.prefix + "mods"] = f"模块查询指令\n\n用法: {self.prefix}mods 关键字"
-
+        mod_count = 0
         for mod in mod_dir.iterdir():
             if mod.is_dir() and not mod.name.startswith('_') and mod.joinpath(
                     '__init__.py').exists():
-                self.load_mod(f'{module_prefix}.{mod.name}')
+                module_path = f'{module_prefix}.{mod.name}'
+                try:
+                    m = importlib.import_module(module_path)
+                    if "COMMANDS" in dir(m):
+                        print(module_path)
+                        for comm, func in m.COMMANDS.items():
+                            comm = self.prefix + comm
+                            if comm in self.commands.keys(
+                            ) or comm in self.inner_commands.keys():
+                                self.logger.error(
+                                    f'未能导入 "{module_path}", error: 已存在指令{comm}')
+                            else:
+                                self.commands[comm], self.docs[
+                                    comm] = func, func.__doc__
+                    if "SCHEDULES" in dir(m):
+                        for name, kwargs in m.SCHEDULES.items():
+                            self.loop.create_task(self.schedule(name, **kwargs))
+                    if "DIRECTS" in dir(m):
+                        for name, func in m.DIRECTS.items():
+                            self.directs[name], self.docs[
+                                name] = func, func.__doc__
+                    mod_count += 1
+                    self.logger.debug(f'成功导入 "{module_path}"')
+                except Exception as e:
+                    self.logger.error(f'未能导入 "{module_path}", error: {e}')
+                    self.logger.exception(e)
 
         self.docs = collections.OrderedDict(sorted(self.docs.items()))
-
-    def load_mod(self, module_path: str):
-        try:
-            mod = importlib.import_module(module_path)
-            if "COMMANDS" in dir(mod):
-                for comm, func in mod.COMMANDS.items():
-                    comm = self.prefix + comm
-                    if comm in self.commands.keys():
-                        self.logger.error(
-                            f'未能导入 "{module_path}", error: 已存在指令{comm}')
-                    else:
-                        self.commands[comm], self.docs[
-                            comm] = func, func.__doc__
-            if "SCHEDULES" in dir(mod):
-                for name, kwargs in mod.SCHEDULES.items():
-                    self.loop.create_task(self.schedule(name, **kwargs))
-            if "DIRECTS" in dir(mod):
-                for name, func in mod.DIRECTS.items():
-                    self.directs[name], self.docs[name] = func, func.__doc__
-            self.logger.info(f'成功导入 "{module_path}"')
-        except Exception as e:
-            self.logger.error(f'未能导入 "{module_path}", error: {e}')
-            self.logger.exception(e)
+        self.logger.info(f'成功导入 {mod_count} 个模组.')
 
     async def simpleRecallLastMessage(self):
         await self.app.revokeMessage(self.history)
@@ -167,8 +161,7 @@ class Bot(object):
             if not withAt:
                 ret = await self.app.sendGroupMessage(subject.group, msg)
             else:
-                new_msg = MessageChain.create([At(subject.id)])
-                new_msg.plus(msg)
+                new_msg = MessageChain.create([At(subject.id)]).plusWith(msg)
                 ret = await self.app.sendGroupMessage(subject.group, new_msg)
         if isinstance(subject, Group):
             ret = await self.app.sendGroupMessage(subject, msg)
@@ -184,8 +177,13 @@ class Bot(object):
     async def judge(self, subject: Union[Member, Friend],
                     message: MessageChain):
         try:
-            for direct in self.directs.values():
-                asyncio.create_task(direct(self, message, subject))
+            if isinstance(subject, Member):
+                cur_mods = self.db.get(subject.group, "mods", [])
+            else:
+                cur_mods = self.db.get(subject, "mods", [])
+            for name, direct in self.directs.items():
+                if name in cur_mods:
+                    asyncio.create_task(direct(message, self, subject))
             message_str = message.asDisplay()
             pattern = self.prefix + r"([\S]+ )*[\S]+"
             match = re.match(pattern, message_str, re.I)
@@ -209,41 +207,25 @@ class Bot(object):
                     }))
                 elif comm in self.commands.keys():
                     if isinstance(subject, Member):
-                        cur_mods = self.db.get(subject.group, "mods", [])
-                        if comm[len(self.prefix):] in cur_mods:
-                            self.logger.info(
-                                f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
-                                + message_str)
-                            self.command_queue.put((self.commands[comm], args, {
-                                "bot": self,
-                                "subject": subject
-                            }))
-                        else:
-                            await self.sendMessage(
-                                subject,
-                                MessageChain.create([
-                                    Plain(
-                                        f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
-                                    )
-                                ]))
+                        text = f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
                     else:
-                        cur_mods = self.db.get(subject, "mods", [])
-                        if comm[len(self.prefix):] in cur_mods:
-                            self.logger.info(
-                                f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
-                                + message_str)
-                            self.command_queue.put((self.commands[comm], args, {
-                                "bot": self,
-                                "subject": subject
-                            }))
-                        else:
-                            await self.sendMessage(
-                                subject,
-                                MessageChain.create([
-                                    Plain(
-                                        f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
-                                    )
-                                ]))
+                        text = f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
+
+                    if comm[len(self.prefix):] in cur_mods:
+                        self.logger.info(text + message_str)
+                        self.command_queue.put((self.commands[comm], args, {
+                            "bot": self,
+                            "subject": subject
+                        }))
+                    else:
+                        await self.sendMessage(
+                            subject,
+                            MessageChain.create([
+                                Plain(
+                                    f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
+                                )
+                            ]))
+
         except KeyboardInterrupt or SystemExit:
             pass
         except Exception as e:
