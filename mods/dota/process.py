@@ -1,6 +1,6 @@
 import time
 from .helper import getDotaGamesInfo, getDotaPlayerInfo, getDotaGamesInfoOpenDota
-from .constants import hero_dict, error_codes
+from .constants import hero_dict
 
 
 def processInfoOpenDota(playerId):
@@ -45,13 +45,6 @@ def processInfo(playerId, matchesArgs=""):
         t['isWin'] = "胜" if match["players"][0]["isVictory"] else "负"
         t['duration'] = "%d:%02d" % (match["durationSeconds"] // 60,
                                      match["durationSeconds"] % 60)
-        # imp removed and avgImp so high, using imp2 (imp sub avgImp)
-        # if 'imp' in match["players"][0].keys() and 'avgImp' in match.keys():
-        #     # official avgImp bug, use 110 as avgImp
-        #     #t['imp'] = round(match["players"][0]["imp"] / (match["avgImp"]-20 if match["avgImp"]>20 else match["avgImp"]), 2)
-        #     t['imp'] = round(match["players"][0]["imp"] / 110, 2)
-        # else:
-        #     t['imp'] = 0
         if 'imp2' in match["players"][0].keys():
             t['imp'] = ("+" if match["players"][0]["imp2"] >= 0 else "") + str(
                 match["players"][0]["imp2"])
@@ -82,10 +75,9 @@ def processInfo(playerId, matchesArgs=""):
 
 def getGamesIn24Hrs(playerId):
     player_data = getDotaPlayerInfo(playerId)
-    if isinstance(player_data, dict):
-        player_name = player_data["steamAccount"]["name"]
-    else:
-        return error_codes[player_data]
+    if not player_data:
+        return f"玩家 {playerId} 未找到!"
+    player_name = player_data["steamAccount"]["name"]
     res = processInfoOpenDota(playerId)
     report = player_name
     if len(res) == 0:
@@ -105,31 +97,12 @@ def getGamesIn24Hrs(playerId):
     return report[:-1]
 
 
-def getStat(playerId, total=20):
-    reports, kda, gpm, xpm, player_name = getLatestGamesStat(playerId, total)
-    res = player_name + '最近 ' + str(total) + ' 场游戏总数据统计如下：\n'
-    res += '胜率：' + str(reports[0] * 100) + '%\n'
-    res += 'KDA：' + str(kda) + '\n'
-    res += '场均击杀：' + str(reports[1]) + '\n'
-    res += '场均死亡：' + str(reports[2]) + '\n'
-    res += '场均助攻：' + str(reports[3]) + '\n'
-    res += '场均GPM：' + str(gpm) + '\n'
-    res += '场均XPM：' + str(xpm) + '\n'
-    res += '场均正补：' + str(reports[4]) + '\n'
-    res += '场均反补：' + str(reports[5]) + '\n'
-    res += '场均英雄伤害：' + str(reports[6]) + '\n'
-    res += '场均建筑伤害：' + str(reports[7]) + '\n'
-    res += '场均治疗：' + str(reports[8])
-    return res
-
-
 def getLatestGamesStat(playerId, total=20):
     res = {}
     player_data = getDotaPlayerInfo(playerId, "/summary")
-    if isinstance(player_data, str):
-        return error_codes[player_data], 0, 0, 0, ""
-    games_data = getDotaGamesInfo(playerId,
-                                  "?take=" + str(total) + "&include=Player")
+    if not player_data:
+        return None
+    games_data = getDotaGamesInfo(playerId, f"?take={total}&include=Player")
 
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
     exp = 0
@@ -155,46 +128,65 @@ def getLatestGamesStat(playerId, total=20):
     gpm = round(net / total, 2)
     xpm = round(exp / total, 2)
 
-    return reports, kda, gpm, xpm, player_name
+    return (reports, kda, gpm, xpm, player_name)
+
+
+def getStat(playerId, total=20):
+    game_stats = getLatestGamesStat(playerId, total)
+    if not game_stats:
+        return ""
+    reports, kda, gpm, xpm, player_name = game_stats
+    res = player_name + '最近 ' + str(total) + ' 场游戏总数据统计如下：\n'
+    res += '胜率：' + str(reports[0] * 100) + '%\n'
+    res += 'KDA：' + str(kda) + '\n'
+    res += '场均击杀：' + str(reports[1]) + '\n'
+    res += '场均死亡：' + str(reports[2]) + '\n'
+    res += '场均助攻：' + str(reports[3]) + '\n'
+    res += '场均GPM：' + str(gpm) + '\n'
+    res += '场均XPM：' + str(xpm) + '\n'
+    res += '场均正补：' + str(reports[4]) + '\n'
+    res += '场均反补：' + str(reports[5]) + '\n'
+    res += '场均英雄伤害：' + str(reports[6]) + '\n'
+    res += '场均建筑伤害：' + str(reports[7]) + '\n'
+    res += '场均治疗：' + str(reports[8])
+    return res
 
 
 def getLatestComparingStat(playerIdA, playerIdB, total=20):
-    reportsA, kdaA, gpmA, xpmA, player_nameA = getLatestGamesStat(
-        playerIdA, total)
-    if isinstance(reportsA, str):
-        return reportsA
-    reportsB, kdaB, gpmB, xpmB, player_nameB = getLatestGamesStat(
-        playerIdB, total)
-    if isinstance(reportsB, str):
-        return reportsB
+    ret_a = getLatestGamesStat(playerIdA, total)
+    ret_b = getLatestGamesStat(playerIdB, total)
+    if not ret_a or not ret_b:
+        return f"{playerIdB if ret_a else playerIdA} 不存在!"
+    reports_a, kdaA, gpmA, xpmA, player_nameA = ret_a
+    reports_b, kdaB, gpmB, xpmB, player_nameB = ret_b
     cmp_results = list(
         map(lambda a, b: '<' if a < b else '='
-            if a == b else '>', reportsA, reportsB))
+            if a == b else '>', reports_a, reports_b))
     kda_results = '<' if kdaA < kdaB else '=' if kdaA == kdaB else '>'
     gpm_results = '<' if gpmA < gpmB else '=' if gpmA == gpmB else '>'
     xpm_results = '<' if xpmA < xpmB else '=' if xpmA == xpmB else '>'
 
     res = player_nameA + ' vs ' + player_nameB + '最近 ' + str(
         total) + ' 场游戏数据如下：\n'
-    res += '胜率：' + str(reportsA[0]) + " " + cmp_results[0] + " " + str(
-        reportsB[0]) + '\n'
+    res += '胜率：' + str(reports_a[0]) + " " + cmp_results[0] + " " + str(
+        reports_b[0]) + '\n'
     res += 'KDA：' + str(kdaA) + " " + kda_results + " " + str(kdaB) + '\n'
-    res += '场均击杀：' + str(reportsA[1]) + " " + cmp_results[1] + " " + str(
-        reportsB[1]) + '\n'
-    res += '场均死亡：' + str(reportsA[2]) + " " + cmp_results[2] + " " + str(
-        reportsB[2]) + '\n'
-    res += '场均助攻：' + str(reportsA[3]) + " " + cmp_results[3] + " " + str(
-        reportsB[3]) + '\n'
+    res += '场均击杀：' + str(reports_a[1]) + " " + cmp_results[1] + " " + str(
+        reports_b[1]) + '\n'
+    res += '场均死亡：' + str(reports_a[2]) + " " + cmp_results[2] + " " + str(
+        reports_b[2]) + '\n'
+    res += '场均助攻：' + str(reports_a[3]) + " " + cmp_results[3] + " " + str(
+        reports_b[3]) + '\n'
     res += '场均GPM：' + str(gpmA) + " " + gpm_results + " " + str(gpmB) + '\n'
     res += '场均XPM：' + str(xpmA) + " " + xpm_results + " " + str(xpmB) + '\n'
-    res += '场均正补：' + str(reportsA[4]) + " " + cmp_results[4] + " " + str(
-        reportsB[4]) + '\n'
-    res += '场均反补：' + str(reportsA[5]) + " " + cmp_results[5] + " " + str(
-        reportsB[5]) + '\n'
-    res += '场均英雄伤害：' + str(reportsA[6]) + " " + cmp_results[6] + " " + str(
-        reportsB[6]) + '\n'
-    res += '场均建筑伤害：' + str(reportsA[7]) + " " + cmp_results[7] + " " + str(
-        reportsB[7]) + '\n'
-    res += '场均治疗：' + str(reportsA[8]) + " " + cmp_results[8] + " " + str(
-        reportsB[8])
+    res += '场均正补：' + str(reports_a[4]) + " " + cmp_results[4] + " " + str(
+        reports_b[4]) + '\n'
+    res += '场均反补：' + str(reports_a[5]) + " " + cmp_results[5] + " " + str(
+        reports_b[5]) + '\n'
+    res += '场均英雄伤害：' + str(reports_a[6]) + " " + cmp_results[6] + " " + str(
+        reports_b[6]) + '\n'
+    res += '场均建筑伤害：' + str(reports_a[7]) + " " + cmp_results[7] + " " + str(
+        reports_b[7]) + '\n'
+    res += '场均治疗：' + str(reports_a[8]) + " " + cmp_results[8] + " " + str(
+        reports_b[8])
     return res

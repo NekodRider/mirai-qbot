@@ -54,9 +54,10 @@ async def task_handler(*args, bot, subject):
     '''任务指令
     
     用法: $task'''
+    counters = f"当前有 {bot.counters[0]} 个 worker, {bot.counters[1]} 个 sender\n"
     if len(bot.schedule_task_list) == 0:
-        return MessageChain.create([Plain("目前没有在运行的任务")])
-    res_str = "目前运行的任务和钩子有：\n"
+        return MessageChain.create([Plain(counters + "目前没有在运行的任务.")])
+    res_str = counters + "目前运行的任务和钩子有：\n"
     for task in bot.schedule_task_list:
         last_scheduled = task.get('last_scheduled', '')
         next_scheduled = task.get('next_scheduled', '')
@@ -68,7 +69,8 @@ async def task_handler(*args, bot, subject):
                                            time.localtime(next_scheduled))
         res_str += f"{task['name'] if task['name'] else task['func_name']}: {'+'+str(task['interval']) if task['interval'] else task['specific_time']} | {last_scheduled} | {next_scheduled}\n"
     for name, func in bot.directs.items():
-        res_str += f"{name}: {func.__doc__}\n"
+        doc = func.__doc__.split('\n')[0]
+        res_str += f"{name}: {doc}\n"
     msg = MessageChain.create([Plain(res_str[:-1])])
     return msg
 

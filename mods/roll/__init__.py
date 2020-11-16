@@ -2,14 +2,14 @@ from graia.application.message.elements.internal import Plain
 from graia.application.message.chain import MessageChain
 from graia.application.group import Member
 from graia.application.friend import Friend
-import typing as T
+from typing import Union
 import random
 import re
 
 from bot import Bot
 
 
-async def roll_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
+async def roll_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     '''按照所给参数roll点
 
     用法: /roll 参数 如/roll 2d6+4代表 roll 2次6面骰子再加4 '''

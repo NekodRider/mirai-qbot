@@ -7,9 +7,9 @@ import random
 import asyncio
 from pyppeteer import launch
 
-from .constants import error_codes
+from .constants import api_dict
 from .helper import getDotaPlayerInfo, getDotaGamesInfo, getNameDict
-from .games import getLatestGamesStat
+from .process import getLatestGamesStat
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei']
 plt.switch_backend('agg')
@@ -68,12 +68,12 @@ def getStarScore(reports, gpm):
 
 
 def getCompStarStat(playerIdA, playerIdB, total=20):
-    reports_a, _, gpm_a, _, player_name_a = getLatestGamesStat(playerIdA, total)
-    if type(reports_a) == type(""):
-        return reports_a, 0, 0
-    reports_b, _, gpm_b, _, player_name_b = getLatestGamesStat(playerIdB, total)
-    if type(reports_b) == type(""):
-        return reports_b, 0, 0
+    ret_a = getLatestGamesStat(playerIdA, total)
+    ret_b = getLatestGamesStat(playerIdB, total)
+    if not ret_a or not ret_b:
+        return f"{playerIdB if ret_a else playerIdA} 不存在!", 0, 0
+    reports_a, _, gpm_a, _, player_name_a = ret_a
+    reports_b, _, gpm_b, _, player_name_b = ret_b
 
     raw_data_a = getStarScore(reports_a, gpm_a)
     raw_data_b = getStarScore(reports_b, gpm_b)
@@ -112,9 +112,10 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
 
 
 def getStarStat(playerId, total=20):
-    reports, _, gpm, _, player_name = getLatestGamesStat(playerId, total)
-    if type(reports) == type(""):
-        return reports, 0
+    game_stats = getLatestGamesStat(playerId, total)
+    if not game_stats:
+        return f"{playerId} 不存在!", 0
+    reports, _, gpm, _, player_name = game_stats
     raw_data = getStarScore(reports, gpm)
 
     fig = plt.figure(figsize=(4, 4.5))
@@ -149,10 +150,11 @@ def getStarStat(playerId, total=20):
 def getWinRateList(playerId, total=20):
     res = []
     player_data = getDotaPlayerInfo(playerId, "/summary")
-    if isinstance(player_data, str):
-        return error_codes[player_data], 0
-    games_data = getDotaGamesInfo(playerId,
-                                  "?take=" + str(total) + "&include=Player")
+    games_data = getDotaGamesInfo(playerId, f"?take={total}&include=Player")
+    if not player_data:
+        return f"{playerId} 不存在!", 0
+    if not games_data:
+        return f"{playerId} 场次无记录!", 0
 
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
     for _, match in enumerate(games_data):
@@ -236,46 +238,6 @@ def getCompWinRateGraph(playerIdList, total=20):
     return pic_name, player_name_list
 
 
-# old one
-# def getCompWinRateGraph(playerIdList, total=20):
-#     winning_rate_list = []
-#     player_name_list = []
-#     graph_max, graph_min = 0, 100
-#     for pid in playerIdList:
-#         wr, pn = getWinRateList(pid, total)
-#         if isinstance(wr, str):
-#             return wr, 0
-#         graph_max = np.max(wr + [graph_max])
-#         graph_min = np.min(wr + [graph_min])
-#         winning_rate_list.append(wr)
-#         player_name_list.append(pn)
-
-#     graph_index = range(0, total + 1)
-
-#     plt.figure(figsize=(7.5, 5.5))
-#     plt.title('最近 ' + str(total) + " 场游戏胜率对比")
-#     for no, wr in enumerate(winning_rate_list):
-#         color = [random.random() for i in range(3)]
-#         plt.plot(graph_index, wr, color=color, label=player_name_list[no])
-#         plt.scatter(graph_index, wr, color=color, s=15)
-#     plt.xlabel('场次')
-#     plt.ylabel('胜率百分比')
-#     x_major_locator = plt.MultipleLocator(total // 10 if total >= 10 else 1)
-#     ax = plt.gca()
-#     ax.xaxis.set_major_locator(x_major_locator)
-#     ax.spines['top'].set_visible(False)
-#     ax.spines['right'].set_visible(False)
-#     plt.xlim(-0.5, total + 0.5)
-#     plt.ylim(graph_min - 0.5, graph_max + 1.5)
-#     plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
-#     plt.draw()
-#     pic_name = str(
-#         Path(__file__).parent.joinpath("".join(playerIdList[:2]) +
-#                                        "_winning_rate.png"))
-#     plt.savefig(pic_name)
-#     return pic_name, player_name_list
-
-
 async def getDotaStory(matchId):
     browser = await launch(args=['--no-sandbox'],
                            handleSIGINT=False,
@@ -283,7 +245,7 @@ async def getDotaStory(matchId):
                            handleSIGHUP=False)
     page = await browser.newPage()
     await page.setViewport({"width": 800, "height": 900})
-    await page.goto(f'https://www.opendota.com/matches/{matchId}/story')
+    await page.goto(api_dict["match_story"].format(matchId))
     await page.evaluate("localStorage.setItem('localization', 'zh-CN');")
     await page.reload({'waitUntil': 'networkidle0'})
     name_dict = getNameDict(matchId)
@@ -298,7 +260,7 @@ async def getDotaStory(matchId):
         await browser.close()
         return 404
     if unparsed:
-        await page.goto(f'https://www.opendota.com/request#{matchId}')
+        await page.goto(api_dict["match_request"].format(matchId))
         await asyncio.sleep(5)
         await browser.close()
         return 1

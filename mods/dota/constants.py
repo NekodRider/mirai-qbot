@@ -1,3 +1,20 @@
+api_dict = {
+    "player":
+        "https://api.stratz.com/api/v1/Player/{}{}",
+    "player_matches":
+        "https://api.stratz.com/api/v1/Player/{}/matches{}",
+    "player_matches_opendota":
+        "https://api.opendota.com/api/players/{}/recentMatches",
+    "player_hero":
+        "https://api.stratz.com/api/v1/Player/{}/heroPerformance/{}?gameMode=1,2,3,4",
+    "match":
+        "https://api.opendota.com/api/matches/{}",
+    "match_story":
+        'https://www.opendota.com/matches/{}/story',
+    "match_request":
+        'https://www.opendota.com/request#{}',
+}
+
 hero_dict = {
     "1": "敌法师",
     "2": "斧王",
@@ -240,4 +257,3 @@ hero_dict_en = {
     "128": "Snapfire",
     "129": "Mars",
 }
-error_codes = {"404_NOT_FOUND": "请输入正确steam ID!", "NO_SUCH_PLAYER": "该玩家不存在!"}

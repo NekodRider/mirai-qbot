@@ -43,6 +43,7 @@ class Bot(object):
         self.history = None
         self.loop = asyncio.get_event_loop()
         self.bcc = Broadcast(loop=self.loop)
+        self.counters = [0, 0]
         if configs['debug']:
             global defaultLogger
             defaultLogger.close()
@@ -57,29 +58,30 @@ class Bot(object):
         self.load_mods()
 
     async def processor(self):
-        try:
-            while True:
-                command_queue = self.command_queue
-                if not command_queue.empty():
-                    message = command_queue.get()
-                    if type(message[0]) == list:
-                        msg = message[0]
-                    else:
-                        try:
-                            msg = await message[0](*message[1], **message[2])
-                        except KeyboardInterrupt or SystemExit:
-                            return
-                        except Exception as e:
-                            self.logger.exception(e)
-                            return
-                    command_queue.task_done()
-                    self.message_queue.put((message[2]["subject"], msg))
-                await asyncio.sleep(1)
-        except Exception as e:
-            self.logger.exception(e)
-            self.init_processors(1)
+        self.counters[0] += 1
+        while True:
+            command_queue = self.command_queue
+            if not command_queue.empty():
+                message = command_queue.get()
+                if type(message[0]) == list:
+                    msg = message[0]
+                else:
+                    try:
+                        msg = await message[0](*message[1], **message[2])
+                    except KeyboardInterrupt or SystemExit:
+                        self.counters[0] -= 1
+                        return
+                    except Exception as e:
+                        self.counters[0] -= 1
+                        self.logger.exception(e)
+                        self.init_processors(1)
+                        return
+                command_queue.task_done()
+                self.message_queue.put((message[2]["subject"], msg))
+            await asyncio.sleep(1)
 
     async def sender(self):
+        self.counters[1] += 1
         while True:
             message_queue = self.message_queue
             if not message_queue.empty():
@@ -87,9 +89,12 @@ class Bot(object):
                 try:
                     await self.sendMessage(subject, msg)
                 except KeyboardInterrupt or SystemExit:
+                    self.counters[1] -= 1
                     return
                 except Exception as e:
+                    self.counters[1] -= 1
                     self.logger.exception(e)
+                    return
             await asyncio.sleep(1)
 
     def init_processors(self, num: int = 5):
@@ -123,7 +128,6 @@ class Bot(object):
                 try:
                     m = importlib.import_module(module_path)
                     if "COMMANDS" in dir(m):
-                        print(module_path)
                         for comm, func in m.COMMANDS.items():
                             comm = self.prefix + comm
                             if comm in self.commands.keys(
@@ -192,25 +196,17 @@ class Bot(object):
                 command_str = message_str[match.span()[0]:match.span(
                 )[1]].lower()
                 [comm, *args] = command_str.split(" ")
+                if isinstance(subject, Member):
+                    text = f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
+                else:
+                    text = f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
                 if comm in self.inner_commands.keys():
-                    if isinstance(subject, Member):
-                        self.logger.info(
-                            f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
-                            + message_str)
-                    else:
-                        self.logger.info(
-                            f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:" +
-                            message_str)
+                    self.logger.info(text + message_str)
                     self.command_queue.put((self.inner_commands[comm], args, {
                         "bot": self,
                         "subject": subject
                     }))
                 elif comm in self.commands.keys():
-                    if isinstance(subject, Member):
-                        text = f"[{comm[len(self.prefix):]}]来自群{subject.group.id}中成员{subject.id}的指令:"
-                    else:
-                        text = f"[{comm[len(self.prefix):]}]来自好友{subject.id}的指令:"
-
                     if comm[len(self.prefix):] in cur_mods:
                         self.logger.info(text + message_str)
                         self.command_queue.put((self.commands[comm], args, {

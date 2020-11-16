@@ -8,7 +8,7 @@ def readJSON(path,
              defaultValue={}) -> Union[dict, list]:
     if not os.path.exists(path):
         if not shouldCreateFileIfNotExisted:
-            return {}
+            return defaultValue
         updateJSON(path, defaultValue)
     with open(path, encoding='utf-8') as f:
         d = json.loads(f.read())
