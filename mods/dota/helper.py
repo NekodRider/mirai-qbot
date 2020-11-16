@@ -1,71 +1,43 @@
 from urllib import request
-import typing as T
+from typing import Union
 import json
-import time
 
-from .constants import hero_dict, hero_dict_en
+from bot import defaultLogger as logger
+from .constants import api_dict,hero_dict, hero_dict_en
 
 
-def getDotaPlayerInfo(playerId, playerArgs="") -> T.Union[dict, str]:
-    url = f"https://api.stratz.com/api/v1/Player/{playerId}{playerArgs}"
+def getDotaPlayerInfo(playerId, playerArgs="") -> Union[dict, None]:
     try:
-        html = request.urlopen(url)
+        html = request.urlopen(api_dict["player"].format(playerId,playerArgs))
     except Exception as e:
-        return f"{e}"
+        logger.exception(e)
+        raise
     player_data = json.loads(html.read().decode("utf-8"))
     if playerArgs == "" and player_data["steamAccount"]["name"] == "Unknown":
-        return "NO_SUCH_PLAYER"
+        return None
     return player_data
 
 
 def getDotaGamesInfo(playerId, matchesArgs=""):
-    url = "https://api.stratz.com/api/v1/Player/" + playerId + "/matches" + matchesArgs
-    html = request.urlopen(url)
+    try:
+        html = request.urlopen(api_dict["player_matches"].format(playerId,matchesArgs))
+    except Exception as e:
+        logger.exception(e)
+        raise
     games_data = json.loads(html.read().decode("utf-8"))
     return games_data
 
 
-def getDotaGamesInfoOpenDota(playerId, matchesArgs=""):
-    url = f"https://api.opendota.com/api/players/{playerId}/recentMatches"
-    req = request.Request(url)
+def getDotaGamesInfoOpenDota(playerId):
+    req = request.Request(api_dict["player_matches_opendota"].format(playerId))
     req.add_header("User-Agent", "Chrome/69.0.3497.81 Safari/537.36")
-    html = request.urlopen(req)
+    try:
+        html = request.urlopen(req)
+    except Exception as e:
+        logger.exception(e)
+        raise
     games_data = json.loads(html.read().decode("utf-8"))
     return games_data
-
-
-def steam_html_process(raw_str):
-    left = 0
-    while 1:
-        l = raw_str[left:].find("[")
-        if l == -1:
-            break
-        elif "img" != raw_str[left + l + 1:left + l + 4]:
-            r = raw_str[left:].find("]")
-            raw_str = raw_str[:left + l] + raw_str[left + r + 1:]
-            left = left + l
-        else:
-            r = raw_str[left:].find("]")
-            r = raw_str[left + r + 1:].find("]")
-            left = left + r + 1
-    return raw_str
-
-
-def getDotaNews(timeout=300):
-    url = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=570&feeds=steam_community_announcements,steam_updates&count=1"
-    html = request.urlopen(url)
-    news_list = json.loads(html.read().decode("utf-8"))["appnews"]["newsitems"]
-    now = time.time()
-    ret = []
-    for i in news_list:
-        if now - i["date"] > timeout:
-            break
-        tmp = {}
-        tmp["title"] = i["title"]
-        tmp["url"] = i["url"]
-        tmp["contents"] = steam_html_process(i["contents"])
-        ret.append(tmp)
-    return ret
 
 
 def getDotaHero(playerId, heroName):
@@ -76,19 +48,20 @@ def getDotaHero(playerId, heroName):
             res["hero"] = v
             hero_id = k
             break
-    if hero_id == -1:
-        return 0
-    res["name"] = getDotaPlayerInfo(playerId)
-    if type(res["name"]) != dict:
-        raise TypeError("Expected dict but found:", res["name"])
-    res["name"] = res["name"]["steamAccount"]["name"]
-    url = f"https://api.stratz.com/api/v1/Player/{playerId}/heroPerformance/{hero_id}?gameMode=1,2,3,4"
-    html = request.urlopen(url)
+    player_info = getDotaPlayerInfo(playerId)
+    if hero_id == -1 or not player_info:
+        return None
+    res["name"] = player_info["steamAccount"]["name"]
+    try:
+        html = request.urlopen(api_dict["player_hero"])
+    except Exception as e:
+        logger.exception(e)
+        raise
     txt = html.read().decode("utf-8")
     if txt == "":
-        return (0, f"{res['name']} 也配玩 {res['hero']}？")
+        return f"{res['name']} 也配玩 {res['hero']}？"
+    
     data = json.loads(txt)
-
     res["win_stat"] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
     res["kda"] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"
     res["gpm"] = int(data["avgGoldPerMinute"])
@@ -115,10 +88,13 @@ def getDotaHero(playerId, heroName):
 
 
 def getNameDict(matchId):
-    url = f"https://api.opendota.com/api/matches/{matchId}"
-    req = request.Request(url)
+    req = request.Request(api_dict["match"].format(matchId))
     req.add_header("User-Agent", "Chrome/69.0.3497.81 Safari/537.36")
-    html = request.urlopen(req)
+    try:
+        html = request.urlopen(req)
+    except Exception as e:
+        logger.exception(e)
+        raise
     players_data = json.loads(html.read().decode("utf-8"))["players"]
     res = {}
     for p in players_data:

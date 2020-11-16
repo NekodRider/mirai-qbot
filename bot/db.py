@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Union, Any
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from collections.abc import Sequence, Mapping
+from collections.abc import Mapping
 import pickle
 
 
@@ -31,15 +31,25 @@ class Storage(object):
 
     def get(self,
             subject: Union[Friend, Group, Member],
-            name: str,
+            name: Union[str, None],
             default: Any = {}) -> Any:
         if isinstance(subject, Friend):
-            return self.friends.get(subject.id, {}).get(name) or default
+            if name:
+                return self.friends.get(subject.id, {}).get(name) or default
+            else:
+                return self.friends.get(subject.id, {})
         elif isinstance(subject, Group):
-            return self.groups.get(subject.id, {}).get(name) or default
+            if name:
+                return self.groups.get(subject.id, {}).get(name) or default
+            else:
+                return self.groups.get(subject.id, {})
         elif isinstance(subject, Member):
-            return self.groups.get(subject.group.id, {}).get(
-                subject.id, {}).get(name) or default
+            if name:
+                return self.groups.get(subject.group.id, {}).get(
+                    subject.id, {}).get(name) or default
+            else:
+                return self.groups.get(subject.group.id, {}).get(
+                    subject.id, {})
         raise TypeError(type(subject))
 
     def set(self,

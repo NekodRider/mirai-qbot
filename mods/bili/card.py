@@ -2,10 +2,16 @@ from urllib import request
 import json
 import time
 
+from bot import defaultLogger as logger
+from .api import video_api, card_api
+
 
 def getCards(uid, timeout=600):
-    url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=" + uid
-    html = request.urlopen(url)
+    try:
+        html = request.urlopen(card_api.format(uid))
+    except Exception as e:
+        logger.exception(e)
+        raise
     data = json.loads(html.read().decode('utf-8'))
     if data["code"] != 0:
         return "error"
@@ -22,6 +28,6 @@ def getCards(uid, timeout=600):
         card_info = json.loads(card["card"])
         tmp["title"] = card_info["title"]
         tmp["pic"] = card_info["pic"]
-        tmp["url"] = "https://www.bilibili.com/video/" + card["desc"]["bvid"]
+        tmp["url"] = video_api.format(card["desc"]["bvid"])
         res.append(tmp)
     return res

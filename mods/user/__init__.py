@@ -1,5 +1,5 @@
 from bot import defaultLogger as logger
-import typing as T
+from typing import Union
 
 from graia.application.friend import Friend
 from graia.application.group import Member
@@ -12,7 +12,7 @@ from bot import Bot
 __all__ = (args_parser)
 
 
-async def setname_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
+async def setname_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     '''设置昵称
 
     用法: /setname 昵称'''
@@ -29,7 +29,7 @@ async def setname_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
         return MessageChain.create([Plain("修改失败qwq")])
 
 
-async def name_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
+async def name_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     '''显示昵称
 
     用法: /name'''
@@ -39,7 +39,7 @@ async def name_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
     ])
 
 
-async def jrrp_handler(*args, bot: Bot, subject: T.Union[Member, Friend]):
+async def jrrp_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     '''查询今日人品
 
     用法: /jrrp'''

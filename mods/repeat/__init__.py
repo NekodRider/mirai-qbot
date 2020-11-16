@@ -1,5 +1,5 @@
 import re
-import typing as T
+from typing import Union
 from graia.application.group import Member
 from graia.application.friend import Friend
 from graia.application.message.chain import MessageChain
@@ -10,14 +10,14 @@ repeat_content = None
 sb_repeat_content = None
 
 
-def is_equal(a: T.Union[MessageChain, None], b: T.Union[MessageChain, None]):
+def is_equal(a: Union[MessageChain, None], b: Union[MessageChain, None]):
     if not a or not b:
         return False
     return a.asSerializationString() == b.asSerializationString()
 
 
 async def repeat_handler(message: MessageChain, bot: Bot,
-                         subject: T.Union[Member, Friend]):
+                         subject: Union[Member, Friend]):
     '''bot拟人化, 实现人类的本质.
     
     开启后会自动参与复读以及吹比'''
