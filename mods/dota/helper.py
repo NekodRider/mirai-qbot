@@ -1,9 +1,10 @@
-from urllib import request
-from typing import Union
 import json
+from typing import Union
+from urllib import request
 
 from bot import defaultLogger as logger
-from .constants import api_dict,hero_dict, hero_dict_en
+
+from .constants import api_dict, hero_dict, hero_dict_en
 
 
 def getDotaPlayerInfo(playerId, playerArgs="") -> Union[dict, None]:

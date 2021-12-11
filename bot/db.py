@@ -1,10 +1,12 @@
+import os
+import pickle
+from collections.abc import Mapping
 from os import replace
 from pathlib import Path
-from typing import Union, Any
+from typing import Any, Union
+
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from collections.abc import Mapping
-import pickle
 
 
 class Storage(object):
@@ -12,6 +14,9 @@ class Storage(object):
     def __init__(self):
         self.groups = {}
         self.friends = {}
+        datadir_path = Path(__file__).parent.parent.joinpath("data")
+        if not os.path.exists(datadir_path):
+            os.mkdir(datadir_path)
 
     @staticmethod
     def update(d1, d2, replace, duplicate):
@@ -48,8 +53,7 @@ class Storage(object):
                 return self.groups.get(subject.group.id, {}).get(
                     subject.id, {}).get(name) or default
             else:
-                return self.groups.get(subject.group.id, {}).get(
-                    subject.id, {})
+                return self.groups.get(subject.group.id, {}).get(subject.id, {})
         raise TypeError(type(subject))
 
     def set(self,

@@ -1,8 +1,9 @@
+import time
+from pathlib import Path
+
 from graia.application.group import Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain
-from pathlib import Path
-import time
 
 
 async def help_handler(*args, bot, subject):
@@ -17,25 +18,23 @@ async def help_handler(*args, bot, subject):
         i[len(bot.prefix):] for i in bot.inner_commands.keys()
     ]
     if len(args) == 0:
-        res_str = "目前开启的全部命令有：\n"
+        res_str = ""
         for comms, kv in docs.items():
-            res_str += f"  {comms} 模块:\n"
+            res_str += f"{comms} 模块:\n"
             for comm, doc in kv[0].items():
-                if comm[len(bot.prefix):] not in cur_mods:
-                    continue
                 if isinstance(doc, str):
                     doc = [x.strip() for x in doc.split("\n")]
                     if len(doc) == 3 and doc[0] != "":
-                        res_str += f"  - {comm}: {doc[0]}\n"
+                        res_str += f"- {comm}: {doc[0]}\n"
                         continue
-                res_str += f"  - {comm}\n"
+                res_str += f"- {comm}\n"
             for comm, doc in kv[1].items():
                 if isinstance(doc, str):
                     doc = [x.strip() for x in doc.split("\n")]
                     if len(doc) == 3 and doc[0] != "":
-                        res_str += f"  - {comm}: {doc[0]}\n"
+                        res_str += f"- {comm}: {doc[0]}\n"
                         continue
-                res_str += f"  - {comm}\n"
+                res_str += f"- {comm}\n"
         msg = MessageChain.create([Plain(str(res_str[:-1]))])
     else:
         res_str = ""
@@ -58,7 +57,7 @@ async def help_handler(*args, bot, subject):
                         continue
                     res_str += f"{comm[len(bot.prefix):]}({'已启用' if comm[len(bot.prefix):] in cur_mods else '已关闭'}) {doc[2]}\n"
         msg = MessageChain.create(
-            [Plain("\n" + res_str[:-1].replace("/", bot.prefix))])
+            [Plain(res_str[:-1].replace("/", bot.prefix))])
 
     return msg
 

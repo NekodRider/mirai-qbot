@@ -1,24 +1,26 @@
 # encoding=Utf-8
 # type: ignore
 import re
-from typing import Union
 from pathlib import Path
+from typing import Union
 
-from bot import Bot
-import bot
-from bot.logger import defaultLogger as logger
 from graia.application.friend import Friend
 from graia.application.group import Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Image, Plain
+
+import bot
+from bot import Bot
+from bot.logger import defaultLogger as logger
 from mods._utils.convert import groupFromStr, groupToStr
 from mods._utils.storage import readJSON, updateJSON
 from mods.user import args_parser
 
-from .diagrams import getCompStarStat, getCompWinRateGraph, getDotaStory, getStarStat, getWinRateGraph
-from .process import getGamesIn24Hrs, getLatestComparingStat, getStat
+from .diagrams import (getCompStarStat, getCompWinRateGraph, getDotaStory,
+                       getStarStat, getWinRateGraph)
 from .helper import getDotaHero
 from .patch import getLatestPatch
+from .process import getGamesIn24Hrs, getLatestComparingStat, getStat
 
 
 @args_parser(1)

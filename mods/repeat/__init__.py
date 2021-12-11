@@ -1,8 +1,10 @@
 import re
 from typing import Union
-from graia.application.group import Member
+
 from graia.application.friend import Friend
+from graia.application.group import Member
 from graia.application.message.chain import MessageChain
+
 from bot import Bot
 
 repeat_queue = [None, None]

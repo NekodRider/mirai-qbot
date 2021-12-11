@@ -1,6 +1,8 @@
 import time
-from .helper import getDotaGamesInfo, getDotaPlayerInfo, getDotaGamesInfoOpenDota
+
 from .constants import hero_dict
+from .helper import (getDotaGamesInfo, getDotaGamesInfoOpenDota,
+                     getDotaPlayerInfo)
 
 
 def processInfoOpenDota(playerId):

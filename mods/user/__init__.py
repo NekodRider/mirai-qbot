@@ -1,4 +1,3 @@
-from bot import defaultLogger as logger
 from typing import Union
 
 from graia.application.friend import Friend
@@ -6,8 +5,10 @@ from graia.application.group import Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain
 
-from .helper import (args_parser, calcJrrp, humanisticCare)
 from bot import Bot
+from bot import defaultLogger as logger
+
+from .helper import args_parser, calcJrrp, humanisticCare
 
 __all__ = ["args_parser"]
 

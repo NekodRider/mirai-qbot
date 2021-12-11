@@ -1,11 +1,13 @@
-from urllib import request
-from pathlib import Path
 import json
-import random
 import os
+import random
+from pathlib import Path
+from urllib import request
 
-from .api import dance_api, dance_recommend_api, video_api, block_words, up_list, block_up_list
 from bot.logger import defaultLogger as logger
+
+from .api import (block_up_list, block_words, dance_api, dance_recommend_api,
+                  up_list, video_api)
 
 
 def checkTitle(title):
@@ -22,8 +24,8 @@ def detectSafeSearchUri(uri):
     config_file = str(config_path)
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config_file
 
-    from google.cloud import vision
     from google.api_core.exceptions import ServiceUnavailable
+    from google.cloud import vision
     client = vision.ImageAnnotatorClient()
     image = vision.types.Image()  #type: ignore
     image.source.image_uri = uri

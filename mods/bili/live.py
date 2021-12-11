@@ -1,8 +1,9 @@
-from urllib import request
 import json
+from urllib import request
 
 from bot import defaultLogger as logger
-from .api import user_api, live_api
+
+from .api import live_api, user_api
 
 
 def getNameByUid(uid):

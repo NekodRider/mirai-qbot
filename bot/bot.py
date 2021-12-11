@@ -2,20 +2,18 @@
 import asyncio
 import collections
 import importlib
-from logging import handlers
 import re
-from re import sub
 import time
 from functools import lru_cache, partial
+from logging import DEBUG, handlers
 from pathlib import Path
 from queue import Queue
+from re import sub
 from threading import Thread
 from typing import Any, Callable, Dict, List, Tuple, Union
-from logging import DEBUG
-import aiohttp
 
-from graia.application import GraiaMiraiApplication, Session
-from graia.application import logger
+import aiohttp
+from graia.application import GraiaMiraiApplication, Session, logger
 from graia.application.event.lifecycle import (ApplicationLaunched,
                                                ApplicationShutdowned)
 from graia.application.friend import Friend
@@ -26,9 +24,9 @@ from graia.broadcast import Broadcast
 from graia.scheduler import SchedulerTask, Timer
 from graia.scheduler.timers import *
 
-from .handlers import INNER_COMMANDS
-from .logger import defaultLogger, DefaultLogger
 from .db import Storage
+from .handlers import INNER_COMMANDS
+from .logger import DefaultLogger, defaultLogger
 
 
 class Bot(object):

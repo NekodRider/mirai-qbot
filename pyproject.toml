@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "mirai-qbot"
+version = "0.1.0"
+description = "A qbot based on mirai."
+authors = ["NekodRider <driver2223@gmail.com>"]
+license = "AGPL v3.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+graia-application-mirai = "0.19.0"
+graia-broadcast = "0.8.11"
+matplotlib = "^3.5.1"
+playwright = "^1.17.2"
+numpy = "1.19.0"
+requests = "^2.26.0"
+google-cloud-vision = "^2.6.2"
+graia-scheduler = "0.0.4"
+sentry-sdk = "^1.5.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "tuna-tsinghua"
+default = true
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"

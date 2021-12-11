@@ -1,8 +1,9 @@
-from bot.bot import Bot
-import time
-import random
 import functools
+import random
+import time
 from typing import Callable, Tuple, Union
+
+from bot.bot import Bot
 
 
 def args_parser(num: int, index: Union[int, None] = None):

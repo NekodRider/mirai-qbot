@@ -1,14 +1,15 @@
 # type: ignore
+import asyncio
+import random
+from functools import reduce
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
-from functools import reduce
-import random
-import asyncio
-from pyppeteer import launch
+from playwright.async_api import async_playwright
 
 from .constants import api_dict
-from .helper import getDotaPlayerInfo, getDotaGamesInfo, getNameDict
+from .helper import getDotaGamesInfo, getDotaPlayerInfo, getNameDict
 from .process import getLatestGamesStat
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei']
@@ -239,44 +240,42 @@ def getCompWinRateGraph(playerIdList, total=20):
 
 
 async def getDotaStory(matchId):
-    browser = await launch(args=['--no-sandbox'],
-                           handleSIGINT=False,
-                           handleSIGTERM=False,
-                           handleSIGHUP=False)
-    page = await browser.newPage()
-    await page.setViewport({"width": 800, "height": 900})
-    await page.goto(api_dict["match_story"].format(matchId))
-    await page.evaluate("localStorage.setItem('localization', 'zh-CN');")
-    await page.reload({'waitUntil': 'networkidle0'})
-    name_dict = getNameDict(matchId)
-    for hero, name in name_dict.items():
-        await page.evaluate(
-            f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',
-            force_expr=True)
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.set_viewport_size({"width": 800, "height": 900})
+        await page.goto(api_dict["match_story"].format(matchId))
+        await page.evaluate("localStorage.setItem('localization', 'zh-CN');")
+        await page.reload(wait_until='networkidle')
+        name_dict = getNameDict(matchId)
+        for hero, name in name_dict.items():
+            await page.evaluate(
+                f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',
+                force_expr=True)
 
-    not_found = await page.querySelector(".FourOhFour")
-    unparsed = await page.querySelector(".unparsed")
-    if not_found:
-        await browser.close()
-        return 404
-    if unparsed:
-        await page.goto(api_dict["match_request"].format(matchId))
-        await asyncio.sleep(5)
-        await browser.close()
-        return 1
+        not_found = await page.query_selector(".FourOhFour")
+        unparsed = await page.query_selector(".unparsed")
+        if not_found:
+            await browser.close()
+            return 404
+        if unparsed:
+            await page.goto(api_dict["match_request"].format(matchId))
+            await asyncio.sleep(5)
+            await browser.close()
+            return 1
 
-    body = await page.querySelector("body")
-    body_bb = await body.boundingBox()
-    height = body_bb['height']
-    path = str(Path(__file__).parent.joinpath(f'story_{matchId}.png'))
-    await page.screenshot({
-        'path': path,
-        'clip': {
-            'x': 0,
-            'y': 180,
-            'width': 800,
-            'height': height - 320
-        }
-    })
-    await browser.close()
-    return path
+        body = await page.query_selector("body")
+        body_bb = await body.bounding_box()
+        height = body_bb['height']
+        path = str(Path(__file__).parent.joinpath(f'story_{matchId}.png'))
+        to_remove = [
+            await page.query_selector("#root > div > div"),
+            await page.query_selector(".MuiTabs-root"),
+            await page.query_selector(".matchButtons"),
+        ]
+        content = await page.query_selector("#root > div > div:nth-child(3)")
+        for i in to_remove:
+            await i.evaluate("node => node.style.display='none'")
+        await content.screenshot(path=path)
+        await browser.close()
+        return path

@@ -1,7 +1,9 @@
-from graia.application import AbstractLogger
-from logging.handlers import TimedRotatingFileHandler
 import logging
+import os
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+
+from graia.application import AbstractLogger
 
 
 class DefaultLogger(AbstractLogger):
@@ -13,8 +15,13 @@ class DefaultLogger(AbstractLogger):
         self.console_handler = logging.StreamHandler()
         self.console_handler.setLevel(level)
 
-        log_path = Path(__file__).parent.parent.joinpath(
-            'logs', 'mirai_bot.log')
+        logdir_path = Path(__file__).parent.parent.joinpath('logs')
+        log_path = logdir_path.joinpath('mirai_bot.log')
+        if not os.path.exists(log_path):
+            if not os.path.exists(logdir_path):
+                os.mkdir(logdir_path)
+            with open(log_path, 'w'):
+                pass
         self.file_handler = TimedRotatingFileHandler(log_path,
                                                      when='h',
                                                      interval=12,

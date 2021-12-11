@@ -1,6 +1,7 @@
-from json.decoder import JSONDecodeError
-import sys
 import json
+import sys
+from json.decoder import JSONDecodeError
+
 from bot import Storage
 
 if __name__ == "__main__":

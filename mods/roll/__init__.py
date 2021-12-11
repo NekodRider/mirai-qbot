@@ -1,10 +1,11 @@
-from graia.application.message.elements.internal import Plain
-from graia.application.message.chain import MessageChain
-from graia.application.group import Member
-from graia.application.friend import Friend
-from typing import Union
 import random
 import re
+from typing import Union
+
+from graia.application.friend import Friend
+from graia.application.group import Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Plain
 
 from bot import Bot
 

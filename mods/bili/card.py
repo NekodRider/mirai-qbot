@@ -1,9 +1,10 @@
-from urllib import request
 import json
 import time
+from urllib import request
 
 from bot import defaultLogger as logger
-from .api import video_api, card_api
+
+from .api import card_api, video_api
 
 
 def getCards(uid, timeout=600):
