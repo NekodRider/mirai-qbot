@@ -14,7 +14,7 @@ def args_parser(num: int, index: Union[int, None] = None):
             if len(args) < num:
                 nickname = bot.db.get(subject, "nickname")
                 if nickname:
-                    if index:
+                    if isinstance(index, int):
                         a = list(args)
                         a.insert(index, nickname)
                         args = tuple(a)

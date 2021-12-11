@@ -10,14 +10,16 @@ from functools import lru_cache, partial
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 from logging import DEBUG
+import aiohttp
 
 from graia.application import GraiaMiraiApplication, Session
+from graia.application import logger
 from graia.application.event.lifecycle import (ApplicationLaunched,
                                                ApplicationShutdowned)
 from graia.application.friend import Friend
-from graia.application.group import Group, Member
+from graia.application.group import Group, Member, MemberPerm
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import At, Plain
 from graia.broadcast import Broadcast
@@ -112,9 +114,10 @@ class Bot(object):
             self.loop.create_task(self.sender())
 
     def load_mods(self):
+        self.docs["内置"] = [{}, {}]
         for comm, func in INNER_COMMANDS.items():
             comm = self.prefix + comm
-            self.inner_commands[comm], self.docs[
+            self.inner_commands[comm], self.docs["内置"][0][
                 comm] = func, func.__doc__.replace("$", self.prefix)
 
         mod_dir = Path(__file__).parent.parent.joinpath("mods")
@@ -127,6 +130,8 @@ class Bot(object):
                 module_path = f'{module_prefix}.{mod.name}'
                 try:
                     m = importlib.import_module(module_path)
+                    module_name = m.NAME if "NAME" in dir(m) else mod.name
+                    self.docs[module_name] = [{}, {}]
                     if "COMMANDS" in dir(m):
                         for comm, func in m.COMMANDS.items():
                             comm = self.prefix + comm
@@ -135,14 +140,14 @@ class Bot(object):
                                 self.logger.error(
                                     f'未能导入 "{module_path}", error: 已存在指令{comm}')
                             else:
-                                self.commands[comm], self.docs[
+                                self.commands[comm], self.docs[module_name][0][
                                     comm] = func, func.__doc__
                     if "SCHEDULES" in dir(m):
                         for name, kwargs in m.SCHEDULES.items():
                             self.loop.create_task(self.schedule(name, **kwargs))
                     if "DIRECTS" in dir(m):
                         for name, func in m.DIRECTS.items():
-                            self.directs[name], self.docs[
+                            self.directs[name], self.docs[module_name][1][
                                 name] = func, func.__doc__
                     mod_count += 1
                     self.logger.debug(f'成功导入 "{module_path}"')
@@ -150,7 +155,6 @@ class Bot(object):
                     self.logger.error(f'未能导入 "{module_path}", error: {e}')
                     self.logger.exception(e)
 
-        self.docs = collections.OrderedDict(sorted(self.docs.items()))
         self.logger.info(f'成功导入 {mod_count} 个模组.')
 
     async def simpleRecallLastMessage(self):
@@ -161,22 +165,29 @@ class Bot(object):
                                          Friend],
                           msg: MessageChain,
                           withAt=True):
-        if isinstance(subject, Member):
-            if not withAt:
-                ret = await self.app.sendGroupMessage(subject.group, msg)
-            else:
-                new_msg = MessageChain.create([At(subject.id)]).plusWith(msg)
-                ret = await self.app.sendGroupMessage(subject.group, new_msg)
-        if isinstance(subject, Group):
-            ret = await self.app.sendGroupMessage(subject, msg)
-        elif isinstance(subject, Friend):
-            ret = await self.app.sendFriendMessage(subject, msg)
-        elif isinstance(subject, tuple):
-            if subject[0] == "Friend":
-                ret = await self.app.sendFriendMessage(subject[1], msg)
-            else:
-                ret = await self.app.sendGroupMessage(subject[1], msg)
-        self.history = ret
+        try:
+            if isinstance(subject, Member):
+                if not withAt:
+                    ret = await self.app.sendGroupMessage(subject.group, msg)
+                else:
+                    new_msg = MessageChain.create([At(subject.id)
+                                                  ]).plusWith(msg)
+                    ret = await self.app.sendGroupMessage(
+                        subject.group, new_msg)
+            if isinstance(subject, Group):
+                ret = await self.app.sendGroupMessage(subject, msg)
+            elif isinstance(subject, Friend):
+                ret = await self.app.sendFriendMessage(subject, msg)
+            elif isinstance(subject, tuple):
+                if subject[0] == "Friend":
+                    ret = await self.app.sendFriendMessage(subject[1], msg)
+                else:
+                    ret = await self.app.sendGroupMessage(subject[1], msg)
+            self.history = ret
+        except KeyboardInterrupt or SystemExit:
+            pass
+        except Exception as e:
+            self.logger.exception(e)
 
     async def judge(self, subject: Union[Member, Friend],
                     message: MessageChain):
@@ -218,7 +229,7 @@ class Bot(object):
                             subject,
                             MessageChain.create([
                                 Plain(
-                                    f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用模块。"
+                                    f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用命令。"
                                 )
                             ]))
 
@@ -283,11 +294,7 @@ class Bot(object):
             await wrapper()
             timer = every_custom_hours(24)
 
-        t = SchedulerTask(wrapper,
-                          timer,
-                          self.bcc,
-                          self.loop,
-                          logger=self.logger)
+        t = SchedulerTask(wrapper, timer, self.bcc, self.loop)
 
         t.setup_task()
 
@@ -299,3 +306,20 @@ class Bot(object):
         if cur_mods and mod in cur_mods:
             cur_mods.remove(mod)
         self.db.set(subject, {"mods": cur_mods}, replace=True)
+
+    async def subscriberByMod(self, mods: List):
+        res = {"friends": [], "groups": []}
+        for friend in self.db.friends.keys():
+            if all([
+                    x in self.db.get(Friend(id=friend, nickname="", remark=""),
+                                     "mods", []) for x in mods
+            ]):
+                res["friends"].append(friend)
+        for group in self.db.groups.keys():
+            if all([
+                    x in self.db.get(
+                        Group(id=group, name="", permission=MemberPerm.Member),
+                        "mods", []) for x in mods
+            ]):
+                res["groups"].append(group)
+        return res

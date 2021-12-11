@@ -17,33 +17,46 @@ async def help_handler(*args, bot, subject):
         i[len(bot.prefix):] for i in bot.inner_commands.keys()
     ]
     if len(args) == 0:
-        res_str = "目前开启的全部模块有：\n"
-        res_str_tail = "其他模块有: "
-        tail_flag = False
-        for comm, doc in docs.items():
-            if comm[len(bot.prefix):] not in cur_mods:
-                continue
-            if type(doc) != str:
-                res_str_tail += comm + " "
-                continue
-            doc = [x.strip() for x in doc.split("\n")]
-            if len(doc) != 3 or doc[0] == "":
-                tail_flag = True
-                res_str_tail += comm + " "
-            else:
-                res_str += f"{comm}: {doc[0]}\n"
-        msg = MessageChain.create(
-            [Plain(str(res_str + (res_str_tail if tail_flag else ""))[:-1])])
+        res_str = "目前开启的全部命令有：\n"
+        for comms, kv in docs.items():
+            res_str += f"  {comms} 模块:\n"
+            for comm, doc in kv[0].items():
+                if comm[len(bot.prefix):] not in cur_mods:
+                    continue
+                if isinstance(doc, str):
+                    doc = [x.strip() for x in doc.split("\n")]
+                    if len(doc) == 3 and doc[0] != "":
+                        res_str += f"  - {comm}: {doc[0]}\n"
+                        continue
+                res_str += f"  - {comm}\n"
+            for comm, doc in kv[1].items():
+                if isinstance(doc, str):
+                    doc = [x.strip() for x in doc.split("\n")]
+                    if len(doc) == 3 and doc[0] != "":
+                        res_str += f"  - {comm}: {doc[0]}\n"
+                        continue
+                res_str += f"  - {comm}\n"
+        msg = MessageChain.create([Plain(str(res_str[:-1]))])
     else:
         res_str = ""
-        for comm in args:
-            comm = bot.prefix + comm if comm[:len(bot.prefix
-                                                 )] != bot.prefix else comm
-            if comm in docs.keys() and type(docs[comm]) == str:
-                doc = [x.strip() for x in docs[comm].split("\n")]
-                if len(doc) != 3 or doc[0] == "":
-                    continue
-                res_str += f"{comm[len(bot.prefix):]}({'已启用' if comm[len(bot.prefix):] in cur_mods else '已关闭'}) {doc[2]}\n"
+        pre_args = [
+            bot.prefix + comm if comm[:len(bot.prefix)] != bot.prefix else comm
+            for comm in args
+        ]
+        for comms, kv in docs.items():
+            for comm, doc in kv[1].items():
+                if comm in args and type(doc) == str:
+                    doc = [x.strip() for x in doc.split("\n")]
+                    if len(doc) != 3 or doc[0] == "":
+                        continue
+                    res_str += f"{comm[len(bot.prefix):]}({'已启用' if comm[len(bot.prefix):] in cur_mods else '已关闭'}) {doc[2]}\n"
+
+            for comm, doc in kv[0].items():
+                if comm in pre_args and type(doc) == str:
+                    doc = [x.strip() for x in doc.split("\n")]
+                    if len(doc) != 3 or doc[0] == "":
+                        continue
+                    res_str += f"{comm[len(bot.prefix):]}({'已启用' if comm[len(bot.prefix):] in cur_mods else '已关闭'}) {doc[2]}\n"
         msg = MessageChain.create(
             [Plain("\n" + res_str[:-1].replace("/", bot.prefix))])
 
@@ -78,7 +91,7 @@ async def task_handler(*args, bot, subject):
 async def mods_handler(*args, bot, subject):
     '''命令查询指令
     
-    用法: $mods (关键字) 无参数表示查询当前启用模块'''
+    用法: $mods (关键字) 无参数表示查询当前启用命令'''
     target = subject
     if isinstance(subject, Member):
         target = subject.group
@@ -95,22 +108,22 @@ async def mods_handler(*args, bot, subject):
                 all_list[
                     i] = f"{all_list[i]}: {'on' if all_list[i] in cur_mods else 'off'}"
             mod_list_str = str(all_list).replace("'", "")
-            msg = f"找到模块: {mod_list_str}."
+            msg = f"找到命令: {mod_list_str}."
         else:
-            msg = f"未找到含有关键字的模块."
+            msg = f"未找到含有关键字的命令."
     else:
         if cur_mods:
             mod_list_str = str(cur_mods).replace("'", "")
-            msg = f"已启用模块: {mod_list_str}."
+            msg = f"已启用命令: {mod_list_str}."
         else:
-            msg = f"未开启任何模块."
+            msg = f"未开启任何命令."
     return MessageChain.create([Plain(msg)])
 
 
 async def on_handler(*args, bot, subject):
-    '''启用模块指令
+    '''启用命令指令
     
-    用法: $on 模块名或all'''
+    用法: $on 命令名或all'''
     msg = ""
     target = subject
     if isinstance(subject, Member):
@@ -120,21 +133,21 @@ async def on_handler(*args, bot, subject):
             await bot.subscribe(target, i[len(bot.prefix):])
         for i in bot.directs.keys():
             await bot.subscribe(target, i)
-        msg += "成功启用全部模块.\n"
+        msg += "成功启用全部命令.\n"
     else:
         for i in args:
             if bot.prefix + i in bot.commands.keys() or i in bot.directs.keys():
                 await bot.subscribe(target, i)
-                msg += f"成功启用模块 {i}.\n"
+                msg += f"成功启用命令 {i}.\n"
             else:
-                msg += f"未找到模块 {i}.\n"
+                msg += f"未找到命令 {i}.\n"
     return MessageChain.create([Plain(msg)])
 
 
 async def off_handler(*args, bot, subject):
-    '''关闭模块指令
+    '''关闭命令指令
     
-    用法: $off 模块名或all'''
+    用法: $off 命令名或all'''
     msg = ""
     target = subject
     if isinstance(subject, Member):
@@ -144,14 +157,14 @@ async def off_handler(*args, bot, subject):
             await bot.unsubscribe(target, i[len(bot.prefix):])
         for i in bot.directs.keys():
             await bot.unsubscribe(target, i)
-        msg += "成功关闭全部模块.\n"
+        msg += "成功关闭全部命令.\n"
     else:
         for i in args:
             if bot.prefix + i in bot.commands.keys() or i in bot.directs.keys():
                 await bot.unsubscribe(target, i)
-                msg += f"成功关闭模块 {i}.\n"
+                msg += f"成功关闭命令 {i}.\n"
             else:
-                msg += f"未找到模块 {i}.\n"
+                msg += f"未找到命令 {i}.\n"
     return MessageChain.create([Plain(msg)])
 
 

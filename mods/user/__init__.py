@@ -9,7 +9,7 @@ from graia.application.message.elements.internal import Plain
 from .helper import (args_parser, calcJrrp, humanisticCare)
 from bot import Bot
 
-__all__ = (args_parser)
+__all__ = ["args_parser"]
 
 
 async def setname_handler(*args, bot: Bot, subject: Union[Member, Friend]):
