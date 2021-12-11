@@ -18,6 +18,7 @@ from mods.user import args_parser
 from .diagrams import getCompStarStat, getCompWinRateGraph, getDotaStory, getStarStat, getWinRateGraph
 from .process import getGamesIn24Hrs, getLatestComparingStat, getStat
 from .helper import getDotaHero
+from .patch import getLatestPatch
 
 
 @args_parser(1)
@@ -32,11 +33,11 @@ async def dota_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
     else:
         dota_id = bot.db.get(subject, "dota_id").get(query_id)
-    if not dota_id:
+    if not dota_id and not query_id.isdigit():
         logger.info(f"[DOTA]未添加该用户{query_id}")
         return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
     else:
-        res = getGamesIn24Hrs(dota_id)
+        res = getGamesIn24Hrs(dota_id or query_id)
         logger.info("[DOTA]返回成功")
         return MessageChain.create([Plain(f"{res}")])
 
@@ -345,6 +346,36 @@ async def story_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     return msg
 
 
+async def dota_update_handler(*args, bot: Bot, subject: Union[Member, Friend]):
+    if isinstance(subject, Member):
+        await bot.subscribe(subject.group, "DOTA2更新订阅")
+    else:
+        await bot.subscribe(subject, "DOTA2更新订阅")
+    return MessageChain.create([Plain(text="订阅DOTA2更新成功！")])
+
+
+async def rm_dota_update_handler(*args, bot: Bot, subject: Union[Member,
+                                                                 Friend]):
+    if isinstance(subject, Member):
+        await bot.unsubscribe(subject.group, "DOTA2更新订阅")
+    else:
+        await bot.unsubscribe(subject, "DOTA2更新订阅")
+    return MessageChain.create([Plain(text="取消订阅DOTA2更新成功！")])
+
+
+async def dota_update_scheduler(bot: Bot):
+    res = getLatestPatch()
+    if res:
+        hint = f"DOTA2 {res['title']} 更新{': '+res['url'] if 'url' in res.keys() else ''}\n"
+        msg = MessageChain.create([Plain(text=hint)])
+        sub_list = await bot.subscriberByMod(["DOTA2更新订阅"])
+        print(bot.db.groups, sub_list)
+        for target in sub_list["friends"]:
+            await bot.sendMessage(("Friend", target), msg)
+        for target in sub_list["groups"]:
+            await bot.sendMessage(("Group", target), msg)
+
+
 COMMANDS = {
     "dota": dota_handler,
     "winrate": winrate_handler,
@@ -355,7 +386,9 @@ COMMANDS = {
     "star": star_handler,
     "stcp": star_compare_handler,
     "hero": hero_handler,
-    "story": story_handler
+    "story": story_handler,
+    "dotaupdate": dota_update_handler,
+    "rmdotaupdate": rm_dota_update_handler,
 }
 
-SCHEDULES = {}
+SCHEDULES = {"DOTA2更新订阅": {"func": dota_update_scheduler, "interval": 120}}

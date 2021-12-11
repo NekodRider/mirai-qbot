@@ -13,6 +13,16 @@ api_dict = {
         'https://www.opendota.com/matches/{}/story',
     "match_request":
         'https://www.opendota.com/request#{}',
+    "patch_list":
+        'http://www.dota2.com/datafeed/patchnoteslist',
+    "patch_notes":
+        'http://www.dota2.com/datafeed/patchnotes?version={}&language=english',
+    "item_api":
+        'http://www.dota2.com/datafeed/itemlist?language=schinese',
+    "ability_api":
+        'http://www.dota2.com/datafeed/abilitylist?language=schinese',
+    "hero_api":
+        'http://www.dota2.com/datafeed/herolist?language=schinese',
 }
 
 hero_dict = {

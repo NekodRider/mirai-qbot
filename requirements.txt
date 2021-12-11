@@ -4,3 +4,4 @@ numpy>=1.19.0
 matplotlib>=3.3.0
 google_cloud_vision>=1.0.0
 pyppeteer>=0.2.2
+graia-scheduler>=0.0.4

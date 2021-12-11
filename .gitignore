@@ -1,11 +1,16 @@
-*.json
+# test
 mods/test
+test.py
+*.tmp
+
+# User files
+data/*
+logs/*
+.venv
 *.png
 /config.py
-.venv
-logs/*
-test.py
-data/*
+*.json
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -146,6 +151,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+.VSCodeCounter
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

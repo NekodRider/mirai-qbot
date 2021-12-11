@@ -1,4 +1,4 @@
 from .bot import *
 from .logger import *
 
-__all__ = (Bot, DefaultLogger, Storage)
+__all__ = ["Bot", "DefaultLogger", "Storage"]
