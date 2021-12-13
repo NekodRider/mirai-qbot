@@ -1,32 +1,63 @@
 import json
 from typing import Union
 from urllib import request
+import logging
+
+from gql import Client, gql
+from gql.transport.aiohttp import AIOHTTPTransport, log
 
 from bot import defaultLogger as logger
 
 from .constants import api_dict, hero_dict, hero_dict_en
 
+log.setLevel(logging.WARNING)
+
 
 def getDotaPlayerInfo(playerId, playerArgs="") -> Union[dict, None]:
+    req = request.Request(api_dict["player"].format(playerId, playerArgs))
+    req.add_header("User-Agent", "Chrome/69.0.3497.81 Safari/537.36")
     try:
-        html = request.urlopen(api_dict["player"].format(playerId,playerArgs))
+        html = request.urlopen(req)
     except Exception as e:
         logger.exception(e)
         raise
     player_data = json.loads(html.read().decode("utf-8"))
-    if playerArgs == "" and player_data["steamAccount"]["name"] == "Unknown":
+    if playerArgs == "" and "profile" not in player_data.keys():
         return None
     return player_data
 
 
 def getDotaGamesInfo(playerId, matchesArgs=""):
+    req = request.Request(api_dict["player_matches"].format(
+        playerId, matchesArgs))
+    req.add_header("User-Agent", "Chrome/69.0.3497.81 Safari/537.36")
     try:
-        html = request.urlopen(api_dict["player_matches"].format(playerId,matchesArgs))
+        html = request.urlopen(req)
     except Exception as e:
         logger.exception(e)
         raise
     games_data = json.loads(html.read().decode("utf-8"))
     return games_data
+
+
+async def getDotaGamesInfoGQL(playerId, total=0):
+    result = None
+    try:
+        transport = AIOHTTPTransport(
+            url=
+            "https://api.stratz.com/graphql?key=gI3HgwbRHfIk2YxMczoB8EY7wigsuAbG"
+        )
+        async with Client(
+                transport=transport,
+                fetch_schema_from_transport=True,
+        ) as session:
+            q = gql(api_dict["stratz_gql"].format(
+                playerId, f"take:{total}," if total else ""))
+            result = (await session.execute(q))["player"]["matches"]
+    except Exception as e:
+        logger.exception(e)
+        raise
+    return result
 
 
 def getDotaGamesInfoOpenDota(playerId):
@@ -52,7 +83,7 @@ def getDotaHero(playerId, heroName):
     player_info = getDotaPlayerInfo(playerId)
     if hero_id == -1 or not player_info:
         return None
-    res["name"] = player_info["steamAccount"]["name"]
+    res["name"] = player_info["profile"]["personaname"]
     try:
         html = request.urlopen(api_dict["player_hero"])
     except Exception as e:
@@ -61,7 +92,7 @@ def getDotaHero(playerId, heroName):
     txt = html.read().decode("utf-8")
     if txt == "":
         return f"{res['name']} 也配玩 {res['hero']}？"
-    
+
     data = json.loads(txt)
     res["win_stat"] = f"{round(data['winCount']/data['matchCount']*100,2)}% - {data['winCount']}W/{data['matchCount']-data['winCount']}L"
     res["kda"] = f"{int(data['avgNumKills'])}/{int(data['avgNumDeaths'])}/{int(data['avgNumAssists'])}"

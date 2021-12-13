@@ -9,7 +9,7 @@ import numpy as np
 from playwright.async_api import async_playwright
 
 from .constants import api_dict
-from .helper import getDotaGamesInfo, getDotaPlayerInfo, getNameDict
+from .helper import getDotaGamesInfoGQL, getDotaPlayerInfo, getNameDict
 from .process import getLatestGamesStat
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei']
@@ -148,23 +148,22 @@ def getStarStat(playerId, total=20):
     return pic_name, player_name
 
 
-def getWinRateList(playerId, total=20):
+async def getWinRateList(playerId, total=20):
     res = []
-    player_data = getDotaPlayerInfo(playerId, "/summary")
-    games_data = getDotaGamesInfo(playerId, f"?take={total}&include=Player")
+    player_data = getDotaPlayerInfo(playerId, "/wl")
+    games_data = await getDotaGamesInfoGQL(playerId, total)
     if not player_data:
         return f"{playerId} 不存在!", 0
     if not games_data:
         return f"{playerId} 场次无记录!", 0
-
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
     for _, match in enumerate(games_data):
         res.append(1 if match["players"][0]["isVictory"] else 0)
 
     latest_total = len(games_data)
     latest_win = reduce(lambda a, b: a + b, res)
-    all_total = player_data["allTime"]["matches"]["matchCount"]
-    total_win = player_data["allTime"]["matches"]["win"]
+    total_win = player_data["win"]
+    all_total = player_data["lose"] + total_win
     pre_total = all_total - latest_total
     pre_win = total_win - latest_win
 
@@ -181,8 +180,8 @@ def getWinRateList(playerId, total=20):
     return winning_rate, player_name
 
 
-def getWinRateGraph(playerId, total=20):
-    winning_rate, player_name = getWinRateList(playerId, total)
+async def getWinRateGraph(playerId, total=20):
+    winning_rate, player_name = await getWinRateList(playerId, total)
     if isinstance(winning_rate, str):
         return winning_rate, 0
     graph_index = range(0, total + 1)
@@ -203,11 +202,11 @@ def getWinRateGraph(playerId, total=20):
     return pic_name, player_name
 
 
-def getCompWinRateGraph(playerIdList, total=20):
+async def getCompWinRateGraph(playerIdList, total=20):
     winning_rate_list = []
     player_name_list = []
     for pid in playerIdList:
-        wr, pn = getWinRateList(pid, total)
+        wr, pn = await getWinRateList(pid, total)
         if isinstance(wr, str):
             return wr, 0
         winning_rate_list.append(wr)
@@ -251,7 +250,7 @@ async def getDotaStory(matchId):
         for hero, name in name_dict.items():
             await page.evaluate(
                 f'(()=>{{var html = document.querySelector("body").innerHTML; html = html.split("{hero}").join("{name}"); document.querySelector("body").innerHTML = html}})()',
-                force_expr=True)
+            )
 
         not_found = await page.query_selector(".FourOhFour")
         unparsed = await page.query_selector(".unparsed")

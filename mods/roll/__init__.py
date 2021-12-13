@@ -16,8 +16,8 @@ async def roll_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     用法: /roll 参数 如/roll 2d6+4代表 roll 2次6面骰子再加4 '''
     params = args
     if len(args) < 1:
-        return MessageChain.create([Plain("缺少参数")])
-    msg = [Plain("\n")]
+        return MessageChain.create([Plain("缺少参数 如 2d6+4 形式")])
+    msg = []
     for arg in args:
         res = re.match(r"(\d+d\d+)(\+\d+)*", arg)
         if not res:

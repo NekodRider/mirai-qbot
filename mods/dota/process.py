@@ -1,7 +1,7 @@
 import time
 
 from .constants import hero_dict
-from .helper import (getDotaGamesInfo, getDotaGamesInfoOpenDota,
+from .helper import (getDotaGamesInfoGQL, getDotaGamesInfoOpenDota,
                      getDotaPlayerInfo)
 
 
@@ -35,12 +35,13 @@ def processInfoOpenDota(playerId):
     return res
 
 
-def processInfo(playerId, matchesArgs=""):
-    games_data = getDotaGamesInfo(playerId, matchesArgs)
+async def processInfo(playerId):
+    games_data = await getDotaGamesInfoGQL(playerId)
     res = []
     for match in games_data:
         if (time.time() - match["startDateTime"]) // 3600 > 24:
             break
+        match["players"] = [x for x in match["players"] if x["id"] == playerId]
         t = {}
         t['time'] = time.strftime("%Y-%m-%d %H:%M:%S",
                                   time.localtime(match["startDateTime"]))
@@ -79,7 +80,7 @@ def getGamesIn24Hrs(playerId):
     player_data = getDotaPlayerInfo(playerId)
     if not player_data:
         return f"玩家 {playerId} 未找到!"
-    player_name = player_data["steamAccount"]["name"]
+    player_name = player_data["profile"]["personaname"]
     res = processInfoOpenDota(playerId)
     report = player_name
     if len(res) == 0:
@@ -99,12 +100,12 @@ def getGamesIn24Hrs(playerId):
     return report[:-1]
 
 
-def getLatestGamesStat(playerId, total=20):
+async def getLatestGamesStat(playerId, total=20):
     res = {}
-    player_data = getDotaPlayerInfo(playerId, "/summary")
+    player_data = getDotaPlayerInfo(playerId)
     if not player_data:
         return None
-    games_data = getDotaGamesInfo(playerId, f"?take={total}&include=Player")
+    games_data = await getDotaGamesInfoGQL(playerId, total)
 
     player_name = games_data[0]["players"][0]["steamAccount"]["name"]
     exp = 0
@@ -133,8 +134,8 @@ def getLatestGamesStat(playerId, total=20):
     return (reports, kda, gpm, xpm, player_name)
 
 
-def getStat(playerId, total=20):
-    game_stats = getLatestGamesStat(playerId, total)
+async def getStat(playerId, total=20):
+    game_stats = await getLatestGamesStat(playerId, total)
     if not game_stats:
         return ""
     reports, kda, gpm, xpm, player_name = game_stats
@@ -154,9 +155,9 @@ def getStat(playerId, total=20):
     return res
 
 
-def getLatestComparingStat(playerIdA, playerIdB, total=20):
-    ret_a = getLatestGamesStat(playerIdA, total)
-    ret_b = getLatestGamesStat(playerIdB, total)
+async def getLatestComparingStat(playerIdA, playerIdB, total=20):
+    ret_a = await getLatestGamesStat(playerIdA, total)
+    ret_b = await getLatestGamesStat(playerIdB, total)
     if not ret_a or not ret_b:
         return f"{playerIdB if ret_a else playerIdA} 不存在!"
     reports_a, kdaA, gpmA, xpmA, player_nameA = ret_a

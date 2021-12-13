@@ -168,35 +168,30 @@ async def winrate_handler(*args, bot: Bot, subject: Union[Member, Friend]):
             [Plain(f"缺少参数或参数过多:{args},用法: /winrate (id) (num)")])
     query_id, *num = args
     if isinstance(subject, Member):
-        dota_id = bot.db.get(subject.group, "dota_id").get(query_id)
+        query_id = bot.db.get(subject.group,
+                              "dota_id").get(query_id) or query_id
     else:
-        dota_id = bot.db.get(subject, "dota_id").get(query_id)
-    if not dota_id:
-        logger.info(f"[WINRATE]未添加该用户{query_id}")
-        return MessageChain.create([Plain(f"未添加该用户{query_id}！")])
-    else:
-        if num and type(num[0]) == type(query_id) and query_id == num[0]:
-            num = [20]
-        query_id = dota_id
-        args = 20
-        if len(num) == 1:
-            try:
-                args = int(num[0])
-                if args > 50 or args <= 0:
-                    args = 20
-            except ValueError:
+        query_id = bot.db.get(subject, "dota_id").get(query_id) or query_id
+
+    args = 20
+    if len(num) == 1:
+        try:
+            args = int(num[0])
+            if args > 50 or args <= 0:
                 args = 20
-        pic_name, player_name = getWinRateGraph(query_id, args)
-        if isinstance(player_name, int):
-            msg = MessageChain.create([Plain(pic_name)])
-            logger.info("[WINRATE]用户不存在")
-        else:
-            msg = MessageChain.create([
-                Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n"),
-                Image.fromLocalFile(pic_name),
-            ])
-            logger.info("[WINRATE]返回成功")
-        return msg
+        except ValueError:
+            args = 20
+    pic_name, player_name = await getWinRateGraph(query_id, args)
+    if isinstance(player_name, int):
+        msg = MessageChain.create([Plain(pic_name)])
+        logger.info("[WINRATE]用户不存在")
+    else:
+        msg = MessageChain.create([
+            Plain(text=player_name + " 最近 " + str(args) + " 场游戏胜率变化图\n"),
+            Image.fromLocalFile(pic_name),
+        ])
+        logger.info("[WINRATE]返回成功")
+    return msg
 
 
 @args_parser(2, 0)
@@ -243,7 +238,7 @@ async def winrate_compare_handler(*args, bot: Bot, subject: Union[Member,
     else:
         if num <= 0 or num > 50:
             num = 20
-        pic_name, player_name_list = getCompWinRateGraph(ids, num)
+        pic_name, player_name_list = await getCompWinRateGraph(ids, num)
         if type(player_name_list) == type(0):
             msg = MessageChain.create([Plain(pic_name)])
             logger.info("[WRCP]用户不存在")

@@ -1,6 +1,6 @@
 api_dict = {
     "player":
-        "https://api.stratz.com/api/v1/Player/{}{}",
+        "https://api.opendota.com/api/players/{}{}",
     "player_matches":
         "https://api.stratz.com/api/v1/Player/{}/matches{}",
     "player_matches_opendota":
@@ -23,6 +23,38 @@ api_dict = {
         'http://www.dota2.com/datafeed/abilitylist?language=schinese',
     "hero_api":
         'http://www.dota2.com/datafeed/herolist?language=schinese',
+    "stratz_gql":
+        """
+            query{{
+                player(steamAccountId:{}){{
+                    matches(request:{{{}gameModeIds:[1,2,3,4]}}){{
+                        startDateTime,
+                        durationSeconds,
+                        players{{
+                            steamAccount{{
+                                name,
+                                id
+                            }}
+                            isVictory,
+                            imp,
+                            role,
+                            lane,
+                            heroId,
+                            kills,
+                            deaths,
+                            assists,
+                            numLastHits,
+                            numDenies,
+                            goldPerMinute,
+                            heroDamage,
+                            towerDamage,
+                            heroHealing,
+                            experiencePerMinute
+                        }}
+                    }}
+                }}
+            }}
+    """
 }
 
 hero_dict = {
@@ -142,10 +174,11 @@ hero_dict = {
     "119": "邪影芳灵",
     "120": "石鳞剑士",
     "121": "天涯墨客",
-    "123": "玛西",
+    "123": "森海飞霞",
     "126": "虚无之灵",
     "128": "电炎绝手",
     "129": "玛尔斯",
+    "136": "玛西"
 }
 hero_dict_en = {
     "1": "Anti-Mage",
@@ -264,8 +297,9 @@ hero_dict_en = {
     "119": "Dark Willow",
     "120": "Pangolier",
     "121": "Grimstroke",
-    "123": "Marci",
+    "123": "Hoodwink",
     "126": "Void Spirit",
     "128": "Snapfire",
     "129": "Mars",
+    "136": "Marci"
 }

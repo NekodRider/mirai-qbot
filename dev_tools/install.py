@@ -49,3 +49,8 @@ try:
     main()
 except SystemExit:
     pass
+sys.argv = ['', 'install', 'install-deps']
+try:
+    main()
+except SystemExit:
+    pass
