@@ -1,63 +1,4 @@
-api_dict = {
-    "player":
-        "https://api.opendota.com/api/players/{}{}",
-    "player_matches":
-        "https://api.stratz.com/api/v1/Player/{}/matches{}",
-    "player_matches_opendota":
-        "https://api.opendota.com/api/players/{}/recentMatches",
-    "player_hero":
-        "https://api.stratz.com/api/v1/Player/{}/heroPerformance/{}?gameMode=1,2,3,4",
-    "match":
-        "https://api.opendota.com/api/matches/{}",
-    "match_story":
-        'https://www.opendota.com/matches/{}/story',
-    "match_request":
-        'https://www.opendota.com/request#{}',
-    "patch_list":
-        'http://www.dota2.com/datafeed/patchnoteslist',
-    "patch_notes":
-        'http://www.dota2.com/datafeed/patchnotes?version={}&language=english',
-    "item_api":
-        'http://www.dota2.com/datafeed/itemlist?language=schinese',
-    "ability_api":
-        'http://www.dota2.com/datafeed/abilitylist?language=schinese',
-    "hero_api":
-        'http://www.dota2.com/datafeed/herolist?language=schinese',
-    "stratz_gql":
-        """
-            query{{
-                player(steamAccountId:{}){{
-                    matches(request:{{{}gameModeIds:[1,2,3,4]}}){{
-                        startDateTime,
-                        durationSeconds,
-                        players{{
-                            steamAccount{{
-                                name,
-                                id
-                            }}
-                            isVictory,
-                            imp,
-                            role,
-                            lane,
-                            heroId,
-                            kills,
-                            deaths,
-                            assists,
-                            numLastHits,
-                            numDenies,
-                            goldPerMinute,
-                            heroDamage,
-                            towerDamage,
-                            heroHealing,
-                            experiencePerMinute
-                        }}
-                    }}
-                }}
-            }}
-    """
-}
-
-hero_dict = {
+HERO_CN_DICT = {
     "1": "敌法师",
     "2": "斧王",
     "3": "祸乱之源",
@@ -180,7 +121,7 @@ hero_dict = {
     "129": "玛尔斯",
     "136": "玛西"
 }
-hero_dict_en = {
+HERO_EN_DICT = {
     "1": "Anti-Mage",
     "2": "Axe",
     "3": "Bane",

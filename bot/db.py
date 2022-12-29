@@ -5,8 +5,7 @@ from os import replace
 from pathlib import Path
 from typing import Any, Union
 
-from graia.application.friend import Friend
-from graia.application.group import Group, Member
+from graia.ariadne.model import Friend, Group, Member
 
 
 class Storage(object):

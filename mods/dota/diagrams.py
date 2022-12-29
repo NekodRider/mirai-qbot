@@ -68,9 +68,9 @@ def getStarScore(reports, gpm):
     return res
 
 
-def getCompStarStat(playerIdA, playerIdB, total=20):
-    ret_a = getLatestGamesStat(playerIdA, total)
-    ret_b = getLatestGamesStat(playerIdB, total)
+async def getCompStarStat(playerIdA, playerIdB, total=20):
+    ret_a = await getLatestGamesStat(playerIdA, total)
+    ret_b = await getLatestGamesStat(playerIdB, total)
     if not ret_a or not ret_b:
         return f"{playerIdB if ret_a else playerIdA} 不存在!", 0, 0
     reports_a, _, gpm_a, _, player_name_a = ret_a
@@ -81,7 +81,8 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
 
     fig = plt.figure(figsize=(4, 4.5))
     ax1 = fig.add_subplot(1, 1, 1, polar=True)
-    ax1.set_title(f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
+    ax1.set_title(
+        f'{player_name_a} VS {player_name_b} 最近 {str(total)} 场游戏数据对比')
     ax1.set_rlim(0, 10.5)
 
     value_a = np.array([i for i in raw_data_a.values()]).astype(float)
@@ -112,8 +113,8 @@ def getCompStarStat(playerIdA, playerIdB, total=20):
     return pic_name, player_name_a, player_name_b
 
 
-def getStarStat(playerId, total=20):
-    game_stats = getLatestGamesStat(playerId, total)
+async def getStarStat(playerId, total=20):
+    game_stats = await getLatestGamesStat(playerId, total)
     if not game_stats:
         return f"{playerId} 不存在!", 0
     reports, _, gpm, _, player_name = game_stats

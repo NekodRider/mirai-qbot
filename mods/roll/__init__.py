@@ -2,10 +2,9 @@ import random
 import re
 from typing import Union
 
-from graia.application.friend import Friend
-from graia.application.group import Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.model import Friend, Member
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 
 from bot import Bot
 
@@ -16,12 +15,12 @@ async def roll_handler(*args, bot: Bot, subject: Union[Member, Friend]):
     用法: /roll 参数 如/roll 2d6+4代表 roll 2次6面骰子再加4 '''
     params = args
     if len(args) < 1:
-        return MessageChain.create([Plain("缺少参数 如 2d6+4 形式")])
+        return MessageChain([Plain("缺少参数 如 2d6+4 形式")])
     msg = []
     for arg in args:
         res = re.match(r"(\d+d\d+)(\+\d+)*", arg)
         if not res:
-            return MessageChain.create([Plain("参数格式不对 请输入 2d6+4 形式")])
+            return MessageChain([Plain("参数格式不对 请输入 2d6+4 形式")])
         d, p = res[1], res[2]
         param = [int(x) if x != '' else 0 for x in d.split("d")]
         if param[0] > 100 or param[1] > 999999 or 0 in param:
@@ -33,7 +32,7 @@ async def roll_handler(*args, bot: Bot, subject: Union[Member, Friend]):
                 f"{param[0]}d{param[1]}{p or ''} 结果:{str(res)}{p or ''}{' = '+str(sum(res))+(p or '') if param[0]>1 else ''}{' = '+str(sum(res)+int(p)) if p else ''}\n"
             ))
 
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 COMMANDS = {"roll": roll_handler}

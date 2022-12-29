@@ -3,10 +3,9 @@ import os
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-from graia.application import AbstractLogger
 
 
-class DefaultLogger(AbstractLogger):
+class DefaultLogger():
 
     def __init__(self, level=logging.INFO, fmt_str=None):
         self.logger = logging.getLogger()

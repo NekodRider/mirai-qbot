@@ -1,9 +1,8 @@
 from typing import Union
 
-from graia.application.friend import Friend
-from graia.application.group import Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.model import Friend, Member
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 
 from bot import Bot
 from bot import defaultLogger as logger
@@ -18,16 +17,16 @@ async def setname_handler(*args, bot: Bot, subject: Union[Member, Friend]):
 
     用法: /setname 昵称'''
     if len(args) == 0:
-        return MessageChain.create([Plain('使用示例: /setname yd')])
+        return MessageChain([Plain('使用示例: /setname yd')])
     [name, *_] = args
     oldName = bot.db.get(subject, "nickname")
     try:
         bot.db.set(subject, {'nickname': name})
-        return MessageChain.create(
+        return MessageChain(
             [Plain('成功从' + (oldName if oldName else '-未设定-') + '变更为' + name)])
     except Exception as e:
         logger.debug(e)
-        return MessageChain.create([Plain("修改失败qwq")])
+        return MessageChain([Plain("修改失败qwq")])
 
 
 async def name_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -35,7 +34,7 @@ async def name_handler(*args, bot: Bot, subject: Union[Member, Friend]):
 
     用法: /name'''
     name = bot.db.get(subject, "nickname")
-    return MessageChain.create([
+    return MessageChain([
         Plain(('你的名字是 ' + name + ' ！') if name else '还没设定哦，通过 /setname 修改名字~')
     ])
 
@@ -64,7 +63,7 @@ async def jrrp_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         postfix = 'NB！'
     elif rp < 100:
         postfix = 'NB！！'
-    return MessageChain.create(
+    return MessageChain(
         [Plain((msg + postfix) % (nickname, rp, nickname) + hint)])
 
 

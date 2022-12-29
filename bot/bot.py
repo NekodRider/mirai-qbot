@@ -1,6 +1,6 @@
 #type: ignore
 import asyncio
-import collections
+from datetime import datetime, timedelta
 import importlib
 import re
 import time
@@ -11,18 +11,23 @@ from queue import Queue
 from re import sub
 from threading import Thread
 from typing import Any, Callable, Dict, List, Tuple, Union
+from creart import create
 
 import aiohttp
-from graia.application import GraiaMiraiApplication, Session, logger
-from graia.application.event.lifecycle import (ApplicationLaunched,
-                                               ApplicationShutdowned)
-from graia.application.friend import Friend
-from graia.application.group import Group, Member, MemberPerm
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import At, Plain
+from graia.ariadne.app import Ariadne
+from graia.ariadne.model import Group, Member, Friend
+from graia.ariadne.message.element import At
+from graia.ariadne.message.chain import MessageChain
 from graia.broadcast import Broadcast
-from graia.scheduler import SchedulerTask, Timer
-from graia.scheduler.timers import *
+from graia.ariadne.event.lifecycle import ApplicationLaunched
+from graia.ariadne.connection.config import (
+    HttpClientConfig,
+    WebsocketClientConfig,
+    config,
+)
+
+from graia.scheduler import SchedulerTask
+from graia.scheduler.timers import every_custom_seconds
 
 from .db import Storage
 from .handlers import INNER_COMMANDS
@@ -41,18 +46,20 @@ class Bot(object):
         self.message_queue = Queue()
         self.command_queue = Queue()
         self.history = None
-        self.loop = asyncio.get_event_loop()
-        self.bcc = Broadcast(loop=self.loop)
+        self.bcc = create(Broadcast)
+        self.loop = self.bcc.loop
         self.counters = [0, 0]
         if configs['debug']:
             global defaultLogger
             defaultLogger.close()
             defaultLogger = DefaultLogger(level=DEBUG)
         self.logger = defaultLogger
-        self.app = GraiaMiraiApplication(broadcast=self.bcc,
-                                         connect_info=Session(**app_configs),
-                                         logger=self.logger,
-                                         debug=configs['debug'])
+        self.app = Ariadne(connection=config(
+            app_configs["account"],
+            app_configs["authKey"],
+            HttpClientConfig(host=app_configs["host"]),
+            WebsocketClientConfig(host=app_configs["host"]),
+        ),)
         self.prefix = configs['prefix']
         self.db = Storage.load()
         self.load_mods()
@@ -98,7 +105,6 @@ class Bot(object):
             await asyncio.sleep(1)
 
     def init_processors(self, num: int = 5):
-
         def start_loop(loop):
             asyncio.set_event_loop(loop)
             loop.run_forever()
@@ -142,7 +148,8 @@ class Bot(object):
                                     comm] = func, func.__doc__
                     if "SCHEDULES" in dir(m):
                         for name, kwargs in m.SCHEDULES.items():
-                            self.loop.create_task(self.schedule(name, **kwargs))
+                            self.loop.create_task(
+                                self.schedule(name, **kwargs))
                     if "DIRECTS" in dir(m):
                         for name, func in m.DIRECTS.items():
                             self.directs[name], self.docs[module_name][1][
@@ -166,21 +173,20 @@ class Bot(object):
         try:
             if isinstance(subject, Member):
                 if not withAt:
-                    ret = await self.app.sendGroupMessage(subject.group, msg)
+                    ret = await self.app.send_group_message(subject.group, msg)
                 else:
-                    new_msg = MessageChain.create([At(subject.id)
-                                                  ]).plusWith(msg)
-                    ret = await self.app.sendGroupMessage(
+                    new_msg = MessageChain([At(subject.id), msg])
+                    ret = await self.app.send_group_message(
                         subject.group, new_msg)
             if isinstance(subject, Group):
-                ret = await self.app.sendGroupMessage(subject, msg)
+                ret = await self.app.send_group_message(subject, msg)
             elif isinstance(subject, Friend):
                 ret = await self.app.sendFriendMessage(subject, msg)
             elif isinstance(subject, tuple):
                 if subject[0] == "Friend":
                     ret = await self.app.sendFriendMessage(subject[1], msg)
                 else:
-                    ret = await self.app.sendGroupMessage(subject[1], msg)
+                    ret = await self.app.send_group_message(subject[1], msg)
             self.history = ret
         except KeyboardInterrupt or SystemExit:
             pass
@@ -197,7 +203,7 @@ class Bot(object):
             for name, direct in self.directs.items():
                 if name in cur_mods:
                     asyncio.create_task(direct(message, self, subject))
-            message_str = message.asDisplay()
+            message_str = message.display
             pattern = self.prefix + r"([\S]+ )*[\S]+"
             match = re.match(pattern, message_str, re.I)
             command_str = ""
@@ -225,7 +231,7 @@ class Bot(object):
                     else:
                         await self.sendMessage(
                             subject,
-                            MessageChain.create([
+                            MessageChain([
                                 Plain(
                                     f"未启用 {comm[len(self.prefix):]}, 可通过输入/on {comm[len(self.prefix):]} 来启用命令。"
                                 )
@@ -237,7 +243,6 @@ class Bot(object):
             self.logger.exception(e)
 
     def activate(self):
-
         @self.bcc.receiver("GroupMessage")
         async def _(member: Member, message: MessageChain):
             await self.judge(member, message)

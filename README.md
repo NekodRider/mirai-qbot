@@ -1,9 +1,10 @@
 # doto 鱼塘分队群用 qbot
 
-框架采用 [mirai](https://github.com/mamoe/mirai) 以及 [python-mirai-v4(graia-application)](https://github.com/GraiaProject/Application)
+框架采用 [mirai](https://github.com/mamoe/mirai) 以及 [Ariadne](https://github.com/GraiaProject/Ariadne)
 
-### Features
-```
+## Features
+
+```text
 内置 模块:
 - /help: 帮助指令
 - /task: 任务指令
@@ -46,12 +47,16 @@ user 模块:
 - /jrrp: 查询今日人品
 ```
 
-### Change Logs
+## Change Logs
+
+- 2022/12/04 v0.2.0
+  整体迁移到 Graia/Ariadne
+
 - 2021/12/11 v0.1.1
   新功能引入和多处改动，引入 poetry 管理依赖
 
 - 2020/10/11 v0.1.0
-  整体迁移到 graia(python-mirai-v4)
+  整体迁移到 Graia/Application
 
 - 2020/09/12 v0.0.5
   添加指令注释机制，订阅机制，缓存机制，底层命令处理优化为消息队列，以及dota更新订阅功能

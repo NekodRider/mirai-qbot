@@ -3,10 +3,9 @@ import time
 from pathlib import Path
 from typing import Union
 
-from graia.application.friend import Friend
-from graia.application.group import Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Image, Plain
+from graia.ariadne.model import Friend, Member
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image, Plain
 
 from bot import Bot
 from bot.logger import defaultLogger as logger
@@ -35,7 +34,7 @@ async def dance_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         msg.append(Image.fromNetworkAddress(pic[i]))  # type: ignore
         msg.append(Plain("\n"))
     logger.info("[DANCE]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def recommend_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -51,7 +50,7 @@ async def recommend_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         msg.append(Image.fromNetworkAddress(pic[i]))  # type: ignore
         msg.append(Plain("\n"))
     logger.info("[RECOMMEND]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def live_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -78,7 +77,7 @@ async def live_handler(*args, bot: Bot, subject: Union[Member, Friend]):
                         Plain(res['name'] + " 正在直播 " + "[{}]{}\n{}".format(
                             res["area_name"], res["title"], res["url"])))
                     msg.append(Image.fromNetworkAddress(res["keyframe"]))
-        return MessageChain.create(msg)
+        return MessageChain(msg)
 
     room_id = args[0]
     res = getLiveInfo(room_id)
@@ -112,7 +111,7 @@ async def live_handler(*args, bot: Bot, subject: Union[Member, Friend]):
                 Image.fromNetworkAddress(res["keyframe"])
             ]
         logger.info("[LIVE]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def rmlive_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -120,7 +119,7 @@ async def rmlive_handler(*args, bot: Bot, subject: Union[Member, Friend]):
 
     用法: /rmlive 房间号'''
     if len(args) != 1:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain([Plain("缺少参数或参数过多")])
     room_id = args[0]
     res = getLiveInfo(room_id)
     if isinstance(res, str):
@@ -140,7 +139,7 @@ async def rmlive_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         updateJSON(BILI_LIVE_JSON_PATH, monitor_dict)
         msg = [Plain("已将 {} 移出监视列表\n".format(res['name']))]
         logger.info("[RMLIVE]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def up_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -158,7 +157,7 @@ async def up_handler(*args, bot: Bot, subject: Union[Member, Friend]):
             if (isinstance(subject, Member) and groupToStr(subject.group) in target) \
                     or (isinstance(subject, Friend) and subject.id in target):
                 res += getNameByUid(up) + " "
-        return MessageChain.create([Plain(res)])
+        return MessageChain([Plain(res)])
 
     up_id = args[0]
     up_name = getNameByUid(up_id)
@@ -191,7 +190,7 @@ async def up_handler(*args, bot: Bot, subject: Union[Member, Friend]):
                 msg.append(Image.fromNetworkAddress(i["pic"]))  # type: ignore
                 msg.append(Plain("\n"))
         logger.info("[UP]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def rmup_handler(*args, bot: Bot, subject: Union[Member, Friend]):
@@ -199,7 +198,7 @@ async def rmup_handler(*args, bot: Bot, subject: Union[Member, Friend]):
 
     用法: /rmup UP主uid'''
     if len(args) != 1:
-        return MessageChain.create([Plain("缺少参数或参数过多")])
+        return MessageChain([Plain("缺少参数或参数过多")])
     up_id = args[0]
     res = getCards(up_id)
     if res == "error":
@@ -219,7 +218,7 @@ async def rmup_handler(*args, bot: Bot, subject: Union[Member, Friend]):
         updateJSON(BILI_UP_JSON_PATH, up_dict)
         msg = [Plain("已将 {} 移出监视列表\n".format(getNameByUid(up_id)))]
         logger.info("[RMUP]返回成功")
-    return MessageChain.create(msg)
+    return MessageChain(msg)
 
 
 async def live_scheduler(bot: Bot):
@@ -231,7 +230,7 @@ async def live_scheduler(bot: Bot):
         if isinstance(res, dict) and res['isLive'] == 1 and time.time() - int(
                 time.mktime(time.strptime(res['live_time'],
                                           "%Y-%m-%d %H:%M:%S"))) < 600:
-            msg = MessageChain.create([
+            msg = MessageChain([
                 Plain(res['name'] + " 开播啦! " + "[{}]{}\n{}".format(
                     res["area_name"], res["title"], res["url"])),
                 Image.fromNetworkAddress(res["keyframe"])
@@ -257,7 +256,7 @@ async def up_scheduler(bot: Bot):
                     Plain(text=f"{up_name} 投稿了视频《{i['title']}》:{i['url']}\n"))
                 msg.append(Image.fromNetworkAddress(i["pic"]))
                 msg.append(Plain(text="\n"))
-            msg = MessageChain.create(msg)
+            msg = MessageChain(msg)
             for member in up_dict[up_id]:
                 if type(member) == str:
                     await bot.sendMessage(groupFromStr(member), msg)

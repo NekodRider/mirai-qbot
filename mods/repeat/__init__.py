@@ -1,9 +1,8 @@
 import re
 from typing import Union
 
-from graia.application.friend import Friend
-from graia.application.group import Member
-from graia.application.message.chain import MessageChain
+from graia.ariadne.model import Friend, Member
+from graia.ariadne.message.chain import MessageChain
 
 from bot import Bot
 
@@ -15,16 +14,16 @@ sb_repeat_content = None
 def is_equal(a: Union[MessageChain, None], b: Union[MessageChain, None]):
     if not a or not b:
         return False
-    return a.asSerializationString() == b.asSerializationString()
+    return a.as_persistent_string() == b.as_persistent_string()
 
 
 async def repeat_handler(message: MessageChain, bot: Bot,
                          subject: Union[Member, Friend]):
     '''bot拟人化, 实现人类的本质.
-    
+
     开启后会自动参与复读以及吹比'''
-    message = message.asSendable()
-    message_str = message.asDisplay()
+    message = message.as_sendable()
+    message_str = message.display
     if isinstance(subject, Friend) or not message_str:
         return
 

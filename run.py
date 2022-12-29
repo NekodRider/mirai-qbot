@@ -12,7 +12,8 @@ if __name__ == "__main__":
         config = importlib.import_module("config")
         if all([hasattr(config, x) for x in ("app_configs", "bot_configs")]):
             # 注释下面一行来关闭 sentry
-            sentry_sdk.init(**config.app_configs["sentry_sdk"])
+            if(config.app_configs["sentry"]):
+                sentry_sdk.init(**config.app_configs["sentry_sdk"])
             bot = Bot(config.app_configs, config.bot_configs)
             bot.activate()
         else:

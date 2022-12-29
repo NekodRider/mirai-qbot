@@ -1,14 +1,14 @@
 import time
 from pathlib import Path
 
-from graia.application.group import Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.model import Member
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 
 
 async def help_handler(*args, bot, subject):
     '''帮助指令
-    
+
     用法: $help'''
     docs = bot.docs
     target = subject
@@ -35,7 +35,7 @@ async def help_handler(*args, bot, subject):
                         res_str += f"- {comm}: {doc[0]}\n"
                         continue
                 res_str += f"- {comm}\n"
-        msg = MessageChain.create([Plain(str(res_str[:-1]))])
+        msg = MessageChain([Plain(str(res_str[:-1]))])
     else:
         res_str = ""
         pre_args = [
@@ -56,19 +56,18 @@ async def help_handler(*args, bot, subject):
                     if len(doc) != 3 or doc[0] == "":
                         continue
                     res_str += f"{comm[len(bot.prefix):]}({'已启用' if comm[len(bot.prefix):] in cur_mods else '已关闭'}) {doc[2]}\n"
-        msg = MessageChain.create(
-            [Plain(res_str[:-1].replace("/", bot.prefix))])
+        msg = MessageChain([Plain(res_str[:-1].replace("/", bot.prefix))])
 
     return msg
 
 
 async def task_handler(*args, bot, subject):
     '''任务指令
-    
+
     用法: $task'''
     counters = f"当前有 {bot.counters[0]} 个 worker, {bot.counters[1]} 个 sender\n"
     if len(bot.schedule_task_list) == 0:
-        return MessageChain.create([Plain(counters + "目前没有在运行的任务.")])
+        return MessageChain([Plain(counters + "目前没有在运行的任务.")])
     res_str = counters + "目前运行的任务和钩子有：\n"
     for task in bot.schedule_task_list:
         last_scheduled = task.get('last_scheduled', '')
@@ -83,13 +82,13 @@ async def task_handler(*args, bot, subject):
     for name, func in bot.directs.items():
         doc = func.__doc__.split('\n')[0]
         res_str += f"{name}: {doc}\n"
-    msg = MessageChain.create([Plain(res_str[:-1])])
+    msg = MessageChain([Plain(res_str[:-1])])
     return msg
 
 
 async def mods_handler(*args, bot, subject):
     '''命令查询指令
-    
+
     用法: $mods (关键字) 无参数表示查询当前启用命令'''
     target = subject
     if isinstance(subject, Member):
@@ -116,12 +115,12 @@ async def mods_handler(*args, bot, subject):
             msg = f"已启用命令: {mod_list_str}."
         else:
             msg = f"未开启任何命令."
-    return MessageChain.create([Plain(msg)])
+    return MessageChain([Plain(msg)])
 
 
 async def on_handler(*args, bot, subject):
     '''启用命令指令
-    
+
     用法: $on 命令名或all'''
     msg = ""
     target = subject
@@ -140,12 +139,12 @@ async def on_handler(*args, bot, subject):
                 msg += f"成功启用命令 {i}.\n"
             else:
                 msg += f"未找到命令 {i}.\n"
-    return MessageChain.create([Plain(msg)])
+    return MessageChain([Plain(msg)])
 
 
 async def off_handler(*args, bot, subject):
     '''关闭命令指令
-    
+
     用法: $off 命令名或all'''
     msg = ""
     target = subject
@@ -164,19 +163,19 @@ async def off_handler(*args, bot, subject):
                 msg += f"成功关闭命令 {i}.\n"
             else:
                 msg += f"未找到命令 {i}.\n"
-    return MessageChain.create([Plain(msg)])
+    return MessageChain([Plain(msg)])
 
 
 async def logger_handler(*args, bot, subject):
     '''日志查询指令
-    
+
     用法: $log'''
     with open(Path(__file__).parent.parent.joinpath("logs", "mirai_bot.log"),
               "r",
               encoding='utf-8') as f:
         res = f.readlines()
         res = "".join(res[0 if len(res) < 21 else len(res) - 21:len(res) - 1])
-    return MessageChain.create([Plain(res)])
+    return MessageChain([Plain(res)])
 
 
 INNER_COMMANDS = {

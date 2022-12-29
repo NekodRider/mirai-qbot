@@ -1,4 +1,4 @@
-from graia.application.group import Group, MemberPerm
+from graia.ariadne.model import Group, MemberPerm
 
 
 def groupToStr(g):
